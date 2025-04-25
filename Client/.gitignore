@@ -1,0 +1,51 @@
+# Node.js dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+build/
+dist/
+
+# React Native specific
+android/
+ios/
+*.keystore
+*.gradle
+*.iml
+*.hprof
+*.lock
+*.orig
+*.patch
+*.rej
+*.so
+*.swp
+*.swo
+*.tmp
+*.temp
+*.xcuserstate
+*.xcworkspace
+*.xcodeproj
+*.idea/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Metro bundler cache
+.expo/
+.expo-shared/
+.expo-settings.json
