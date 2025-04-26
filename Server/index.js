@@ -9,6 +9,8 @@ const Port=3000;
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(cors()) 
+const routers = require('./routers');
+app.use('/api', routers);
 
 
 // Start the server

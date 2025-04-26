@@ -27,4 +27,5 @@ module.exports=(sequelize, DataTypes) => {
             defaultValue:0.0
         },
     })
+    return User
 }

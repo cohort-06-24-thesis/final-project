@@ -8,6 +8,7 @@ const sequelize = new Sequelize('donation', 'postgres', 'root', {
 
 
   const User = require('../models/user.model')(sequelize,DataTypes);
+  const DonationItem = require('../models/donationItems')(sequelize,DataTypes);
 
   try {
    sequelize.authenticate();
@@ -21,4 +22,4 @@ const sequelize = new Sequelize('donation', 'postgres', 'root', {
 // }
 // connection()
 
-module.exports={User}
+module.exports={User,DonationItem}
