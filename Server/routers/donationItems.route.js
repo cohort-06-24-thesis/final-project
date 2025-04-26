@@ -3,8 +3,8 @@ const router = express.Router();
 const donationItemsController = require('../controllers/donationItems.controller');
 
 // Routes for donation items
-router.post('/', donationItemsController.createDonationItem);
-router.get('/', donationItemsController.getAllDonationItems);
+router.post('/addItem', donationItemsController.createDonationItem);
+router.get('/getAllItems', donationItemsController.getAllDonationItems);
 router.get('/:id', donationItemsController.getDonationItemById);
 router.put('/:id', donationItemsController.updateDonationItem);
 router.delete('/:id', donationItemsController.deleteDonationItem);
