@@ -11,6 +11,10 @@ const sequelize = new Sequelize('donation', 'postgres', 'root', {
   const Payment = require('../models/payment.model')(sequelize,DataTypes);
   const report= require('../models/report.model')(sequelize,DataTypes);
   const favourite= require('../models/favourite.model')(sequelize,DataTypes);
+const Notification= require('../models/notification.model')(sequelize,DataTypes);
+const Comment= require('../models/comment.model')(sequelize,DataTypes);
+
+
 
   try {
    sequelize.authenticate();
@@ -18,10 +22,11 @@ const sequelize = new Sequelize('donation', 'postgres', 'root', {
   } catch (error) {
     console.error('Unable to connect to the database:', error);
   }
+  
 // const connection=async()=>{
 //   await sequelize.sync({ force: true });
 // console.log('All models were synchronized successfully.');
 // }
 // connection()
 
-module.exports={User, Payment,report}
+module.exports={User, Payment,report,favourite,Notification,Comment};
