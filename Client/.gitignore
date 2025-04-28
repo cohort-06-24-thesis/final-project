@@ -39,3 +39,4 @@ ios/Pods/
 
 # Package lock files
 package-lock.json
+yarn.lock
