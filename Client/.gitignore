@@ -1,6 +1,10 @@
 # Node.js dependencies
 node_modules/
 
+# Expo specific files
+.expo/
+.expo-shared/
+
 # Logs
 logs/
 *.log
@@ -8,30 +12,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Build output
-build/
-dist/
-
-# React Native specific
-android/
-ios/
-*.keystore
-*.gradle
-*.iml
-*.hprof
-*.lock
-*.orig
-*.patch
-*.rej
-*.so
-*.swp
-*.swo
-*.tmp
-*.temp
-*.xcuserstate
-*.xcworkspace
-*.xcodeproj
-*.idea/
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
 
 # OS-specific files
 .DS_Store
@@ -41,11 +26,13 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Temporary files
-*.tmp
-*.temp
+# Debug files
+debug.log
 
-# Metro bundler cache
-.expo/
-.expo-shared/
-.expo-settings.json
+# Build output
+build/
+dist/
+
+# React Native specific
+android/app/build/
+ios/Pods/
