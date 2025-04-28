@@ -36,3 +36,6 @@ dist/
 # React Native specific
 android/app/build/
 ios/Pods/
+
+# Package lock files
+package-lock.json
