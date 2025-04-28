@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     bottom: 50,
   },
   dot: {
-    backgroundColor: '##80ED99', // Light green for inactive dots
+    backgroundColor: '#B2FFB2', // Light green for inactive dots
     width: 10,
     height: 10,
     borderRadius: 5,
