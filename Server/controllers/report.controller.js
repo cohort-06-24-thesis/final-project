@@ -1,5 +1,4 @@
-const db = require('../models');
-const Report = db.Report;
+const {Report} = require("../Database/index.js")
 
 
 module.exports= {

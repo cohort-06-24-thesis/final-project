@@ -1,5 +1,4 @@
-const db = require("../models");
-const Notification = db.notification;
+const {Notification} = require("../Database/index.js")
 
 module.exports = {
     // Create new notification

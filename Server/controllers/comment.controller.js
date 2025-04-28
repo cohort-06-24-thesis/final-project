@@ -1,5 +1,4 @@
-const db = require('../models');
-const Comment = db.Comment;
+const {Comment} = require("../Database/index.js")
 
 module.exports = {
     // Create a new comment

@@ -1,5 +1,4 @@
-const db = require('../models');
-const Favourite = db.Favourite;
+const {Favourite} = require("../Database/index.js")
 
 module.exports = {
     // Create a new favourite
