@@ -26,7 +26,7 @@ export default function Login({ navigation }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('User logged in successfully:', userCredential.user.email);
       setError(''); // Clear any existing errors
-      navigation.navigate('Home');
+     navigation.replace('MainApp');
     } catch (error) {
       console.error('Login error:', error);
       switch (error.code) {
