@@ -22,7 +22,7 @@ const inNeed= require('../models/InNeed')(sequelize,DataTypes);
 const campaignDonation = require('../models/CampaignDonations')(sequelize,DataTypes);
 const Event = require('../models/Event')(sequelize,DataTypes);
 const Message = require('../models/Message')(sequelize,DataTypes);
-const conversation = require('../models/conversation.model')(sequelize,DataTypes);
+const Conversation = require('../models/conversation.model')(sequelize,DataTypes);
 
 
 User.hasMany(DonationItem, { foreignKey: 'userId' });
@@ -89,5 +89,5 @@ DonationItem.belongsTo(Event, { foreignKey: 'eventId' });
 // connection()
 
 
-module.exports={User, Payment,report,DonationItem,Category,favourite,Notification,Comment,inNeed,campaignDonation,Event,Message,conversation};
+module.exports={User, Payment,report,DonationItem,Category,favourite,Notification,Comment,inNeed,campaignDonation,Event,Message,Conversation};
 
