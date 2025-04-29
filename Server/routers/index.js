@@ -6,10 +6,11 @@ const favouriteRouter = require('./favourite.router');
 const commentRouter = require('./comment.router');
 const reportRouter = require('./report.router');
 const notificationRouter = require('./notification.router');
+const userRouter = require('./user.route');
 
 const router = express.Router();
 
-// Mount routers
+// // Mount routers
 router.use('/donationItems', donationItemsRouter);
 router.use('/category', categoryRouter);
 router.use('/payment', paymentRouter);
@@ -17,5 +18,6 @@ router.use('/favourite', favouriteRouter);
 router.use('/comment', commentRouter);
 router.use('/report', reportRouter);
 router.use('/notification', notificationRouter);
+router.use('/users', userRouter);
 
 module.exports = router;
