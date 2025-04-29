@@ -1,11 +1,11 @@
 const express = require("express");
-const {AddComment,findAllComment,findOneComment,updateComment,deleteComment}= require("../controllers/comment.controller");
+const {create,remove,findAll,findOne,update}= require("../controllers/comment.controller");
 const Router = express.Router();
 
-Router.post('/createComment',AddComment);
-Router.get('/findAllComments',findAllComment);
-Router.get('/findOneComment/:id',findOneComment);
-Router.put('/updateComment/:id',updateComment);
-Router.delete('/deleteComment/:id',deleteComment);
+Router.post('/createComment',create);
+Router.get('/findAllComments',findAll);
+Router.get('/findOneComment/:id',findOne);
+Router.put('/updateComment/:id',update);
+Router.delete('/deleteComment/:id',remove);
 
 module.exports = Router;

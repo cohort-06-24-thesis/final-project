@@ -13,7 +13,7 @@ const messageRouter = require('./message.router');
 
 const router = express.Router();
 
-// Mount routers
+// // Mount routers
 router.use('/donationItems', donationItemsRouter);
 router.use('/category', categoryRouter);
 router.use('/payment', paymentRouter);
