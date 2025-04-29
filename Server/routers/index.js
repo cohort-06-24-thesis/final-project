@@ -7,7 +7,7 @@ const commentRouter = require('./comment.router');
 const reportRouter = require('./report.router');
 const notificationRouter = require('./notification.router');
 const userRouter = require('./user.route');
-
+const eventRouter = require('./event.router'); // Assuming you have an event router
 const router = express.Router();
 
 // // Mount routers
@@ -19,5 +19,6 @@ router.use('/comment', commentRouter);
 router.use('/report', reportRouter);
 router.use('/notification', notificationRouter);
 router.use('/users', userRouter);
+router.use('/events', eventRouter);
 
 module.exports = router;

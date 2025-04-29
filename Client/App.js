@@ -10,6 +10,7 @@ import ForgotPassword from './screens/ForgotPassword';
 import SplashScreen from './screens/SplashScreen';
 import LandingPage from './screens/LandingPage';
 import Home from './screens/Home'; // ✅ Import Home screen
+import EventsScreen from './screens/event';
 
 const Stack = createStackNavigator();
 
@@ -68,6 +69,17 @@ export default function App() {
             component={Home} 
             options={{ 
               title: 'Welcome',
+            }}
+          />
+          <Stack.Screen 
+            name="Events" 
+            component={EventsScreen}
+            options={{
+              title: 'Events',
+              headerStyle: {
+                backgroundColor: '#4CAF50',
+              },
+              headerTintColor: '#fff',
             }}
           />
         </Stack.Navigator>
