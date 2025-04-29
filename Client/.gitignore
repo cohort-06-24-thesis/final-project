@@ -37,6 +37,6 @@ dist/
 android/app/build/
 ios/Pods/
 
+
 # Package lock files
 package-lock.json
-yarn.lock
