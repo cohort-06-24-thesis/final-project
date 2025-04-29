@@ -1,5 +1,6 @@
 # Node.js dependencies
 node_modules/
+package-lock.json
 
 # Expo specific files
 .expo/
@@ -38,4 +39,3 @@ android/app/build/
 ios/Pods/
 
 
-package-lock.json
