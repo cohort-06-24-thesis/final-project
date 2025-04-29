@@ -1,15 +1,15 @@
 const express = require('express');
 const cors = require('cors');
-require("./Database/index.js")
+// require("./Database/index.js")
+const routers = require('./routers');
 
 
 const app=express();
 const Port=3000;
 
+app.use(cors()) 
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
-app.use(cors()) 
-const routers = require('./routers');
 app.use('/api', routers);
 
 

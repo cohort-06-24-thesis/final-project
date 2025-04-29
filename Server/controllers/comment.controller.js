@@ -2,7 +2,7 @@ const {Comment} = require("../Database/index.js")
 
 module.exports = {
     // Create a new comment
-    AddComment: async (req, res) => {
+    create: async (req, res) => {
         try {
             const comment = await Comment.create({
                 content: req.body.content
@@ -16,7 +16,7 @@ module.exports = {
     },
 
     // Get all comments
-    findAllComment: async (req, res) => {
+    findAll: async (req, res) => {
         try {
             const comments = await Comment.findAll();
             res.status(200).json(comments);
@@ -28,7 +28,7 @@ module.exports = {
     },
 
     // Get a single comment by id
-    findOneComment: async (req, res) => {
+    findOne: async (req, res) => {
         try {
             const comment = await Comment.findByPk(req.params.id);
             if (comment) {
@@ -46,7 +46,7 @@ module.exports = {
     },
 
     // Update a comment
-    updateComment: async (req, res) => {
+    update: async (req, res) => {
         try {
             const updated = await Comment.update({
                 content: req.body.content
@@ -71,7 +71,7 @@ module.exports = {
     },
 
     // Delete a comment
-    deleteComment: async (req, res) => {
+ remove: async (req, res) => {
         try {
             const deleted = await Comment.destroy({
                 where: { id: req.params.id }
