@@ -17,9 +17,11 @@ const sequelize = new Sequelize('donation', 'postgres', 'root', {
   const favourite= require('../models/favourite.model')(sequelize,DataTypes);
 const Notification= require('../models/notification.model')(sequelize,DataTypes);
 const Comment= require('../models/comment.model')(sequelize,DataTypes);
+const inNeed= require('../models/InNeed')(sequelize,DataTypes);
 
-
-
+const campaignDonation = require('../models/CampaignDonations')(sequelize,DataTypes);
+const Event = require('../models/Event')(sequelize,DataTypes);
+const Message = require('../models/Message')(sequelize,DataTypes);
 
   try {
    sequelize.authenticate();
@@ -36,5 +38,5 @@ const Comment= require('../models/comment.model')(sequelize,DataTypes);
 
 module.exports={User,DonationItem,Category}
 
-module.exports={User, Payment,report,favourite,Notification,Comment};
+module.exports={User, Payment,report,favourite,Notification,Comment,inNeed,campaignDonation,Event,Message};
 
