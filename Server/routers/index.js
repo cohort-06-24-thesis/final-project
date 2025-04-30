@@ -10,6 +10,9 @@ const inNeedRouter = require('./inNeed.router');
 const campaignDonationRouter = require('./campaignDonation.router');
 const eventRouter = require('./event.router');
 const messageRouter = require('./message.router');
+const conversationRouter = require('./conversation.router');
+const userRouter = require('./user.route');
+
 
 const router = express.Router();
 router.use('/donationItems', donationItemsRouter);
@@ -23,5 +26,7 @@ router.use('/inNeed', inNeedRouter);
 router.use('/campaignDonation', campaignDonationRouter);
 router.use('/event', eventRouter);
 router.use('/message', messageRouter);
+router.use('/conversation', conversationRouter);
+router.use('/user', userRouter);
 
 module.exports = router;

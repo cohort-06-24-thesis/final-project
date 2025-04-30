@@ -9,7 +9,7 @@ const events = [
     date: new Date('2025-03-10'),
     location: 'Tunis',
     status: 'upcoming',
-    partcipators: 'TunisHelp, Red Crescent'
+    participators: 'TunisHelp, Red Crescent'
   },
   {
     title: 'Eid al-Fitr Support',
@@ -18,7 +18,7 @@ const events = [
     date: new Date('2025-04-15'),
     location: 'Ariana',
     status: 'upcoming',
-    partcipators: 'Youth Aid Org, Volunteers A'
+    participators: 'Youth Aid Org, Volunteers A'
   },
   {
     title: 'Back-to-School Drive',
@@ -27,7 +27,7 @@ const events = [
     date: new Date('2025-08-25'),
     location: 'Sfax',
     status: 'upcoming',
-    partcipators: 'Education First, TunisDonors'
+    participators: 'Education First, TunisDonors'
   },
   {
     title: 'Winter Clothes Drive',
@@ -36,7 +36,7 @@ const events = [
     date: new Date('2025-11-01'),
     location: 'Kairouan',
     status: 'upcoming',
-    partcipators: 'Warm Hearts NGO'
+    participators: 'Warm Hearts NGO'
   },
   {
     title: 'Food Basket Campaign',
@@ -45,7 +45,7 @@ const events = [
     date: new Date('2025-05-05'),
     location: 'Sousse',
     status: 'upcoming',
-    partcipators: 'FoodForAll Org'
+    participators: 'FoodForAll Org'
   },
   {
     title: 'Clean Water Initiative',
@@ -54,7 +54,7 @@ const events = [
     date: new Date('2025-06-12'),
     location: 'Gafsa',
     status: 'upcoming',
-    partcipators: 'AquaLife Foundation'
+    participators: 'AquaLife Foundation'
   },
   {
     title: 'Health Checkup Camp',
@@ -63,7 +63,7 @@ const events = [
     date: new Date('2025-07-10'),
     location: 'Bizerte',
     status: 'upcoming',
-    partcipators: 'HealthFirst Tunisia'
+    participators: 'HealthFirst Tunisia'
   },
   {
     title: 'Orphanage Support Program',
@@ -72,7 +72,7 @@ const events = [
     date: new Date('2025-09-20'),
     location: 'Gabès',
     status: 'upcoming',
-    partcipators: 'HopeHouse Foundation'
+    participators: 'HopeHouse Foundation'
   },
   {
     title: 'Women Empowerment Workshop',
@@ -81,7 +81,7 @@ const events = [
     date: new Date('2025-10-10'),
     location: 'Tozeur',
     status: 'upcoming',
-    partcipators: 'Rise Women Org'
+    participators: 'Rise Women Org'
   },
   {
     title: 'Disability Aid Drive',
@@ -90,7 +90,7 @@ const events = [
     date: new Date('2025-12-05'),
     location: 'Mahdia',
     status: 'upcoming',
-    partcipators: 'Accessibility Now'
+    participators: 'Accessibility Now'
   },
   // Add 10 more events below (duplicates with different cities or slight tweaks)
   {
@@ -100,7 +100,7 @@ const events = [
     date: new Date('2025-03-12'),
     location: 'Zarzis',
     status: 'upcoming',
-    partcipators: 'HopeGivers'
+    participators: 'HopeGivers'
   },
   {
     title: 'Children’s Book Drive',
@@ -109,7 +109,7 @@ const events = [
     date: new Date('2025-07-19'),
     location: 'Tataouine',
     status: 'upcoming',
-    partcipators: 'Readers Club'
+    participators: 'Readers Club'
   },
   {
     title: 'Senior Citizen Support',
@@ -118,7 +118,7 @@ const events = [
     date: new Date('2025-08-30'),
     location: 'Monastir',
     status: 'upcoming',
-    partcipators: 'Golden Years Org'
+    participators: 'Golden Years Org'
   },
   {
     title: 'Environmental Awareness Week',
@@ -127,7 +127,7 @@ const events = [
     date: new Date('2025-06-05'),
     location: 'El Kef',
     status: 'upcoming',
-    partcipators: 'Green Tunisia'
+    participators: 'Green Tunisia'
   },
   {
     title: 'Animal Shelter Aid',
@@ -136,7 +136,7 @@ const events = [
     date: new Date('2025-11-15'),
     location: 'Nabeul',
     status: 'upcoming',
-    partcipators: 'Paws & Hope'
+    participators: 'Paws & Hope'
   },
   {
     title: 'Village Lighting Project',
@@ -145,7 +145,7 @@ const events = [
     date: new Date('2025-09-12'),
     location: 'Beja',
     status: 'upcoming',
-    partcipators: 'Light The Way'
+    participators: 'Light The Way'
   },
   {
     title: 'Refugee Aid Program',
@@ -154,7 +154,7 @@ const events = [
     date: new Date('2025-10-20'),
     location: 'Medenine',
     status: 'upcoming',
-    partcipators: 'Safe Haven'
+    participators: 'Safe Haven'
   },
   {
     title: 'Mental Health Awareness Day',
@@ -163,7 +163,7 @@ const events = [
     date: new Date('2025-10-30'),
     location: 'Jendouba',
     status: 'upcoming',
-    partcipators: 'MindMatters TN'
+    participators: 'MindMatters TN'
   },
   {
     title: 'Emergency Relief Kit Distribution',
@@ -172,7 +172,7 @@ const events = [
     date: new Date('2025-04-01'),
     location: 'Siliana',
     status: 'upcoming',
-    partcipators: 'Rapid Relief Org'
+    participators: 'Rapid Relief Org'
   },
   {
     title: 'Community Kitchen Launch',
@@ -181,7 +181,7 @@ const events = [
     date: new Date('2025-05-20'),
     location: 'Manouba',
     status: 'upcoming',
-    partcipators: 'FoodBridge'
+    participators: 'FoodBridge'
   }
 ];
 
