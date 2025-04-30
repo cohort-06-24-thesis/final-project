@@ -9,11 +9,11 @@ export default function DonationItems({ navigation }) {
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get(`http://192.168.248.168:3000/api/donationItems/getAllItems`);
-      console.log(response.data);
+      const response = await axios.get('http://192.168.248.168:3000/api/donationItems/getAllItems');
+      console.log('Fetched items:', response.data);
       setItems(response.data);
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching items:', error);
     }
   };
 
@@ -47,14 +47,23 @@ export default function DonationItems({ navigation }) {
               />
               <View style={styles.itemInfo}>
                 <Text style={styles.itemTitle}>{item.title}</Text>
-                <Text style={styles.itemDistance}>3 km away</Text>
+                <Text style={styles.itemLocation}>{item.location}</Text>
                 <Text style={[
                   styles.itemStatus,
                   { color: item.status === 'available' ? '#4CAF50' : '#666' }
                 ]}>
                   {item.status}
                 </Text>
-                <TouchableOpacity style={styles.claimButton}>
+                <TouchableOpacity 
+                  style={styles.claimButton}
+                  onPress={() => {
+                    if (item.status === 'claimed') {
+                      navigation.navigate('ItemDetails', { item });
+                    } else {
+                      // Handle claim action
+                    }
+                  }}
+                >
                   <Text style={styles.claimButtonText}>
                     {item.status === 'claimed' ? 'View' : 'Claim'}
                   </Text>
@@ -130,7 +139,7 @@ const styles = {
     fontWeight: 'bold',
     marginBottom: 4,
   },
-  itemDistance: {
+  itemLocation: {
     fontSize: 14,
     color: '#666',
     marginBottom: 4,
