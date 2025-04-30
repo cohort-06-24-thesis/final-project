@@ -1,205 +1,61 @@
-const { sequelize } = require('../Database/index');
-const { Event } = require('../Database/index');  // Import Event model directly
+const { Event } = require('../Database/index');
 
 const events = [
   {
-    title: 'Ramadhan Donations',
-    description: 'Help provide iftar meals for families in need during the holy month',
-    images: ['https://www.palaisfaraj.com/wp-content/uploads/2025/02/luxury-hotel-fez-morocco-blog-ftor-ramadan-morocco-2025.jpg'],
-    date: new Date('2025-03-10'),
-    location: 'Tunis',
+    title: 'Community Food Drive',
+    description: 'Join us for a community-wide food collection drive to help local families in need.',
+    images: ['https://example.com/food-drive.jpg'],
+    date: new Date('2024-04-15'),
+    location: 'Tunis Central Community Center',
     status: 'upcoming',
-    participators: 'TunisHelp, Red Crescent'
+    participators: '50 volunteers needed'
   },
   {
-    title: 'Eid al-Fitr Support',
-    description: 'Support families with essential supplies for Eid celebrations',
-    images: ['https://thearabweekly.com/sites/default/files/styles/article_image_800x450_/public/2024-04/2024-04-09_07-53-30_066216.jpg?itok=I2Q7L66l'],
-    date: new Date('2025-04-15'),
-    location: 'Ariana',
+    title: 'Children\'s Book Fair',
+    description: 'Annual book fair collecting and distributing books to underprivileged children.',
+    images: ['https://example.com/book-fair.jpg'],
+    date: new Date('2024-05-01'),
+    location: 'Sfax Public Library',
     status: 'upcoming',
-    participators: 'Youth Aid Org, Volunteers A'
+    participators: '30 volunteers needed'
   },
   {
-    title: 'Back-to-School Drive',
-    description: 'Provide school kits for underprivileged children',
-    images: ['https://example.com/school.jpg'],
-    date: new Date('2025-08-25'),
-    location: 'Sfax',
+    title: 'Medical Outreach Program',
+    description: 'Free medical checkups and consultations for elderly residents.',
+    images: ['https://example.com/medical-outreach.jpg'],
+    date: new Date('2024-04-20'),
+    location: 'Sousse Medical Center',
     status: 'upcoming',
-    participators: 'Education First, TunisDonors'
+    participators: '20 medical professionals needed'
   },
   {
-    title: 'Winter Clothes Drive',
-    description: 'Distribute coats and blankets to the homeless',
-    images: ['https://example.com/winter.jpg'],
-    date: new Date('2025-11-01'),
-    location: 'Kairouan',
+    title: 'Youth Sports Day',
+    description: 'Sports equipment collection and activities for youth centers.',
+    images: ['https://example.com/sports-day.jpg'],
+    date: new Date('2024-05-15'),
+    location: 'Bizerte Sports Complex',
     status: 'upcoming',
-    participators: 'Warm Hearts NGO'
+    participators: '40 volunteers needed'
   },
   {
-    title: 'Food Basket Campaign',
-    description: 'Deliver food packages to low-income households',
-    images: ['https://example.com/food.jpg'],
-    date: new Date('2025-05-05'),
-    location: 'Sousse',
+    title: 'Education Supply Drive',
+    description: 'Collecting school supplies for the upcoming academic year.',
+    images: ['https://example.com/education-drive.jpg'],
+    date: new Date('2024-06-01'),
+    location: 'Monastir Community Hall',
     status: 'upcoming',
-    participators: 'FoodForAll Org'
-  },
-  {
-    title: 'Clean Water Initiative',
-    description: 'Build wells in rural areas to ensure clean water access',
-    images: ['https://example.com/water.jpg'],
-    date: new Date('2025-06-12'),
-    location: 'Gafsa',
-    status: 'upcoming',
-    participators: 'AquaLife Foundation'
-  },
-  {
-    title: 'Health Checkup Camp',
-    description: 'Free health screenings and consultations for all ages',
-    images: ['https://example.com/health.jpg'],
-    date: new Date('2025-07-10'),
-    location: 'Bizerte',
-    status: 'upcoming',
-    participators: 'HealthFirst Tunisia'
-  },
-  {
-    title: 'Orphanage Support Program',
-    description: 'Collect donations for orphanage upkeep and supplies',
-    images: ['https://example.com/orphan.jpg'],
-    date: new Date('2025-09-20'),
-    location: 'Gabès',
-    status: 'upcoming',
-    participators: 'HopeHouse Foundation'
-  },
-  {
-    title: 'Women Empowerment Workshop',
-    description: 'Train and support women in local communities',
-    images: ['https://example.com/women.jpg'],
-    date: new Date('2025-10-10'),
-    location: 'Tozeur',
-    status: 'upcoming',
-    participators: 'Rise Women Org'
-  },
-  {
-    title: 'Disability Aid Drive',
-    description: 'Provide wheelchairs and equipment for the disabled',
-    images: ['https://example.com/disability.jpg'],
-    date: new Date('2025-12-05'),
-    location: 'Mahdia',
-    status: 'upcoming',
-    participators: 'Accessibility Now'
-  },
-  // Add 10 more events below (duplicates with different cities or slight tweaks)
-  {
-    title: 'Ramadhan Food Packs',
-    description: 'Support fasting families with food essentials',
-    images: ['https://example.com/ramadhan2.jpg'],
-    date: new Date('2025-03-12'),
-    location: 'Zarzis',
-    status: 'upcoming',
-    participators: 'HopeGivers'
-  },
-  {
-    title: 'Children’s Book Drive',
-    description: 'Distribute books to rural schools',
-    images: ['https://example.com/books.jpg'],
-    date: new Date('2025-07-19'),
-    location: 'Tataouine',
-    status: 'upcoming',
-    participators: 'Readers Club'
-  },
-  {
-    title: 'Senior Citizen Support',
-    description: 'Aid elderly citizens with daily supplies',
-    images: ['https://example.com/seniors.jpg'],
-    date: new Date('2025-08-30'),
-    location: 'Monastir',
-    status: 'upcoming',
-    participators: 'Golden Years Org'
-  },
-  {
-    title: 'Environmental Awareness Week',
-    description: 'Plant trees and clean public parks',
-    images: ['https://example.com/eco.jpg'],
-    date: new Date('2025-06-05'),
-    location: 'El Kef',
-    status: 'upcoming',
-    participators: 'Green Tunisia'
-  },
-  {
-    title: 'Animal Shelter Aid',
-    description: 'Provide food and medicine for rescued animals',
-    images: ['https://example.com/animals.jpg'],
-    date: new Date('2025-11-15'),
-    location: 'Nabeul',
-    status: 'upcoming',
-    participators: 'Paws & Hope'
-  },
-  {
-    title: 'Village Lighting Project',
-    description: 'Install solar lights in underserved areas',
-    images: ['https://example.com/solar.jpg'],
-    date: new Date('2025-09-12'),
-    location: 'Beja',
-    status: 'upcoming',
-    participators: 'Light The Way'
-  },
-  {
-    title: 'Refugee Aid Program',
-    description: 'Collect goods for displaced families',
-    images: ['https://example.com/refugee.jpg'],
-    date: new Date('2025-10-20'),
-    location: 'Medenine',
-    status: 'upcoming',
-    participators: 'Safe Haven'
-  },
-  {
-    title: 'Mental Health Awareness Day',
-    description: 'Workshops and resources for emotional support',
-    images: ['https://example.com/mental.jpg'],
-    date: new Date('2025-10-30'),
-    location: 'Jendouba',
-    status: 'upcoming',
-    participators: 'MindMatters TN'
-  },
-  {
-    title: 'Emergency Relief Kit Distribution',
-    description: 'Be prepared: donate to assemble emergency packs',
-    images: ['https://example.com/relief.jpg'],
-    date: new Date('2025-04-01'),
-    location: 'Siliana',
-    status: 'upcoming',
-    participators: 'Rapid Relief Org'
-  },
-  {
-    title: 'Community Kitchen Launch',
-    description: 'Open a permanent kitchen to serve daily meals',
-    images: ['https://example.com/kitchen.jpg'],
-    date: new Date('2025-05-20'),
-    location: 'Manouba',
-    status: 'upcoming',
-    participators: 'FoodBridge'
+    participators: '25 volunteers needed'
   }
 ];
 
 const seedEvents = async () => {
   try {
-    // Remove db.sequelize.sync() since we're using the initialized sequelize instance
     await Event.bulkCreate(events);
-    console.log(`✅ Seeded ${events.length} events successfully.`);
-    process.exit(0);
+    console.log('Events seeded successfully');
   } catch (error) {
-    console.error('❌ Failed to seed events:', error);
-    process.exit(1);
+    console.error('Error seeding events:', error);
+    throw error;
   }
 };
-
-// Only run if this file is being run directly
-if (require.main === module) {
-  seedEvents();
-}
 
 module.exports = seedEvents;

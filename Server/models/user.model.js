@@ -1,6 +1,5 @@
-module.exports=(sequelize, DataTypes) => {
-    const User= sequelize.define('User', {
-
+module.exports = (sequelize, DataTypes) => {
+    const User = sequelize.define('User', {
         name: {
             type: DataTypes.STRING,
             allowNull: false
@@ -18,14 +17,17 @@ module.exports=(sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: true
         },
-        role:{
-            type:DataTypes.ENUM('admin','user'),
-            defaultValue:'user'
+        role: {
+            type: DataTypes.STRING,
+            defaultValue: 'user',
+            validate: {
+                isIn: [['admin', 'user']]
+            }
         },
-        rating:{
-            type:DataTypes.FLOAT,
-            defaultValue:0.0
-        },
-    })
-    return User
+        rating: {
+            type: DataTypes.FLOAT,
+            defaultValue: 0.0
+        }
+    });
+    return User;
 }

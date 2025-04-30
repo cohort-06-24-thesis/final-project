@@ -1,9 +1,13 @@
 const { Sequelize,DataTypes } = require('sequelize')
 
 const sequelize = new Sequelize('donation', 'postgres', 'root', {
-    host: 'localhost',
-    dialect:'postgres'
-  });
+  host: 'localhost',
+  dialect: 'postgres',
+  logging: false, // Disable logging
+  define: {
+      timestamps: true
+  }
+});
 
 
 
@@ -21,7 +25,7 @@ const inNeed= require('../models/InNeed')(sequelize,DataTypes);
 
 
 const CampaignDonations = require('../models/CampaignDonations')(sequelize,DataTypes);
-const Event = require('../models/Event')(sequelize,DataTypes);
+const Event = require('../models/Event.model')(sequelize,DataTypes);
 
 const Message = require('../models/Message')(sequelize,DataTypes);
 const Conversation = require('../models/Conversation.model')(sequelize,DataTypes);
@@ -92,6 +96,6 @@ DonationItem.belongsTo(Event, { foreignKey: 'eventId' });
 
 
 
-module.exports={User, Payment,report,DonationItem,Category,favourite,Notification,Comment,inNeed,CampaignDonations,Event,Message,conversation};
+module.exports={User, Payment,report,DonationItem,Category,favourite,Notification,Comment,inNeed,CampaignDonations,Event,Message,Conversation};
 
 
