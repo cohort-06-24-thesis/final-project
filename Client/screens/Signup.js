@@ -29,7 +29,7 @@ export default function Signup({ navigation }) {
       console.log('User signed up successfully:', userCredential.user.email);
       
       // Add name field since it's required by the backend
-      await axios.post('http://192.168.43.191:3000/api/users/add', {
+      await axios.post('http://192.168.248.252:3000/api/users/add', {
         name: name, 
         email: userCredential.user.email,
         password: password,

@@ -1,48 +1,66 @@
-'use strict';
+const { CampaignDonations } = require('../Database/index');
 
-module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkInsert('CampaignDonations', [
-      {
-        title: 'School Supplies for Underprivileged Children',
-        description: 'Raising funds to provide school supplies for children in need.',
-        images: ['https://example.com/school1.jpg', 'https://example.com/school2.jpg'],
-        goal: 5000.00,
-        totalRaised: 1500.00,
-        progress: 30.0,
-        startDate: new Date('2023-11-01'),
-        endDate: new Date('2023-12-01'),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        title: 'Clean Water Initiative',
-        description: 'Help us build wells to provide clean water to remote villages.',
-        images: ['https://example.com/water1.jpg'],
-        goal: 10000.00,
-        totalRaised: 4000.00,
-        progress: 40.0,
-        startDate: new Date('2023-11-15'),
-        endDate: new Date('2023-12-15'),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        title: 'Winter Shelter for the Homeless',
-        description: 'Providing warm shelter and meals for the homeless during winter.',
-        images: ['https://example.com/shelter1.jpg', 'https://example.com/shelter2.jpg'],
-        goal: 8000.00,
-        totalRaised: 2000.00,
-        progress: 25.0,
-        startDate: new Date('2023-12-01'),
-        endDate: new Date('2024-01-01'),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    ], {});
+const campaigns = [
+  {
+    title: 'Emergency Medical Aid',
+    description: 'Help provide urgent medical supplies to local hospitals.',
+    images: ['https://netec.org/wp-content/uploads/2021/12/MM52201-18JK-F0488-850x567.jpg'],
+    progress: 45.5,
+    goal: 10000,
+    totalRaised: 4550,
+    startDate: new Date('2024-03-01'),
+    endDate: new Date('2024-05-01')
   },
+  {
+    title: 'School Building Project',
+    description: 'Support building a new school in rural Tunisia.',
+    images: ['https://www.levelset.com/wp-content/uploads/2022/01/SchoolConstructionCost-768x384.png'],
+    progress: 75.0,
+    goal: 50000,
+    totalRaised: 37500,
+    startDate: new Date('2024-03-15'),
+    endDate: new Date('2024-06-15')
+  },
+  {
+    title: 'Clean Water Initiative',
+    description: 'Provide clean drinking water to communities in need.',
+    images: ['https://example.com/water-project.jpg'],
+    progress: 30.0,
+    goal: 15000,
+    totalRaised: 4500,
+    startDate: new Date('2024-04-01'),
+    endDate: new Date('2024-07-01')
+  },
+  {
+    title: 'Food Bank Support',
+    description: 'Help stock local food banks for families in need.',
+    images: ['https://example.com/food-bank.jpg'],
+    progress: 60.0,
+    goal: 8000,
+    totalRaised: 4800,
+    startDate: new Date('2024-03-10'),
+    endDate: new Date('2024-04-10')
+  },
+  {
+    title: 'Orphanage Renovation',
+    description: 'Renovate facilities at local orphanage.',
+    images: ['https://example.com/orphanage.jpg'],
+    progress: 25.0,
+    goal: 20000,
+    totalRaised: 5000,
+    startDate: new Date('2024-05-01'),
+    endDate: new Date('2024-08-01')
+  }
+];
 
-  down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('CampaignDonations', null, {});
+const seedCampaigns = async () => {
+  try {
+    await CampaignDonations.bulkCreate(campaigns);
+    console.log('Campaign seeds executed successfully');
+  } catch (error) {
+    console.error('Error seeding campaigns:', error);
+    throw error;
   }
 };
+
+module.exports = seedCampaigns;

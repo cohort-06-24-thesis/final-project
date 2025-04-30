@@ -20,6 +20,9 @@ import InNeed from './screens/InNeed';
 import Campaign from './screens/Campaign';
 import Events from './screens/Events';
 import AddEvent from './screens/AddEvent';
+import	AddCampaign from './screens/AddCampaign'
+import AddInNeed from './screens/AddInNeed'
+import AddDonation from './screens/AddDonation'
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -121,6 +124,27 @@ export default function App() {
             component={AddEvent} 
             options={{ 
               title: 'Add Event',
+            }}
+          />
+          <Stack.Screen 
+            name="AddCampaign" 
+            component={AddCampaign} 
+            options={{ 
+              title: 'Add Campaign',
+            }}
+          />
+           <Stack.Screen 
+            name="AddInNeed" 
+            component={AddInNeed} 
+            options={{ 
+              title: 'AddInNeed',
+            }}
+          />
+           <Stack.Screen 
+            name="AddDonation" 
+            component={AddDonation} 
+            options={{ 
+              title: 'AddDonation',
             }}
           />
         </Stack.Navigator>

@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.ENUM('upcoming', 'ongoing', 'completed'),
             defaultValue: 'upcoming'
         },
-        partcipators : {
+        participators : {
             type: DataTypes.STRING,
             allowNull: false
         }
