@@ -22,7 +22,7 @@ const inNeed= require('../models/InNeed')(sequelize,DataTypes);
 const campaignDonation = require('../models/CampaignDonations')(sequelize,DataTypes);
 const Event = require('../models/Event')(sequelize,DataTypes);
 const Message = require('../models/Message')(sequelize,DataTypes);
-const Conversation = require('../models/conversation.model')(sequelize,DataTypes);
+const Conversation = require('../models/Conversation.model')(sequelize,DataTypes);
 
 
 User.hasMany(DonationItem, { foreignKey: 'userId' });
@@ -62,11 +62,11 @@ Event.belongsTo(User, { foreignKey: 'userId' });
 User.hasMany(Message, { foreignKey: 'senderId' });
 Message.belongsTo(User, { foreignKey: 'senderId' });
 
-conversation.hasMany(Message, { foreignKey: 'conversationId' });
-Message.belongsTo(conversation, { foreignKey: 'conversationId' });
+Conversation.hasMany(Message, { foreignKey: 'ConversationId' });
+Message.belongsTo(Conversation, { foreignKey: 'ConversationId' });
 
-User.belongsToMany(conversation, { through: 'UserConversations', foreignKey: 'userId' });
-conversation.belongsToMany(User, { through: 'UserConversations', foreignKey: 'conversationId' });
+User.belongsToMany(Conversation, { through: 'UserConversations', foreignKey: 'userId' });
+Conversation.belongsToMany(User, { through: 'UserConversations', foreignKey: 'ConversationId' });
 
 campaignDonation.hasMany(Payment, { foreignKey: 'campaignId' });
 Payment.belongsTo(campaignDonation, { foreignKey: 'campaignId' });
