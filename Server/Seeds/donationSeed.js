@@ -6,7 +6,7 @@ const seedDonationItems = async () => {
       {
         title: 'Winter Clothes',
         description: 'Warm clothes for children in need.',
-        image: ['https://example.com/images/winter-clothes.jpg'],
+        image: ['https://www.veteransplaceusa.org/wp-content/uploads/2019/12/Clothes-Donation-1024x683.jpg'],
         status: 'available',
         location: 'Tunis',
       },
