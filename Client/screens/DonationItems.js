@@ -9,7 +9,7 @@ export default function DonationItems({ navigation }) {
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get('http://192.168.248.168:3000/api/donationItems/getAllItems');
+      const response = await axios.get('http://192.168.248.252:3000/api/donationItems/getAllItems');
       console.log('Fetched items:', response.data);
       setItems(response.data);
     } catch (error) {
@@ -160,15 +160,15 @@ const styles = {
     fontWeight: 'bold',
   },
   addButton: {
+    backgroundColor: '#4CAF50',
+    borderRadius: 25,
+    width: 50,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
     position: 'absolute',
     bottom: 20,
     right: 20,
-    backgroundColor: '#4CAF50',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
     elevation: 5,
   },
 };
