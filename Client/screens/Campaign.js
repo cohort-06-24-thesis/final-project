@@ -1,20 +1,20 @@
-
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
+import { Ionicons } from '@expo/vector-icons'; // ✅ Import Ionicons
+import { useNavigation } from '@react-navigation/native'; // ✅ Use navigation
 
 export default function Campaign() {
   const [campaigns, setCampaigns] = useState([]);
-
+  const navigation = useNavigation(); // ✅ Get navigation instance
 
   useEffect(() => {
-    // Fetch campaigns from your backend
     fetchCampaigns();
   }, []);
 
   const fetchCampaigns = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/campaignDonation');
+      const response = await axios.get('http://192.168.248.252:3000/api/campaignDonation');
       setCampaigns(response.data);
     } catch (error) {
       console.error('Error fetching campaigns:', error);
@@ -22,42 +22,45 @@ export default function Campaign() {
   };
 
   const handleTopUp = () => {
-    // Implement top up wallet functionality
     console.log('Top up wallet');
   };
 
   return (
-    <ScrollView style={styles.container}>
-     
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container}>
+        <Text style={styles.sectionTitle}>Feature Campaign</Text>
 
-      {/* Feature Campaign Section */}
-      <Text style={styles.sectionTitle}>Feature Campaign</Text>
-      
-      {campaigns.map((campaign, index) => (
-        <View key={index} style={styles.campaignCard}>
-          {campaign.images && campaign.images.length > 0 && (
-            <Image 
-              source={{ uri: campaign.images[0] }} 
-              style={styles.campaignImage}
-            />
-          )}
-          <View style={styles.campaignInfo}>
-            <Text style={styles.campaignTitle}>{campaign.title}</Text>
-            {/* <Text style={styles.organizationName}>By Unesco</Text> */}
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${campaign.progress}%` }]} />
+        {campaigns.map((campaign, index) => (
+          <View key={index} style={styles.campaignCard}>
+            {campaign.images && campaign.images.length > 0 && (
+              <Image source={{ uri: campaign.images[0] }} style={styles.campaignImage} />
+            )}
+            <View style={styles.campaignInfo}>
+              <Text style={styles.campaignTitle}>{campaign.title}</Text>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: `${campaign.progress}%` }]} />
+              </View>
+              <Text style={styles.progressText}>Raised {campaign.progress}%</Text>
+              <View style={styles.donorsContainer}>
+                <Text style={styles.donorsText}>{campaign.totalDonors} people donated</Text>
+              </View>
+              <Text style={styles.location}>Tunisia</Text>
             </View>
-            <Text style={styles.progressText}>Raised {campaign.progress}%</Text>
-            <View style={styles.donorsContainer}>
-              {/* Add donor avatars here */}
-              <Text style={styles.donorsText}>{campaign.totalDonors} people donated</Text>
-            </View>
-            <Text style={styles.location}>Tunisia</Text>
           </View>
-        </View>
-      ))}
-    </ScrollView>
-)}
+        ))}
+      </ScrollView>
+
+      {/* ✅ Add Button placed outside map and inside main view */}
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => navigation.navigate('AddCampaign')}
+      >
+        <Ionicons name="add" size={30} color="white" />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 
 
 const styles = StyleSheet.create({
@@ -150,5 +153,17 @@ const styles = StyleSheet.create({
   },
   location: {
     color: '#666',
+  },
+  addButton: {
+    backgroundColor: '#4CAF50',
+    borderRadius: 25,
+    width: 50,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    elevation: 5,
   },
 });
