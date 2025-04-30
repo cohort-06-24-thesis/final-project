@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
@@ -56,8 +57,7 @@ export default function Campaign() {
         </View>
       ))}
     </ScrollView>
-  );
-}
+
 
 const styles = StyleSheet.create({
   container: {
