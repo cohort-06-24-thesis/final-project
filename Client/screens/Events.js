@@ -8,6 +8,8 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
 import axios from 'axios';
 
 const EventCard = ({ title, description, date, location, participators, images }) => (
@@ -51,7 +53,7 @@ const EventsScreen = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/event/getAllEvents');
+      const response = await axios.get('http://192.168.248.252:3000/api/event/getAllEvents');
       if (response.data.success) {
         setEvents(response.data.data);
       } else {
@@ -98,6 +100,12 @@ const EventsScreen = () => {
           ))
         )}
       </ScrollView>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => navigation.navigate('AddEvent')}
+      >
+        <Ionicons name="add" size={30} color="white" />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -189,7 +197,19 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  }
+  },
+  addButton: {
+    backgroundColor: '#4CAF50',
+    borderRadius: 25,
+    width: 50,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    elevation: 5,
+  },
 });
 
 export default EventsScreen;
