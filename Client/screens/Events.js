@@ -42,7 +42,7 @@ const EventCard = ({ title, description, date, location, participators, images }
 
 
 
-const EventsScreen = () => {
+const EventsScreen = ({navigation}) => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

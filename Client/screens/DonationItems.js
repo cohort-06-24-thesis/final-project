@@ -23,7 +23,7 @@ export default function DonationItems({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>SADAQAH</Text>
+      <Text style={styles.headerText}>SADAKA</Text>
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
@@ -39,38 +39,43 @@ export default function DonationItems({ navigation }) {
       {/* Items Grid */}
       <ScrollView style={styles.itemsContainer}>
         <View style={styles.itemsGrid}>
-          {items.map((item, index) => (
-            <View key={index} style={styles.itemCard}>
-              <Image 
-                source={{ uri: item.image?.[0] || 'https://via.placeholder.com/150' }}
-                style={styles.itemImage}
-              />
-              <View style={styles.itemInfo}>
-                <Text style={styles.itemTitle}>{item.title}</Text>
-                <Text style={styles.itemLocation}>{item.location}</Text>
-                <Text style={[
-                  styles.itemStatus,
-                  { color: item.status === 'available' ? '#4CAF50' : '#666' }
-                ]}>
-                  {item.status}
-                </Text>
-                <TouchableOpacity 
-                  style={styles.claimButton}
-                  onPress={() => {
-                    if (item.status === 'claimed') {
-                      navigation.navigate('ItemDetails', { item });
-                    } else {
-                      // Handle claim action
-                    }
-                  }}
-                >
-                  <Text style={styles.claimButtonText}>
-                    {item.status === 'claimed' ? 'View' : 'Claim'}
+          {items
+            .filter((item) =>
+              item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.location?.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map((item, index) => (
+              <View key={index} style={styles.itemCard}>
+                <Image 
+                  source={{ uri: item.image?.[0] || 'https://via.placeholder.com/150' }}
+                  style={styles.itemImage}
+                />
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemTitle}>{item.title}</Text>
+                  <Text style={styles.itemLocation}>{item.location}</Text>
+                  <Text style={[
+                    styles.itemStatus,
+                    { color: item.status === 'available' ? '#4CAF50' : '#666' }
+                  ]}>
+                    {item.status}
                   </Text>
-                </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.claimButton}
+                    onPress={() => {
+                      if (item.status === 'claimed') {
+                        navigation.navigate('ItemDetails', { item });
+                      } else {
+                        // Handle claim action
+                      }
+                    }}
+                  >
+                    <Text style={styles.claimButtonText}>
+                      {item.status === 'claimed' ? 'View' : 'Claim'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ))}
+            ))}
         </View>
       </ScrollView>
 
