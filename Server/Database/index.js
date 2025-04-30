@@ -20,7 +20,7 @@ const Comment= require('../models/comment.model')(sequelize,DataTypes);
 const inNeed= require('../models/InNeed')(sequelize,DataTypes);
 
 const campaignDonation = require('../models/CampaignDonations')(sequelize,DataTypes);
-const Event = require('../models/Event')(sequelize,DataTypes);
+const Event = require('../models/Event.model')(sequelize,DataTypes);
 const Message = require('../models/Message')(sequelize,DataTypes);
 const Conversation = require('../models/Conversation.model')(sequelize,DataTypes);
 
