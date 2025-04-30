@@ -57,6 +57,7 @@ export default function Campaign() {
         </View>
       ))}
     </ScrollView>
+)}
 
 
 const styles = StyleSheet.create({

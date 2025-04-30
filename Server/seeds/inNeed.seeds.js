@@ -1,36 +1,64 @@
-'use strict';
+const { inNeed } = require('../Database/index');
 
-module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkInsert('InNeeds', [
-      {
-        title: 'Emergency Food Assistance',
-        description: 'Family in need of immediate food assistance due to unexpected circumstances. Any help would be greatly appreciated.',
-        images: ['https://example.com/food1.jpg', 'https://example.com/food2.jpg'],
-        location: 'New York, NY',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        title: 'Winter Clothing Drive',
-        description: 'Collecting warm winter clothing for homeless individuals in our community. Looking for coats, boots, and warm accessories.',
-        images: ['https://example.com/clothing1.jpg'],
-        location: 'Chicago, IL',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        title: 'Medical Supplies Needed',
-        description: 'Urgent need for medical supplies for local clinic. Looking for basic first aid supplies and medications.',
-        images: ['https://example.com/medical1.jpg', 'https://example.com/medical2.jpg'],
-        location: 'Los Angeles, CA',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    ], {});
+const inNeedSeeds = [
+  {
+    title: 'Family Needs Assistance',
+    description: 'Single mother with three children needs support with basic necessities.',
+    images: ['https://example.com/family-support.jpg'],
+    location: 'Tunis'
   },
-
-  down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('InNeeds', null, {});
+  {
+    title: 'Medical Support Required',
+    description: 'Elderly person needs assistance with medical supplies and regular checkups.',
+    images: ['https://example.com/medical-support.jpg'],
+    location: 'Sfax'
+  },
+  {
+    title: 'Education Support',
+    description: 'Student from low-income family needs help with school supplies and tuition.',
+    images: ['https://example.com/education-support.jpg'],
+    location: 'Sousse'
+  },
+  {
+    title: 'Housing Assistance',
+    description: 'Family of five seeking temporary housing support after displacement.',
+    images: ['https://example.com/housing-support.jpg'],
+    location: 'Bizerte'
+  },
+  {
+    title: 'Food Support',
+    description: 'Elderly couple needs regular food assistance and basic groceries.',
+    images: ['https://example.com/food-support.jpg'],
+    location: 'Kairouan'
+  },
+  {
+    title: 'Disability Support',
+    description: 'Person with disability needs assistance with mobility equipment.',
+    images: ['https://example.com/disability-support.jpg'],
+    location: 'Gabes'
+  },
+  {
+    title: 'Winter Clothing Need',
+    description: 'Family needs warm clothes and blankets for the winter season.',
+    images: ['https://example.com/winter-support.jpg'],
+    location: 'Monastir'
+  },
+  {
+    title: 'Job Training Request',
+    description: 'Young adult seeking support for vocational training program.',
+    images: ['https://example.com/training-support.jpg'],
+    location: 'Nabeul'
   }
-}; 
+];
+
+const seedInNeed = async () => {
+  try {
+    await inNeed.bulkCreate(inNeedSeeds);
+    console.log('InNeed seeds executed successfully');
+  } catch (error) {
+    console.error('Error seeding InNeed data:', error);
+    throw error;
+  }
+};
+
+module.exports = seedInNeed;

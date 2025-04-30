@@ -44,6 +44,13 @@ getAllCampaigns : async (req, res) => {
 
         if (!campaign) {
             return res.status(404).json({ error: 'Campaign not found' });
+        }
+    }
+    catch (error) {
+        console.error('Error fetching campaign:', error);
+        // res.status(500).json({ error: 'Something went wrong while fetching the campaign.' });
+}
+ },
 
 
 // Update a Campaign by ID
@@ -56,8 +63,16 @@ getAllCampaigns : async (req, res) => {
 
         if (!campaign) {
             return res.status(404).json({ error: 'Campaign not found' });
+        }
 
-    ,
+
+    }
+    catch (error) {
+        console.error('Error updating campaign:', error);
+        // res.status(500).json({ error: 'Something went wrong while updating the campaign.' });
+        res.send(error)
+    }
+},
     getCampaignDonationById:async(req,res)=>{
         try {
             const { id } = req.params;
@@ -103,7 +118,6 @@ getAllCampaigns : async (req, res) => {
         }
     }
 
-},
-
-
 }
+
+
