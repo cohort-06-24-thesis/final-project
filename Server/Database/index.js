@@ -17,8 +17,62 @@ const sequelize = new Sequelize('donation', 'postgres', 'root', {
   const favourite= require('../models/favourite.model')(sequelize,DataTypes);
 const Notification= require('../models/notification.model')(sequelize,DataTypes);
 const Comment= require('../models/comment.model')(sequelize,DataTypes);
+const inNeed= require('../models/InNeed')(sequelize,DataTypes);
+
+const campaignDonation = require('../models/CampaignDonations')(sequelize,DataTypes);
+const Event = require('../models/Event.model')(sequelize,DataTypes);
+const Message = require('../models/Message')(sequelize,DataTypes);
+const conversation = require('../models/conversation.model')(sequelize,DataTypes);
 
 
+User.hasMany(DonationItem, { foreignKey: 'userId' });
+DonationItem.belongsTo(User, { foreignKey: 'userId' });
+
+User.hasMany(favourite, { foreignKey: 'userId' });
+favourite.belongsTo(User, { foreignKey: 'userId' });
+
+DonationItem.hasMany(favourite, { foreignKey: 'donationItemId' });
+favourite.belongsTo(DonationItem, { foreignKey: 'donationItemId' });
+
+Category.hasMany(DonationItem, { foreignKey: 'categoryId' });
+DonationItem.belongsTo(Category, { foreignKey: 'categoryId' });
+
+User.hasMany(report, { foreignKey: 'userId' });
+report.belongsTo(User, { foreignKey: 'userId' });
+
+
+User.hasMany(Notification, { foreignKey: 'userId' });
+Notification.belongsTo(User, { foreignKey: 'userId' });
+
+User.hasMany(Comment, { foreignKey: 'userId' });
+Comment.belongsTo(User, { foreignKey: 'userId' });
+
+DonationItem.hasMany(Comment, { foreignKey: 'donationItemId' });
+Comment.belongsTo(DonationItem, { foreignKey: 'donationItemId' });
+
+User.hasMany(inNeed, { foreignKey: 'userId' });
+inNeed.belongsTo(User, { foreignKey: 'userId' });
+
+User.hasMany(campaignDonation, { foreignKey: 'userId' });
+campaignDonation.belongsTo(User, { foreignKey: 'userId' });
+
+User.hasMany(Event, { foreignKey: 'userId' });
+Event.belongsTo(User, { foreignKey: 'userId' });
+
+User.hasMany(Message, { foreignKey: 'senderId' });
+Message.belongsTo(User, { foreignKey: 'senderId' });
+
+conversation.hasMany(Message, { foreignKey: 'conversationId' });
+Message.belongsTo(conversation, { foreignKey: 'conversationId' });
+
+User.belongsToMany(conversation, { through: 'UserConversations', foreignKey: 'userId' });
+conversation.belongsToMany(User, { through: 'UserConversations', foreignKey: 'conversationId' });
+
+campaignDonation.hasMany(Payment, { foreignKey: 'campaignId' });
+Payment.belongsTo(campaignDonation, { foreignKey: 'campaignId' });
+
+Event.hasMany(DonationItem, { foreignKey: 'eventId' });
+DonationItem.belongsTo(Event, { foreignKey: 'eventId' });
 
 
   try {
@@ -34,7 +88,6 @@ const Comment= require('../models/comment.model')(sequelize,DataTypes);
 // }
 // connection()
 
-module.exports={User,DonationItem,Category}
 
-module.exports={User, Payment,report,favourite,Notification,Comment};
+module.exports={User, Payment,report,DonationItem,Category,favourite,Notification,Comment,inNeed,campaignDonation,Event,Message,conversation};
 

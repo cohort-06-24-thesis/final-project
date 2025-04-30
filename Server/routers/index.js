@@ -6,11 +6,12 @@ const favouriteRouter = require('./favourite.router');
 const commentRouter = require('./comment.router');
 const reportRouter = require('./report.router');
 const notificationRouter = require('./notification.router');
-const userRouter = require('./user.route');
-const eventRouter = require('./event.router'); // Assuming you have an event router
-const router = express.Router();
+const inNeedRouter = require('./inNeed.router');
+const campaignDonationRouter = require('./campaignDonation.router');
+const eventRouter = require('./event.router');
+const messageRouter = require('./message.router');
 
-// // Mount routers
+const router = express.Router();
 router.use('/donationItems', donationItemsRouter);
 router.use('/category', categoryRouter);
 router.use('/payment', paymentRouter);
@@ -18,7 +19,9 @@ router.use('/favourite', favouriteRouter);
 router.use('/comment', commentRouter);
 router.use('/report', reportRouter);
 router.use('/notification', notificationRouter);
-router.use('/users', userRouter);
-router.use('/events', eventRouter);
+router.use('/inNeed', inNeedRouter);
+router.use('/campaignDonation', campaignDonationRouter);
+router.use('/event', eventRouter);
+router.use('/message', messageRouter);
 
 module.exports = router;
