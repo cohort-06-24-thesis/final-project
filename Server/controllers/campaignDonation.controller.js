@@ -1,9 +1,10 @@
 // controllers/campaignDonationsController.js
 
-const { CampaignDonations } = require('../Database/index');
+const { CampaignDonations } = require('../Database/index.js');
 
 // Create a new Campaign
-exports.createCampaign = async (req, res) => {
+module.exports = {
+    add : async (req, res) => {
     try {
         const { title, description, images, goal, startDate, endDate } = req.body;
         const newCampaign = await CampaignDonations.create({
@@ -11,29 +12,31 @@ exports.createCampaign = async (req, res) => {
             description,
             images,
             goal,
-            startDate,
-            endDate
+            startDate: new Date(startDate),
+            endDate: new Date(endDate)
         });
         res.status(201).json(newCampaign);
     } catch (error) {
         console.error('Error creating campaign:', error);
-        res.status(500).json({ error: 'Something went wrong while creating the campaign.' });
+        // res.status(500).json({ error: 'Something went wrong while creating the campaign.' });
+        res.send(error)
     }
-};
+},
 
 // Get all Campaigns
-exports.getAllCampaigns = async (req, res) => {
+getAllCampaigns : async (req, res) => {
     try {
         const campaigns = await CampaignDonations.findAll();
         res.status(200).json(campaigns);
     } catch (error) {
         console.error('Error fetching campaigns:', error);
-        res.status(500).json({ error: 'Something went wrong while fetching campaigns.' });
+        // res.status(500).json({ error: 'Something went wrong while fetching campaigns.' });
+        res.send(error)
     }
-};
+},
 
 // Get a single Campaign by ID
-exports.getCampaignById = async (req, res) => {
+ getCampaignById : async (req, res) => {
     try {
         const { id } = req.params;
         const campaign = await CampaignDonations.findByPk(id);
@@ -47,10 +50,10 @@ exports.getCampaignById = async (req, res) => {
         console.error('Error fetching campaign:', error);
         res.status(500).json({ error: 'Something went wrong while fetching the campaign.' });
     }
-};
+},
 
 // Update a Campaign by ID
-exports.updateCampaign = async (req, res) => {
+ updateCampaign : async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, images, goal, totalRaised, progress, startDate, endDate } = req.body;
@@ -77,10 +80,10 @@ exports.updateCampaign = async (req, res) => {
         console.error('Error updating campaign:', error);
         res.status(500).json({ error: 'Something went wrong while updating the campaign.' });
     }
-};
+},
 
 // Delete a Campaign by ID
-exports.deleteCampaign = async (req, res) => {
+ deleteCampaign : async (req, res) => {
     try {
         const { id } = req.params;
         const campaign = await CampaignDonations.findByPk(id);
@@ -95,4 +98,5 @@ exports.deleteCampaign = async (req, res) => {
         console.error('Error deleting campaign:', error);
         res.status(500).json({ error: 'Something went wrong while deleting the campaign.' });
     }
-};
+}
+}
