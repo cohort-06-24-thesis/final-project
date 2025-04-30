@@ -19,8 +19,10 @@ const Notification= require('../models/notification.model')(sequelize,DataTypes)
 const Comment= require('../models/comment.model')(sequelize,DataTypes);
 const inNeed= require('../models/InNeed')(sequelize,DataTypes);
 
-const campaignDonation = require('../models/CampaignDonations')(sequelize,DataTypes);
-const Event = require('../models/Event.model')(sequelize,DataTypes);
+
+const CampaignDonations = require('../models/CampaignDonations')(sequelize,DataTypes);
+const Event = require('../models/Event')(sequelize,DataTypes);
+
 const Message = require('../models/Message')(sequelize,DataTypes);
 const Conversation = require('../models/Conversation.model')(sequelize,DataTypes);
 
@@ -53,8 +55,8 @@ Comment.belongsTo(DonationItem, { foreignKey: 'donationItemId' });
 User.hasMany(inNeed, { foreignKey: 'userId' });
 inNeed.belongsTo(User, { foreignKey: 'userId' });
 
-User.hasMany(campaignDonation, { foreignKey: 'userId' });
-campaignDonation.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(CampaignDonations, { foreignKey: 'userId' });
+CampaignDonations.belongsTo(User, { foreignKey: 'userId' });
 
 User.hasMany(Event, { foreignKey: 'userId' });
 Event.belongsTo(User, { foreignKey: 'userId' });
@@ -68,8 +70,8 @@ Message.belongsTo(Conversation, { foreignKey: 'ConversationId' });
 User.belongsToMany(Conversation, { through: 'UserConversations', foreignKey: 'userId' });
 Conversation.belongsToMany(User, { through: 'UserConversations', foreignKey: 'ConversationId' });
 
-campaignDonation.hasMany(Payment, { foreignKey: 'campaignId' });
-Payment.belongsTo(campaignDonation, { foreignKey: 'campaignId' });
+CampaignDonations.hasMany(Payment, { foreignKey: 'campaignId' });
+Payment.belongsTo(CampaignDonations, { foreignKey: 'campaignId' });
 
 Event.hasMany(DonationItem, { foreignKey: 'eventId' });
 DonationItem.belongsTo(Event, { foreignKey: 'eventId' });
@@ -89,5 +91,7 @@ DonationItem.belongsTo(Event, { foreignKey: 'eventId' });
 // connection()
 
 
-module.exports={User, Payment,report,DonationItem,Category,favourite,Notification,Comment,inNeed,campaignDonation,Event,Message,Conversation};
+
+module.exports={User, Payment,report,DonationItem,Category,favourite,Notification,Comment,inNeed,CampaignDonations,Event,Message,conversation};
+
 

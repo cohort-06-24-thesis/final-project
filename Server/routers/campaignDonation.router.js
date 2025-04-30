@@ -2,13 +2,14 @@
 
 const express = require('express');
 const router = express.Router();
-const campaignDonationsController = require('../controllers/campaignDonation.controller');
+const {add,getAllCampaigns,getCampaignById,updateCampaign,deleteCampaign} = require('../controllers/campaignDonation.controller.js');
 
-router.get('/getAll', campaignDonationsController.getAllCampaignDonation);
-router.get('/:id', campaignDonationsController.getCampaignDonationById);
-router.post('/add', campaignDonationsController.createCampaignDonation);
-router.put('/:id', campaignDonationsController.updateCampaignDonation);
-router.delete('/:id', campaignDonationsController.deleteCampaignDonation);
-    
+
+router.post('/', add);
+router.get('/', getAllCampaigns);
+router.get('/:id', getCampaignById);
+router.put('/:id', updateCampaign);
+router.delete('/:id', deleteCampaign);
+
 
 module.exports = router;
