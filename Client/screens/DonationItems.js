@@ -21,6 +21,10 @@ export default function DonationItems({ navigation }) {
     fetchItems();
   }, []);
 
+  const handleItemPress = (item) => {
+    navigation.navigate('DonationDetails', { item });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.headerText}>SADAKA</Text>
@@ -45,7 +49,11 @@ export default function DonationItems({ navigation }) {
               item.location?.toLowerCase().includes(searchQuery.toLowerCase())
             )
             .map((item, index) => (
-              <View key={index} style={styles.itemCard}>
+              <TouchableOpacity 
+                key={index} 
+                style={styles.itemCard}
+                onPress={() => handleItemPress(item)}
+              >
                 <Image 
                   source={{ uri: item.image?.[0] || 'https://via.placeholder.com/150' }}
                   style={styles.itemImage}
@@ -60,21 +68,24 @@ export default function DonationItems({ navigation }) {
                     {item.status}
                   </Text>
                   <TouchableOpacity 
-                    style={styles.claimButton}
-                    onPress={() => {
-                      if (item.status === 'claimed') {
-                        navigation.navigate('ItemDetails', { item });
-                      } else {
+                    style={[
+                      styles.claimButton,
+                      { backgroundColor: item.status === 'claimed' ? '#666' : '#00C44F' }
+                    ]}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      if (item.status === 'available') {
                         // Handle claim action
+                        console.log('Claiming item:', item.id);
                       }
                     }}
                   >
                     <Text style={styles.claimButtonText}>
-                      {item.status === 'claimed' ? 'View' : 'Claim'}
+                      {item.status === 'claimed' ? 'Claimed' : 'Claim'}
                     </Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
         </View>
       </ScrollView>
@@ -154,7 +165,6 @@ const styles = {
     marginBottom: 8,
   },
   claimButton: {
-    backgroundColor: '#00C44F',
     paddingVertical: 8,
     borderRadius: 20,
     alignItems: 'center',
