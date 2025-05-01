@@ -89,7 +89,7 @@ DonationItem.belongsTo(Event, { foreignKey: 'eventId' });
   }
   
 // const connection=async()=>{
-//   await sequelize.sync({ force: true });
+//   await sequelize.sync({ alter: true });
 // console.log('All models were synchronized successfully.');
 // }
 // connection()
