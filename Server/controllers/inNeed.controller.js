@@ -1,12 +1,12 @@
 // controllers/inNeedController.js
 
-const { InNeed } = require('../Database/index'); // Adjust the import based on your file structure
+const { inNeed } = require('../Database/index'); // Adjust the import based on your file structure
 
 // Create a new InNeed
 exports.createInNeed = async (req, res) => {
     try {
         const { title, description, images, location } = req.body;
-        const newInNeed = await InNeed.create({ title, description, images, location });
+        const newInNeed = await inNeed.create({ title, description, images, location });
         res.status(201).json(newInNeed);
     } catch (error) {
         console.error('Error creating InNeed:', error);
@@ -17,7 +17,7 @@ exports.createInNeed = async (req, res) => {
 // Get all InNeed entries
 exports.getAllInNeeds = async (req, res) => {
     try {
-        const inNeeds = await InNeed.findAll();
+        const inNeeds = await inNeed.findAll();
         res.status(200).json(inNeeds);
     } catch (error) {
         console.error('Error fetching InNeeds:', error);
@@ -29,7 +29,7 @@ exports.getAllInNeeds = async (req, res) => {
 exports.getInNeedById = async (req, res) => {
     try {
         const { id } = req.params;
-        const inNeed = await InNeed.findByPk(id);
+        const inNeed = await inNeed.findByPk(id);
 
         if (!inNeed) {
             return res.status(404).json({ error: 'InNeed not found' });
@@ -48,7 +48,7 @@ exports.updateInNeed = async (req, res) => {
         const { id } = req.params;
         const { title, description, images, location } = req.body;
 
-        const inNeed = await InNeed.findByPk(id);
+        const inNeed = await inNeed.findByPk(id);
 
         if (!inNeed) {
             return res.status(404).json({ error: 'InNeed not found' });
@@ -67,7 +67,7 @@ exports.updateInNeed = async (req, res) => {
 exports.deleteInNeed = async (req, res) => {
     try {
         const { id } = req.params;
-        const inNeed = await InNeed.findByPk(id);
+        const inNeed = await inNeed.findByPk(id);
 
         if (!inNeed) {
             return res.status(404).json({ error: 'InNeed not found' });
