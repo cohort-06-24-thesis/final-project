@@ -20,9 +20,10 @@ import Campaign from './screens/Campaign';
 import Events from './screens/Events';
 import AddEvent from './screens/AddEvent';
 import AddCampaign from './screens/AddCampaign';
+import CampaignDetails from './screens/CampaignDetails';
 import AddInNeed from './screens/AddInNeed';
 import AddDonation from './screens/AddDonation';
-import InNeedDetails from './screens/InNeedDetails'; 
+import InNeedDetails from './screens/InNeedDetails';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -87,15 +88,62 @@ export default function App() {
             headerLeftContainerStyle: { paddingLeft: 10 },
           }}
         >
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen name="Signup" component={Signup} options={{ title: 'Create Account' }} />
-          <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{ title: 'Reset Password' }} />
-          <Stack.Screen name="MainApp" component={TabNavigator} />
-          <Stack.Screen name="AddEvent" component={AddEvent} options={{ title: 'Add Event' }} />
-          <Stack.Screen name="AddCampaign" component={AddCampaign} options={{ title: 'Add Campaign' }} />
-          <Stack.Screen name="AddInNeed" component={AddInNeed} options={{ title: 'Add In Need' }} />
-          <Stack.Screen name="AddDonation" component={AddDonation} options={{ title: 'Add Donation' }} />
-          <Stack.Screen name="InNeedDetails" component={InNeedDetails} options={{ title: 'Need Details' }} />
+          <Stack.Screen 
+            name="Login" 
+            component={Login} 
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen 
+            name="Signup" 
+            component={Signup}
+            options={{ title: 'Create Account' }}
+          />
+          <Stack.Screen 
+            name="ForgotPassword" 
+            component={ForgotPassword}
+            options={{ title: 'Reset Password' }}
+          />
+          <Stack.Screen 
+            name="MainApp" 
+            component={TabNavigator} 
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen 
+            name="AddEvent" 
+            component={AddEvent} 
+            options={{ title: 'Add Event' }}
+          />
+          <Stack.Screen 
+            name="AddCampaign" 
+            component={AddCampaign} 
+            options={{ title: 'Add Campaign' }}
+          />
+          <Stack.Screen 
+            name="CampaignDetails" 
+            component={CampaignDetails}
+            options={{
+              title: 'Campaign Details',
+              headerShown: true,
+              headerStyle: { backgroundColor: '#fff' },
+              headerTintColor: '#4CAF50',
+              headerTitleStyle: { fontWeight: 'bold' },
+            }}
+          />
+          <Stack.Screen 
+            name="AddInNeed" 
+            component={AddInNeed} 
+            options={{ title: 'Add In Need' }}
+          />
+          <Stack.Screen 
+            name="AddDonation" 
+            component={AddDonation} 
+            options={{ title: 'Add Donation' }}
+          />
+          <Stack.Screen 
+            name="InNeedDetails" 
+            component={InNeedDetails} 
+            options={{ title: 'Need Details' }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
       <StatusBar style="auto" />
