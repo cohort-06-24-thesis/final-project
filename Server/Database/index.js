@@ -80,6 +80,9 @@ Payment.belongsTo(CampaignDonations, { foreignKey: 'campaignId' });
 Event.hasMany(DonationItem, { foreignKey: 'eventId' });
 DonationItem.belongsTo(Event, { foreignKey: 'eventId' });
 
+Category.hasMany(DonationItem , { foreignKey: 'categoryId' });
+DonationItem.belongsTo(Category , { foreignKey: 'categoryId' });
+
 
   try {
    sequelize.authenticate();
