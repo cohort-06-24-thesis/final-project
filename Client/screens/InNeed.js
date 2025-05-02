@@ -7,22 +7,23 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
-import { API_BASE } from '../config'
-
-
+import { API_BASE } from '../config';
 
 const InNeedScreen = ({ navigation }) => {
   const [needs, setNeeds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // Add refreshing state
 
   useEffect(() => {
     fetchInNeedData();
   }, []);
 
   const fetchInNeedData = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(`${API_BASE}/inNeed/all`);
       setNeeds(response.data);
@@ -31,6 +32,12 @@ const InNeedScreen = ({ navigation }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchInNeedData(); // Fetch data again when user pulls to refresh
+    setRefreshing(false);
   };
 
   if (loading) {
@@ -43,7 +50,16 @@ const InNeedScreen = ({ navigation }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh} // Call onRefresh when pull-to-refresh is triggered
+            colors={['#80ED99']} // Customize refresh indicator color
+          />
+        }
+      >
         <Text style={styles.header}>People In Need</Text>
         {needs.map((item, index) => (
           <TouchableOpacity
