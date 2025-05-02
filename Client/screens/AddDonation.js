@@ -13,6 +13,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { Camera } from 'expo-camera';
+import { API_BASE } from '../config'
 
 export default function AddDonation({ navigation }) {
   const [title, setTitle] = useState('');
@@ -74,7 +75,7 @@ export default function AddDonation({ navigation }) {
     }
 
     try {
-      const response = await axios.post('http://172.20.10.6:3000/api/donationItems/addItem', {
+      const response = await axios.post(`${API_BASE}/donationItems/addItem`, {
         title,
         description,
         location,

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput, Image, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import { API_BASE } from '../config'
 
 // Map category names to Ionicons icon names
 const categoryIcons = {
@@ -25,7 +26,7 @@ export default function DonationItems({ navigation }) {
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get('http://172.20.10.6:3000/api/donationItems/getAllItems');
+      const response = await axios.get(`${API_BASE}/donationItems/getAllItems`);
       setItems(response.data);
     } catch (error) {
       console.error('Error fetching items:', error);
@@ -34,7 +35,7 @@ export default function DonationItems({ navigation }) {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://172.20.10.6:3000/api/category/getAll');
+      const response = await axios.get(`${API_BASE}/category/getAll`);
       setCategories(response.data);
     } catch (error) {
       console.error('Error fetching categories:', error);
