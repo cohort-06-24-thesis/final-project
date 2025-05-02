@@ -7,27 +7,37 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import { API_BASE } from '../config';
 
-const InNeedScreen = ({navigation}) => {
+const InNeedScreen = ({ navigation }) => {
   const [needs, setNeeds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // Add refreshing state
 
   useEffect(() => {
     fetchInNeedData();
   }, []);
 
   const fetchInNeedData = async () => {
+    setLoading(true);
     try {
-      const response = await axios.get('http://192.168.248.252:3000/api/inNeed/all');
+      const response = await axios.get(`${API_BASE}/inNeed/all`);
       setNeeds(response.data);
     } catch (error) {
       console.error('Error fetching in-need data:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchInNeedData(); // Fetch data again when user pulls to refresh
+    setRefreshing(false);
   };
 
   if (loading) {
@@ -40,10 +50,23 @@ const InNeedScreen = ({navigation}) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh} // Call onRefresh when pull-to-refresh is triggered
+            colors={['#80ED99']} // Customize refresh indicator color
+          />
+        }
+      >
         <Text style={styles.header}>People In Need</Text>
         {needs.map((item, index) => (
-          <View key={index} style={styles.card}>
+          <TouchableOpacity
+            key={index}
+            style={styles.card}
+            onPress={() => navigation.navigate('InNeedDetails', { item })}
+          >
             {item.images && item.images.length > 0 ? (
               <Image source={{ uri: item.images[0] }} style={styles.image} />
             ) : (
@@ -59,10 +82,10 @@ const InNeedScreen = ({navigation}) => {
                 <Text style={styles.helpButtonText}>Help Now</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
-  
+
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.navigate('AddInNeed')}
@@ -71,7 +94,6 @@ const InNeedScreen = ({navigation}) => {
       </TouchableOpacity>
     </View>
   );
-  
 };
 
 const styles = StyleSheet.create({

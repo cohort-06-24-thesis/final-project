@@ -29,13 +29,13 @@ exports.getAllInNeeds = async (req, res) => {
 exports.getInNeedById = async (req, res) => {
     try {
         const { id } = req.params;
-        const inNeed = await inNeed.findByPk(id);
+        const item = await inNeed.findByPk(id);
 
-        if (!inNeed) {
+        if (!item) {
             return res.status(404).json({ error: 'InNeed not found' });
         }
 
-        res.status(200).json(inNeed);
+        res.status(200).json(item);
     } catch (error) {
         console.error('Error fetching InNeed:', error);
         res.status(500).json({ error: 'Something went wrong while fetching the record.' });
@@ -48,17 +48,17 @@ exports.updateInNeed = async (req, res) => {
         const { id } = req.params;
         const { title, description, images, location } = req.body;
 
-        const inNeed = await inNeed.findByPk(id);
+        const item = await inNeed.findByPk(id);
 
-        if (!inNeed) {
-            return res.status(404).json({ error: 'InNeed not found' });
+        if (!item) {
+            return res.status(404).json({ error: 'item not found' });
         }
 
-        await inNeed.update({ title, description, images, location });
+        await item.update({ title, description, images, location });
 
-        res.status(200).json(inNeed);
+        res.status(200).json(item);
     } catch (error) {
-        console.error('Error updating InNeed:', error);
+        console.error('Error updating item:', error);
         res.status(500).json({ error: 'Something went wrong while updating the record.' });
     }
 };
@@ -66,17 +66,17 @@ exports.updateInNeed = async (req, res) => {
 // Delete an InNeed by ID
 exports.deleteInNeed = async (req, res) => {
     try {
-        const { id } = req.params;
-        const inNeed = await inNeed.findByPk(id);
-
-        if (!inNeed) {
-            return res.status(404).json({ error: 'InNeed not found' });
-        }
-
-        await inNeed.destroy();
-        res.status(200).json({ message: 'InNeed deleted successfully.' });
+      const { id } = req.params;
+      const inNeedItem = await inNeed.findByPk(id);
+  
+      if (!inNeedItem) {
+        return res.status(404).json({ error: 'InNeed not found' });
+      }
+  
+      await inNeedItem.destroy();
+      res.status(200).json({ message: 'InNeed deleted successfully.' });
     } catch (error) {
-        console.error('Error deleting InNeed:', error);
-        res.status(500).json({ error: 'Something went wrong while deleting the record.' });
+      console.error('Error deleting InNeed:', error);
+      res.status(500).json({ error: 'Something went wrong while deleting the record.' });
     }
-};
+  };
