@@ -3,6 +3,8 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from 'rea
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { API_BASE } from '../config'
+
 
 export default function Campaign() {
   const [campaigns, setCampaigns] = useState([]);
@@ -18,7 +20,7 @@ export default function Campaign() {
 
   const fetchCampaigns = async () => {
     try {
-      const response = await axios.get('http://192.168.50.252:3000/api/campaignDonation');
+      const response = await axios.get(`${API_BASE}/campaignDonation`);
       setCampaigns(response.data);
     } catch (error) {
       console.error('Error fetching campaigns:', error);

@@ -12,6 +12,8 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
+import { API_BASE } from '../config'
+
 
 export default function AddInNeed({ navigation }) {
   const [title, setTitle] = useState('');
@@ -59,7 +61,7 @@ export default function AddInNeed({ navigation }) {
     };
 
     try {
-      const res = await fetch('http://192.168.50.252:3000/api/inNeed/create', {
+      const res = await fetch((`${API_BASE}/inNeed/create`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

@@ -14,6 +14,8 @@ import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
+import { API_BASE } from '../config'
+
 
 export default function AddCampaign() {
   const navigation = useNavigation();
@@ -49,7 +51,7 @@ export default function AddCampaign() {
     }
 
     try {
-      const response = await axios.post('http://192.168.1.186:3000/api/campaignDonation', formData);
+      const response = await axios.post(`${API_BASE}/campaignDonation`, formData);
       Alert.alert('Success', 'Campaign created successfully');
       navigation.goBack();
     } catch (error) {
