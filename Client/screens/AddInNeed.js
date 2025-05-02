@@ -12,8 +12,8 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
-import { API_BASE } from '../config'
-
+import * as Location from 'expo-location';
+import { API_BASE } from '../config';
 
 export default function AddInNeed({ navigation }) {
   const [title, setTitle] = useState('');
@@ -46,6 +46,20 @@ export default function AddInNeed({ navigation }) {
       const uri = result.assets[0].uri;
       setImages(prev => [...prev, uri]);
     }
+  };
+
+  const getCurrentLocation = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      return Alert.alert('Permission denied', 'Location permission is required.');
+    }
+
+    const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+    setLocationCoords({
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+    });
+    setLocationStr(`${location.coords.latitude}, ${location.coords.longitude}`);
   };
 
   const handleSubmit = async () => {
@@ -108,6 +122,10 @@ export default function AddInNeed({ navigation }) {
         <Marker coordinate={locationCoords} />
       </MapView>
 
+      <TouchableOpacity style={styles.locationButton} onPress={getCurrentLocation}>
+        <Text style={styles.locationButtonText}>Use My Current Location</Text>
+      </TouchableOpacity>
+
       <Text style={styles.label}>Images</Text>
       <View style={styles.iconButtons}>
         <TouchableOpacity onPress={() => pickImage(false)} style={styles.iconBtn}>
@@ -161,6 +179,17 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 8,
     marginBottom: 10,
+  },
+  locationButton: {
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 8,
+    marginVertical: 10,
+    alignItems: 'center',
+  },
+  locationButtonText: {
+    color: 'white',
+    fontSize: 16,
   },
   iconButtons: {
     flexDirection: 'row',
