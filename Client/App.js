@@ -111,12 +111,12 @@ export default function App() {
           <Stack.Screen 
             name="AddEvent" 
             component={AddEvent} 
-            options={{ title: 'Add Event' }}
+            options={{ title: 'Add Event'  }}
           />
           <Stack.Screen 
             name="AddCampaign" 
             component={AddCampaign} 
-            options={{ title: 'Add Campaign' }}
+            options={{ title: 'Add Campaign', headerShown: true }}
           />
           <Stack.Screen 
             name="CampaignDetails" 
@@ -132,7 +132,7 @@ export default function App() {
           <Stack.Screen 
             name="AddInNeed" 
             component={AddInNeed} 
-            options={{ title: 'Add In Need' }}
+            options={{ title: 'Add In Need', headerShown: true  }}
           />
           <Stack.Screen 
             name="AddDonation" 
