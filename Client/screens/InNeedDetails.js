@@ -8,7 +8,11 @@ const InNeedDetails = ({ route }) => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {item.images && item.images.length > 0 ? (
-        <Image source={{ uri: item.images[0] }} style={styles.image} />
+        <ScrollView horizontal contentContainerStyle={styles.imageContainer}>
+          {item.images.map((image, index) => (
+            <Image key={index} source={{ uri: image }} style={styles.image} />
+          ))}
+        </ScrollView>
       ) : (
         <View style={[styles.image, styles.noImage]}>
           <Text style={styles.noImageText}>No Image Available</Text>
@@ -47,61 +51,64 @@ const InNeedDetails = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-      padding: 16,
-      backgroundColor: '#FAFAFA',
-    },
-    image: {
-      width: '100%',
-      height: 240,
-      borderRadius: 16,
-      marginBottom: 20,
-      resizeMode: 'cover',
-    },
-    noImage: {
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: '#E0E0E0',
-    },
-    noImageText: {
-      color: '#777',
-      fontStyle: 'italic',
-    },
-    title: {
-      fontSize: 26,
-      fontWeight: '700',
-      color: '#1A1A1A',
-      marginBottom: 8,
-    },
-    location: {
-      fontSize: 15,
-      color: '#616161',
-      marginBottom: 16,
-    },
-    map: {
-      width: '100%',
-      height: 200,
-      borderRadius: 16,
-      marginBottom: 24,
-    },
-    descriptionContainer: {
-      marginTop: 10,
-      paddingVertical: 16,
-      borderTopWidth: 1,
-      borderColor: '#DDD',
-    },
-    sectionTitle: {
-      fontSize: 20,
-      fontWeight: '600',
-      marginBottom: 8,
-      color: '#2C2C2C',
-    },
-    description: {
-      fontSize: 16,
-      color: '#444',
-      lineHeight: 24,
-    },
-  });
-  
+  container: {
+    padding: 16,
+    backgroundColor: '#FAFAFA',
+  },
+  imageContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  image: {
+    width: Dimensions.get('window').width - 32, // Adjust the width for margins
+    height: 240,
+    borderRadius: 16,
+    marginRight: 10, // Space between images
+    resizeMode: 'cover',
+  },
+  noImage: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#E0E0E0',
+  },
+  noImageText: {
+    color: '#777',
+    fontStyle: 'italic',
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  location: {
+    fontSize: 15,
+    color: '#616161',
+    marginBottom: 16,
+  },
+  map: {
+    width: '100%',
+    height: 200,
+    borderRadius: 16,
+    marginBottom: 24,
+  },
+  descriptionContainer: {
+    marginTop: 10,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderColor: '#DDD',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#2C2C2C',
+  },
+  description: {
+    fontSize: 16,
+    color: '#444',
+    lineHeight: 24,
+  },
+});
 
 export default InNeedDetails;
