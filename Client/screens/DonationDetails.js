@@ -14,80 +14,100 @@ export default function DonationDetails({ route, navigation }) {
     console.log('Report item');
   };
 
+  const handleContact = () => {
+    console.log('Contact user');
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      {/* Image Carousel */}
-      <View style={styles.imageContainer}>
-        <Image 
-          source={{ uri: item.image?.[0] || 'https://via.placeholder.com/150' }}
-          style={styles.image}
-        />
-      </View>
-
-      {/* Content */}
-      <View style={styles.content}>
-        <Text style={styles.title}>{item.title}</Text>
-        
-        <View style={styles.statusContainer}>
-          <Text style={[
-            styles.status,
-            { color: item.status === 'available' ? '#4CAF50' : '#666' }
-          ]}>
-            {item.status}
-          </Text>
+    <View style={styles.container}>
+      <ScrollView style={styles.scrollContainer}>
+        {/* Image Carousel */}
+        <View style={styles.imageContainer}>
+          <Image 
+            source={{ uri: item.image?.[0] || 'https://via.placeholder.com/150' }}
+            style={styles.image}
+          />
         </View>
 
-        <View style={styles.infoRow}>
-          <Ionicons name="location-outline" size={20} color="#666" />
-          <Text style={styles.infoText}>{item.location}</Text>
-        </View>
+        {/* Content */}
+        <View style={styles.content}>
+          <Text style={styles.title}>{item.title}</Text>
+          
+          <View style={styles.statusContainer}>
+            <Text style={[
+              styles.status,
+              { color: item.status === 'available' ? '#4CAF50' : '#666' }
+            ]}>
+              {item.status}
+            </Text>
+          </View>
 
-        <Text style={styles.sectionTitle}>Description</Text>
-        <Text style={styles.description}>{item.description}</Text>
+          <View style={styles.infoRow}>
+            <Ionicons name="location-outline" size={20} color="#666" />
+            <Text style={styles.infoText}>{item.location}</Text>
+          </View>
 
-        <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleFavorite}>
-            <Ionicons name="heart-outline" size={24} color="#666" />
-            <Text style={styles.actionButtonText}>Favorite</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.description}>{item.description}</Text>
 
-          <TouchableOpacity style={styles.actionButton} onPress={handleReport}>
-            <Ionicons name="flag-outline" size={24} color="#666" />
-            <Text style={styles.actionButtonText}>Report</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleFavorite}>
+              <Ionicons name="heart-outline" size={24} color="#666" />
+              <Text style={styles.actionButtonText}>Favorite</Text>
+            </TouchableOpacity>
 
+            <TouchableOpacity style={styles.actionButton} onPress={handleReport}>
+              <Ionicons name="flag-outline" size={24} color="#666" />
+              <Text style={styles.actionButtonText}>Report</Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* Map Section */}
-        <Text style={styles.sectionTitle}>Location</Text>
-        <View style={styles.mapContainer}>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: item.latitude || 48.8566, // Default to Paris if no latitude
-              longitude: item.longitude || 2.3522, // Default to Paris if no longitude
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-          >
-            <Marker
-              coordinate={{
-                latitude: item.latitude || 48.8566,
-                longitude: item.longitude || 2.3522,
+          {/* Map Section */}
+          <Text style={styles.sectionTitle}>Location</Text>
+          <View style={styles.mapContainer}>
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                latitude: item.latitude || 48.8566, // Default to Paris if no latitude
+                longitude: item.longitude || 2.3522, // Default to Paris if no longitude
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
               }}
-              title={item.title}
-              description={item.location}
-            />
-          </MapView>
+            >
+              <Marker
+                coordinate={{
+                  latitude: item.latitude || 48.8566,
+                  longitude: item.longitude || 2.3522,
+                }}
+                title={item.title}
+                description={item.location}
+              />
+            </MapView>
+          </View>
+
+          {/* {item.status === 'available' && (
+            <TouchableOpacity style={styles.claimButton}>
+              <Text style={styles.claimButtonText}>Claim Now</Text>
+            </TouchableOpacity>
+          )} */}
         </View>
-        
-        {item.status === 'available' && (
-          <TouchableOpacity style={styles.claimButton}>
-            <Text style={styles.claimButtonText}>Claim Now</Text>
-          </TouchableOpacity>
-        )}
+      </ScrollView>
+
+      {/* Fixed User Details Section */}
+      <View style={styles.userContainer}>
+        <Image 
+          source={{ uri: item.user?.profilePic || 'https://via.placeholder.com/100' }}
+          style={styles.userImage}
+        />
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>{item.user?.name || 'Anonymous'}</Text>
+          <Text style={styles.userRating}>⭐ {item.user?.rating || '0.0'}</Text>
+        </View>
+        <TouchableOpacity style={styles.contactButton} onPress={handleContact}>
+          <Text style={styles.contactButtonText}>Contact</Text>
+        </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -95,6 +115,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  scrollContainer: {
+    flex: 1,
+    marginBottom: 80, // Leave space for the fixed user bar
   },
   imageContainer: {
     width: '100%',
@@ -141,17 +165,17 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 24,
   },
-  claimButton: {
-    backgroundColor: '#4CAF50',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  claimButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  // claimButton: {
+  //   backgroundColor: '#4CAF50',
+  //   padding: 16,
+  //   borderRadius: 8,
+  //   alignItems: 'center',
+  // },
+  // claimButtonText: {
+  //   color: '#fff',
+  //   fontSize: 16,
+  //   fontWeight: 'bold',
+  // },
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -175,5 +199,46 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+  },
+  userContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#f9f9f9',
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+  },
+  userImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 16,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  userRating: {
+    fontSize: 14,
+    color: '#666',
+  },
+  contactButton: {
+    backgroundColor: '#EFD13D',
+    paddingVertical: 20,
+    paddingHorizontal: 38,
+    right: 8,
+    borderRadius: 12,
+  },
+  contactButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
