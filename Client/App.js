@@ -24,6 +24,8 @@ import CampaignDetails from './screens/CampaignDetails';
 import AddInNeed from './screens/AddInNeed';
 import AddDonation from './screens/AddDonation';
 import InNeedDetails from './screens/InNeedDetails';
+import DonationDetails from './screens/DonationDetails';
+import FullScreenMap from './screens/FullScreenMap';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -143,7 +145,19 @@ export default function App() {
             name="InNeedDetails" 
             component={InNeedDetails} 
             options={{ title: 'Need Details' }}
-          />
+          /> 
+          <Stack.Screen 
+           name="DonationDetails" 
+           component={DonationDetails}
+           options={{ 
+           title: 'Donation Details',
+  }}
+/>
+         <Stack.Screen 
+          name="FullScreenMap" 
+          component={FullScreenMap} 
+          options={{ title: 'Map', headerShown: true }}
+/>
         </Stack.Navigator>
       </NavigationContainer>
       <StatusBar style="auto" />
