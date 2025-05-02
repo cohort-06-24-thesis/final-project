@@ -77,16 +77,16 @@ export default function DonationDetails({ route, navigation }) {
             <MapView
               style={styles.map}
               initialRegion={{
-                latitude: item.latitude,
-                longitude: item.longitude,
+                latitude: item.latitude || 48.8566,
+                longitude: item.longitude|| 2.3522,
                 latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
+                longitudeDelta: 0.01 ,
               }}
             >
               <Marker
                 coordinate={{
-                  latitude: item.latitude,
-                  longitude: item.longitude,
+                  latitude: item.latitude || 48.8566,
+                  longitude: item.longitude || 2.3522,
                 }}
                 title={item.title}
                 description={item.location}

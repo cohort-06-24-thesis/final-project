@@ -3,6 +3,7 @@ const donationSeed = require('./donationSeed');
 const CompaignSeed = require('./Campaign.seeds');
 const EventSeed = require('./seed-events');
 const inNeedSeed = require('./inNeed.seeds');
+const CategorySeed = require('./categorySeed');
 
 
 const runSeeds = async () => {
@@ -17,6 +18,8 @@ const runSeeds = async () => {
     await EventSeed();
     console.log('Seeding inNeed...');
     await inNeedSeed();
+    console.log('Seeding categories...');
+    await CategorySeed();
     console.log('All seeds executed successfully.');
   } catch (error) {
     console.error('Error running seeds:', error);

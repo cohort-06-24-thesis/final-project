@@ -74,7 +74,7 @@ export default function AddDonation({ navigation }) {
     }
 
     try {
-      const response = await axios.post('http://192.168.248.252:3000/api/donationItems/addItem', {
+      const response = await axios.post('http://172.20.10.6:3000/api/donationItems/addItem', {
         title,
         description,
         location,
