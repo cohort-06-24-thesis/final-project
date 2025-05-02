@@ -32,13 +32,14 @@ export default function DonationDetails({ route, navigation }) {
         {/* Content */}
         <View style={styles.content}>
           <Text style={styles.title}>{item.title}</Text>
-          
-          <View style={styles.statusContainer}>
+
+          {/* Status Badge */}
+          <View style={styles.statusBadgeContainer}>
             <Text style={[
-              styles.status,
-              { color: item.status === 'available' ? '#4CAF50' : '#666' }
+              styles.statusBadge,
+              { backgroundColor: item.status === 'available' ? '#4CAF50' : item.status === 'reserved' ? '#FFC107' : '#FF5722' }
             ]}>
-              {item.status}
+              {item.status.toUpperCase()}
             </Text>
           </View>
 
@@ -68,28 +69,22 @@ export default function DonationDetails({ route, navigation }) {
             <MapView
               style={styles.map}
               initialRegion={{
-                latitude: item.latitude || 48.8566, // Default to Paris if no latitude
-                longitude: item.longitude || 2.3522, // Default to Paris if no longitude
+                latitude: item.latitude, 
+                longitude: item.longitude,
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
               }}
             >
               <Marker
                 coordinate={{
-                  latitude: item.latitude || 48.8566,
-                  longitude: item.longitude || 2.3522,
+                  latitude: item.latitude,
+                  longitude: item.longitude,
                 }}
                 title={item.title}
                 description={item.location}
               />
             </MapView>
           </View>
-
-          {/* {item.status === 'available' && (
-            <TouchableOpacity style={styles.claimButton}>
-              <Text style={styles.claimButtonText}>Claim Now</Text>
-            </TouchableOpacity>
-          )} */}
         </View>
       </ScrollView>
 
@@ -137,12 +132,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
   },
-  statusContainer: {
+  statusBadgeContainer: {
+    alignSelf: 'flex-start',
     marginBottom: 16,
   },
-  status: {
-    fontSize: 16,
-    fontWeight: '500',
+  statusBadge: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   infoRow: {
     flexDirection: 'row',
@@ -165,17 +166,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 24,
   },
-  // claimButton: {
-  //   backgroundColor: '#4CAF50',
-  //   padding: 16,
-  //   borderRadius: 8,
-  //   alignItems: 'center',
-  // },
-  // claimButtonText: {
-  //   color: '#fff',
-  //   fontSize: 16,
-  //   fontWeight: 'bold',
-  // },
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-around',

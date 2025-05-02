@@ -18,8 +18,18 @@ module.exports=(sequelize, DataTypes) => {
         },
         location :{
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+
         },
+        latitude: {
+            type: DataTypes.FLOAT, // Latitude as a float
+            allowNull: true, // Optional field
+        },
+        longitude: {
+            type: DataTypes.FLOAT, // Longitude as a float
+            allowNull: true, // Optional field
+        },
+        
     })
     return DonationItem
 }
