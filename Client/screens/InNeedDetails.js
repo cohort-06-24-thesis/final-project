@@ -47,58 +47,61 @@ const InNeedDetails = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    backgroundColor: 'white',
-  },
-  image: {
-    width: '100%',
-    height: 250,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  noImage: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#eee',
-  },
-  noImageText: {
-    color: '#888',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 6,
-  },
-  location: {
-    fontSize: 16,
-    color: '#444',
-    marginBottom: 12,
-  },
-  map: {
-    width: '100%',
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 20,
-  },
-  descriptionContainer: {
-    marginTop: 10,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderColor: '#eee',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 6,
-    color: '#333',
-  },
-  description: {
-    fontSize: 16,
-    color: '#555',
-    lineHeight: 22,
-  },
-});
+    container: {
+      padding: 16,
+      backgroundColor: '#FAFAFA',
+    },
+    image: {
+      width: '100%',
+      height: 240,
+      borderRadius: 16,
+      marginBottom: 20,
+      resizeMode: 'cover',
+    },
+    noImage: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#E0E0E0',
+    },
+    noImageText: {
+      color: '#777',
+      fontStyle: 'italic',
+    },
+    title: {
+      fontSize: 26,
+      fontWeight: '700',
+      color: '#1A1A1A',
+      marginBottom: 8,
+    },
+    location: {
+      fontSize: 15,
+      color: '#616161',
+      marginBottom: 16,
+    },
+    map: {
+      width: '100%',
+      height: 200,
+      borderRadius: 16,
+      marginBottom: 24,
+    },
+    descriptionContainer: {
+      marginTop: 10,
+      paddingVertical: 16,
+      borderTopWidth: 1,
+      borderColor: '#DDD',
+    },
+    sectionTitle: {
+      fontSize: 20,
+      fontWeight: '600',
+      marginBottom: 8,
+      color: '#2C2C2C',
+    },
+    description: {
+      fontSize: 16,
+      color: '#444',
+      lineHeight: 24,
+    },
+  });
+  
 
 export default InNeedDetails;

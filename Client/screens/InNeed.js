@@ -10,6 +10,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import { API_BASE } from '../config'
+
+
 
 const InNeedScreen = ({ navigation }) => {
   const [needs, setNeeds] = useState([]);
@@ -21,7 +24,7 @@ const InNeedScreen = ({ navigation }) => {
 
   const fetchInNeedData = async () => {
     try {
-      const response = await axios.get('http://192.168.50.252:3000/api/inNeed/all');
+      const response = await axios.get(`${API_BASE}/inNeed/all`);
       setNeeds(response.data);
     } catch (error) {
       console.error('Error fetching in-need data:', error);
