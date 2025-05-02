@@ -8,10 +8,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 
-const InNeedScreen = ({navigation}) => {
+const InNeedScreen = ({ navigation }) => {
   const [needs, setNeeds] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,7 +21,7 @@ const InNeedScreen = ({navigation}) => {
 
   const fetchInNeedData = async () => {
     try {
-      const response = await axios.get('http://192.168.1.159:3000/api/inNeed/all');
+      const response = await axios.get('http://192.168.50.252:3000/api/inNeed/all');
       setNeeds(response.data);
     } catch (error) {
       console.error('Error fetching in-need data:', error);
@@ -43,7 +43,11 @@ const InNeedScreen = ({navigation}) => {
       <ScrollView style={styles.container}>
         <Text style={styles.header}>People In Need</Text>
         {needs.map((item, index) => (
-          <View key={index} style={styles.card}>
+          <TouchableOpacity
+            key={index}
+            style={styles.card}
+            onPress={() => navigation.navigate('InNeedDetails', { item })}
+          >
             {item.images && item.images.length > 0 ? (
               <Image source={{ uri: item.images[0] }} style={styles.image} />
             ) : (
@@ -59,10 +63,10 @@ const InNeedScreen = ({navigation}) => {
                 <Text style={styles.helpButtonText}>Help Now</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
-  
+
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.navigate('AddInNeed')}
@@ -71,7 +75,6 @@ const InNeedScreen = ({navigation}) => {
       </TouchableOpacity>
     </View>
   );
-  
 };
 
 const styles = StyleSheet.create({
