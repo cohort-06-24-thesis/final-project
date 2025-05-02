@@ -21,7 +21,7 @@ const InNeedScreen = ({navigation}) => {
 
   const fetchInNeedData = async () => {
     try {
-      const response = await axios.get('http://192.168.248.252:3000/api/inNeed/all');
+      const response = await axios.get('http://192.168.1.159:3000/api/inNeed/all');
       setNeeds(response.data);
     } catch (error) {
       console.error('Error fetching in-need data:', error);

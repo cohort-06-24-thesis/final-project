@@ -21,6 +21,7 @@ import Campaign from './screens/Campaign';
 import Events from './screens/Events';
 import AddEvent from './screens/AddEvent';
 import	AddCampaign from './screens/AddCampaign'
+import CampaignDetails from './screens/CampaignDetails';
 import AddInNeed from './screens/AddInNeed'
 import AddDonation from './screens/AddDonation'
 
@@ -133,6 +134,20 @@ export default function App() {
               title: 'Add Campaign',
             }}
           />
+           <Stack.Screen 
+          name="CampaignDetails" 
+          component={CampaignDetails}
+          options={{
+            title: 'Campaign Details',
+            headerStyle: {
+              backgroundColor: '#fff',
+            },
+            headerTintColor: '#4CAF50',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+          }}
+        />
            <Stack.Screen 
             name="AddInNeed" 
             component={AddInNeed} 

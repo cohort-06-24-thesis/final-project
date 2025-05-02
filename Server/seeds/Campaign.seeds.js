@@ -24,7 +24,7 @@ const campaigns = [
   {
     title: 'Clean Water Initiative',
     description: 'Provide clean drinking water to communities in need.',
-    images: ['https://example.com/water-project.jpg'],
+    images: ['https://dacfoundation.org/frontend/db-assets/cause-images/1700368682-noticias_thebighand_5-1120x550.jpg'],
     progress: 30.0,
     goal: 15000,
     totalRaised: 4500,
@@ -34,7 +34,7 @@ const campaigns = [
   {
     title: 'Food Bank Support',
     description: 'Help stock local food banks for families in need.',
-    images: ['https://example.com/food-bank.jpg'],
+    images: ['https://mitzvahday.org.uk/wp-content/uploads/2020/11/Naomi-Russell-Jo-Rosenblatt-1000x666.jpg'],
     progress: 60.0,
     goal: 8000,
     totalRaised: 4800,
@@ -44,7 +44,7 @@ const campaigns = [
   {
     title: 'Orphanage Renovation',
     description: 'Renovate facilities at local orphanage.',
-    images: ['https://example.com/orphanage.jpg'],
+    images: ['https://roots.uk.net/wp-content/uploads/2021/09/Roots-1024x723.png'],
     progress: 25.0,
     goal: 20000,
     totalRaised: 5000,

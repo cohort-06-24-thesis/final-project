@@ -1,5 +1,5 @@
 {
-"name": "client",
+  "name": "client",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -29,7 +29,8 @@
     "react-native-swiper": "^1.6.0",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "expo-image-picker": "~16.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

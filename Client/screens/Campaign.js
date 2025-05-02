@@ -1,4 +1,3 @@
-// 
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
@@ -10,16 +9,24 @@ export default function Campaign() {
   const navigation = useNavigation();
 
   useEffect(() => {
-    fetchCampaigns();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchCampaigns(); // fetch every time screen is focused
+    });
+
+    return unsubscribe; // cleanup
+  }, [navigation]);
 
   const fetchCampaigns = async () => {
     try {
-      const response = await axios.get('http://192.168.248.217:3000/api/campaignDonation');
+      const response = await axios.get('http://192.168.1.159:3000/api/campaignDonation');
       setCampaigns(response.data);
     } catch (error) {
       console.error('Error fetching campaigns:', error);
     }
+  };
+
+  const handleViewDetails = (campaign) => {
+    navigation.navigate('CampaignDetails', { campaign });
   };
 
   return (
@@ -30,8 +37,8 @@ export default function Campaign() {
           <View key={index} style={styles.card}>
             <View style={styles.imageContainer}>
               {campaign.images && campaign.images.length > 0 && (
-                <Image 
-                  source={{ uri: campaign.images[0] }} 
+                <Image
+                  source={{ uri: campaign.images[0] }}
                   style={styles.eventImage}
                 />
               )}
@@ -39,12 +46,18 @@ export default function Campaign() {
             <View style={styles.contentContainer}>
               <Text style={styles.title}>{campaign.title}</Text>
               <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: `${campaign.progress}%` }]} />
+                <View
+                  style={[styles.progressFill, { width: `${campaign.progress}%` }]}
+                />
               </View>
               <Text style={styles.description}>Raised {campaign.progress}%</Text>
-              <Text style={styles.participators}>{campaign.totalDonors} people donated</Text>
-              <Text style={styles.location}>Tunisia</Text>
-              <TouchableOpacity style={styles.viewDetailsButton}>
+              <Text style={styles.participators}>
+                {campaign.totalDonors} people donated
+              </Text>
+              <TouchableOpacity
+                style={styles.viewDetailsButton}
+                onPress={() => handleViewDetails(campaign)}
+              >
                 <Text style={styles.viewDetailsText}>View Details</Text>
               </TouchableOpacity>
             </View>
