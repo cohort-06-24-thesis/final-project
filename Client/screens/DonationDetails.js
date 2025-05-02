@@ -65,11 +65,19 @@ export default function DonationDetails({ route, navigation }) {
 
           {/* Map Section */}
           <Text style={styles.sectionTitle}>Location</Text>
-          <View style={styles.mapContainer}>
+          <TouchableOpacity
+            style={styles.mapContainer}
+            onPress={() => navigation.navigate('FullScreenMap', {
+              latitude: item.latitude,
+              longitude: item.longitude,
+              title: item.title,
+              location: item.location,
+            })}
+          >
             <MapView
               style={styles.map}
               initialRegion={{
-                latitude: item.latitude, 
+                latitude: item.latitude,
                 longitude: item.longitude,
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
@@ -84,7 +92,7 @@ export default function DonationDetails({ route, navigation }) {
                 description={item.location}
               />
             </MapView>
-          </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 

@@ -31,7 +31,8 @@
     "react-native-web": "~0.19.13",
     "socket.io-client": "^4.8.1",
     "react-native-maps": "1.18.0",
-    "expo-image-picker": "~16.0.6"
+    "expo-image-picker": "~16.0.6",
+    "expo-camera": "~16.0.18"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

@@ -24,6 +24,7 @@ import	AddCampaign from './screens/AddCampaign'
 import AddInNeed from './screens/AddInNeed'
 import AddDonation from './screens/AddDonation'
 import DonationDetails from './screens/DonationDetails';
+import FullScreenMap from './screens/FullScreenMap';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -154,6 +155,11 @@ export default function App() {
            options={{ 
            title: 'Donation Details',
   }}
+/>
+         <Stack.Screen 
+          name="FullScreenMap" 
+          component={FullScreenMap} 
+          options={{ title: 'Map', headerShown: true }}
 />
         </Stack.Navigator>
       </NavigationContainer>

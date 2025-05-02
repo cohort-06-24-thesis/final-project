@@ -12,6 +12,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import { Camera } from 'expo-camera';
 
 export default function AddDonation({ navigation }) {
   const [title, setTitle] = useState('');
@@ -20,6 +21,40 @@ export default function AddDonation({ navigation }) {
   const [image, setImage] = useState(null);
 
   const handleImagePick = async () => {
+    const options = [
+      { text: 'Open Camera', onPress: openCamera },
+      { text: 'Open Photos', onPress: openGallery },
+      { text: 'Cancel', style: 'cancel' },
+    ];
+
+    Alert.alert('Upload Image', 'Choose an option:', options);
+  };
+
+  const openCamera = async () => {
+    const { status } = await Camera.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Camera access is required to take a photo.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const openGallery = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Media library access is required to select a photo.');
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
