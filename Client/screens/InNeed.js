@@ -16,7 +16,7 @@ import { API_BASE } from '../config';
 const InNeedScreen = ({ navigation }) => {
   const [needs, setNeeds] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false); // Add refreshing state
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchInNeedData();
@@ -36,7 +36,7 @@ const InNeedScreen = ({ navigation }) => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchInNeedData(); // Fetch data again when user pulls to refresh
+    await fetchInNeedData();
     setRefreshing(false);
   };
 
@@ -55,8 +55,8 @@ const InNeedScreen = ({ navigation }) => {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={onRefresh} // Call onRefresh when pull-to-refresh is triggered
-            colors={['#80ED99']} // Customize refresh indicator color
+            onRefresh={onRefresh}
+            colors={['#80ED99']}
           />
         }
       >
@@ -66,18 +66,25 @@ const InNeedScreen = ({ navigation }) => {
             key={index}
             style={styles.card}
             onPress={() => navigation.navigate('InNeedDetails', { item })}
+            activeOpacity={0.9}
           >
             {item.images && item.images.length > 0 ? (
               <Image source={{ uri: item.images[0] }} style={styles.image} />
             ) : (
-              <View style={[styles.image, { justifyContent: 'center', alignItems: 'center' }]}>
-                <Text style={{ color: '#888' }}>No Image</Text>
+              <View style={[styles.image, styles.noImage]}>
+                <Ionicons name="image-outline" size={40} color="#ccc" />
+                <Text style={{ color: '#888', marginTop: 4 }}>No Image</Text>
               </View>
             )}
             <View style={styles.cardContent}>
               <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.description}>{item.description}</Text>
-              <Text style={styles.location}>📍 {item.location}</Text>
+              <Text numberOfLines={2} style={styles.description}>
+                {item.description}
+              </Text>
+              <View style={styles.locationRow}>
+                <Ionicons name="location-outline" size={16} color="#666" />
+                <Text style={styles.location}>{item.location}</Text>
+              </View>
               <TouchableOpacity style={styles.helpButton}>
                 <Text style={styles.helpButtonText}>Help Now</Text>
               </TouchableOpacity>
@@ -120,6 +127,11 @@ const styles = StyleSheet.create({
     height: 180,
     backgroundColor: '#eee',
   },
+  noImage: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f2f2f2',
+  },
   cardContent: {
     padding: 16,
   },
@@ -133,10 +145,15 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 12,
   },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   location: {
     fontSize: 14,
     color: '#444',
-    marginBottom: 12,
+    marginLeft: 4,
   },
   helpButton: {
     backgroundColor: '#00C44F',
