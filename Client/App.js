@@ -23,6 +23,7 @@ import AddEvent from './screens/AddEvent';
 import	AddCampaign from './screens/AddCampaign'
 import AddInNeed from './screens/AddInNeed'
 import AddDonation from './screens/AddDonation'
+import EventDetails from './screens/EventDetails';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -147,6 +148,13 @@ export default function App() {
               title: 'AddDonation',
             }}
           />
+          <Stack.Screen 
+  name="EventDetails" 
+  component={EventDetails}
+  options={{
+    headerShown: false
+  }}
+/>
         </Stack.Navigator>
       </NavigationContainer>
       <StatusBar style="auto" />

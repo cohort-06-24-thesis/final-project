@@ -14,7 +14,7 @@ export default function Campaign() {
 
   const fetchCampaigns = async () => {
     try {
-      const response = await axios.get('http://192.168.248.252:3000/api/campaignDonation');
+      const response = await axios.get('http://192.168.42.3:3000/api/campaignDonation');
       setCampaigns(response.data);
     } catch (error) {
       console.error('Error fetching campaigns:', error);
