@@ -1,20 +1,18 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import MapView, { Marker } from 'react-native-maps';
 
 export default function DonationDetails({ route, navigation }) {
   const { item } = route.params;
 
   const handleFavorite = () => {
-    // Handle adding to favorites
     console.log('Added to favorites');
   };
 
   const handleReport = () => {
-    // Handle reporting item
     console.log('Report item');
   };
-
 
   return (
     <ScrollView style={styles.container}>
@@ -50,16 +48,39 @@ export default function DonationDetails({ route, navigation }) {
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.actionButton} onPress={handleFavorite}>
             <Ionicons name="heart-outline" size={24} color="#666" />
-            <Text style={styles.actionButtonText}>Favoris</Text>
+            <Text style={styles.actionButtonText}>Favorite</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionButton} onPress={handleReport}>
             <Ionicons name="flag-outline" size={24} color="#666" />
-            <Text style={styles.actionButtonText}>Signaler</Text>
+            <Text style={styles.actionButtonText}>Report</Text>
           </TouchableOpacity>
         </View>
 
 
+        {/* Map Section */}
+        <Text style={styles.sectionTitle}>Location</Text>
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: item.latitude || 48.8566, // Default to Paris if no latitude
+              longitude: item.longitude || 2.3522, // Default to Paris if no longitude
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+          >
+            <Marker
+              coordinate={{
+                latitude: item.latitude || 48.8566,
+                longitude: item.longitude || 2.3522,
+              }}
+              title={item.title}
+              description={item.location}
+            />
+          </MapView>
+        </View>
+        
         {item.status === 'available' && (
           <TouchableOpacity style={styles.claimButton}>
             <Text style={styles.claimButtonText}>Claim Now</Text>
@@ -131,7 +152,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -146,5 +166,14 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 12,
     marginTop: 4,
+  },
+  mapContainer: {
+    height: 200,
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginTop: 16,
+  },
+  map: {
+    flex: 1,
   },
 });
