@@ -9,10 +9,18 @@ const categories = [
   { name: 'Electronics' },
   { name: 'Fashion' },
   { name: 'Beauty' },
+  { name: 'Kids' },
+  { name: 'Books' },
+  { name: 'Office' },
   { name: 'Leisure' },
-  { name: 'Childcare' },
   { name: 'Sports' },
   { name: 'Pets' },
+  { name: 'Health' },
+  { name: 'Automotive' },
+  { name: 'Food' },
+
+
+  
 ];
 
 const seedCategories = async () => {

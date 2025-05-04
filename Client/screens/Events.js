@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import axios from 'axios';
+import { API_BASE } from '../config';
 
 const EventCard = ({ title, description, date, location, participators, images }) => (
   <View style={styles.card}>
@@ -53,7 +54,7 @@ const EventsScreen = ({navigation}) => {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('http://192.168.50.252:3000/api/event/getAllEvents');
+      const response = await axios.get(`${API_BASE}/event/getAllEvents`);
       if (response.data.success) {
         setEvents(response.data.data);
       } else {
