@@ -1,38 +1,35 @@
-import { NavigationContainer } from '@react-navigation/native';
-import 'react-native-gesture-handler';
+import { NavigationContainer } from "@react-navigation/native";
+import "react-native-gesture-handler";
 
-import { createStackNavigator } from '@react-navigation/stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
-import { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { createStackNavigator } from "@react-navigation/stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 
-import Login from './screens/Login';
-import Signup from './screens/Signup';
-import ForgotPassword from './screens/ForgotPassword';
-import SplashScreen from './screens/SplashScreen';
-import LandingPage from './screens/LandingPage';
-import Home from './screens/Home';
-import DonationItems from './screens/DonationItems';
-import InNeed from './screens/InNeed';
-import Campaign from './screens/Campaign';
-import Events from './screens/Events';
-import AddEvent from './screens/AddEvent';
+import Login from "./screens/Login";
+import Signup from "./screens/Signup";
+import ForgotPassword from "./screens/ForgotPassword";
+import SplashScreen from "./screens/SplashScreen";
+import LandingPage from "./screens/LandingPage";
+import Home from "./screens/Home";
+import DonationItems from "./screens/DonationItems";
+import InNeed from "./screens/InNeed";
+import Campaign from "./screens/Campaign";
+import Events from "./screens/Events";
+import AddEvent from "./screens/AddEvent";
 
-import	AddCampaign from './screens/AddCampaign'
-import AddInNeed from './screens/AddInNeed'
-import AddDonation from './screens/AddDonation'
-import EventDetails from './screens/EventDetails';
+import AddCampaign from "./screens/AddCampaign";
+import AddInNeed from "./screens/AddInNeed";
+import AddDonation from "./screens/AddDonation";
+import EventDetails from "./screens/EventDetails";
 
+import CampaignDetails from "./screens/CampaignDetails";
 
-import CampaignDetails from './screens/CampaignDetails';
-import AddInNeed from './screens/AddInNeed';
-
-import InNeedDetails from './screens/InNeedDetails';
-import DonationDetails from './screens/DonationDetails';
-import FullScreenMap from './screens/FullScreenMap';
-
+import InNeedDetails from "./screens/InNeedDetails";
+import DonationDetails from "./screens/DonationDetails";
+import FullScreenMap from "./screens/FullScreenMap";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -44,28 +41,32 @@ function TabNavigator() {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
-          if (route.name === 'HomeTab') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Donations') {
-            iconName = focused ? 'gift' : 'gift-outline';
-          } else if (route.name === 'InNeed') {
-            iconName = focused ? 'people' : 'people-outline';
-          } else if (route.name === 'Campaign') {
-            iconName = focused ? 'megaphone' : 'megaphone-outline';
-          } else if (route.name === 'Events') {
-            iconName = focused ? 'calendar' : 'calendar-outline';
+          if (route.name === "HomeTab") {
+            iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "Donations") {
+            iconName = focused ? "gift" : "gift-outline";
+          } else if (route.name === "InNeed") {
+            iconName = focused ? "people" : "people-outline";
+          } else if (route.name === "Campaign") {
+            iconName = focused ? "megaphone" : "megaphone-outline";
+          } else if (route.name === "Events") {
+            iconName = focused ? "calendar" : "calendar-outline";
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#4CAF50',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: "#4CAF50",
+        tabBarInactiveTintColor: "gray",
         headerShown: true,
       })}
     >
-      <Tab.Screen name="HomeTab" component={Home} options={{ title: 'Home' }} />
+      <Tab.Screen name="HomeTab" component={Home} options={{ title: "Home" }} />
       <Tab.Screen name="Donations" component={DonationItems} />
-      <Tab.Screen name="InNeed" component={InNeed} options={{ title: 'In Need' }} />
+      <Tab.Screen
+        name="InNeed"
+        component={InNeed}
+        options={{ title: "In Need" }}
+      />
       <Tab.Screen name="Campaign" component={Campaign} />
       <Tab.Screen name="Events" component={Events} />
     </Tab.Navigator>
@@ -91,89 +92,86 @@ export default function App() {
           initialRouteName="Login"
           screenOptions={{
             headerShown: false,
-            headerStyle: { backgroundColor: '#fff' },
-            headerTintColor: '#4CAF50',
-            headerBackTitle: ' ',
+            headerStyle: { backgroundColor: "#fff" },
+            headerTintColor: "#4CAF50",
+            headerBackTitle: " ",
             headerLeftContainerStyle: { paddingLeft: 10 },
           }}
         >
-          <Stack.Screen 
-            name="Login" 
-            component={Login} 
+          <Stack.Screen
+            name="Login"
+            component={Login}
             options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name="Signup" 
+          <Stack.Screen
+            name="Signup"
             component={Signup}
-            options={{ title: 'Create Account' }}
+            options={{ title: "Create Account" }}
           />
-          <Stack.Screen 
-            name="ForgotPassword" 
+          <Stack.Screen
+            name="ForgotPassword"
             component={ForgotPassword}
-            options={{ title: 'Reset Password' }}
+            options={{ title: "Reset Password" }}
           />
-          <Stack.Screen 
-            name="MainApp" 
-            component={TabNavigator} 
+          <Stack.Screen
+            name="MainApp"
+            component={TabNavigator}
             options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name="AddEvent" 
-            component={AddEvent} 
-            options={{ title: 'Add Event'  }}
+          <Stack.Screen
+            name="AddEvent"
+            component={AddEvent}
+            options={{ title: "Add Event" }}
           />
-          <Stack.Screen 
-            name="AddCampaign" 
-            component={AddCampaign} 
-            options={{ title: 'Add Campaign', headerShown: true }}
+          <Stack.Screen
+            name="AddCampaign"
+            component={AddCampaign}
+            options={{ title: "Add Campaign", headerShown: true }}
           />
-          <Stack.Screen 
-            name="CampaignDetails" 
+          <Stack.Screen
+            name="CampaignDetails"
             component={CampaignDetails}
             options={{
-              title: 'Campaign Details',
+              title: "Campaign Details",
               headerShown: true,
-              headerStyle: { backgroundColor: '#fff' },
-              headerTintColor: '#4CAF50',
-              headerTitleStyle: { fontWeight: 'bold' },
+              headerStyle: { backgroundColor: "#fff" },
+              headerTintColor: "#4CAF50",
+              headerTitleStyle: { fontWeight: "bold" },
             }}
           />
-          <Stack.Screen 
-            name="AddInNeed" 
-            component={AddInNeed} 
-            options={{ title: 'Add In Need', headerShown: true  }}
+          <Stack.Screen
+            name="AddInNeed"
+            component={AddInNeed}
+            options={{ title: "Add In Need", headerShown: true }}
           />
-          <Stack.Screen 
-            name="AddDonation" 
-            component={AddDonation} 
-            options={{ title: 'Add Donation' }}
+          <Stack.Screen
+            name="AddDonation"
+            component={AddDonation}
+            options={{ title: "Add Donation" }}
           />
-          <Stack.Screen 
+          <Stack.Screen
+            name="EventDetails"
+            component={EventDetails}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="InNeedDetails"
+            component={InNeedDetails}
+            options={{ title: "Need Details" }}
+          />
 
-  name="EventDetails" 
-  component={EventDetails}
-  options={{
-    headerShown: false
-  }}
-/>
-
-            name="InNeedDetails" 
-            component={InNeedDetails} 
-            options={{ title: 'Need Details' }}
-          /> 
-          <Stack.Screen 
-           name="DonationDetails" 
-           component={DonationDetails}
-           options={{ 
-           title: 'Donation Details',
-  }}
-/>
-         <Stack.Screen 
-          name="FullScreenMap" 
-          component={FullScreenMap} 
-          options={{ title: 'Map', headerShown: true }}
-/>
-
+          <Stack.Screen
+            name="DonationDetails"
+            component={DonationDetails}
+            options={{
+              title: "Donation Details",
+            }}
+          />
+          <Stack.Screen
+            name="FullScreenMap"
+            component={FullScreenMap}
+            options={{ title: "Map", headerShown: true }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
       <StatusBar style="auto" />
@@ -186,4 +184,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
