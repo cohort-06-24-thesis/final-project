@@ -1,4 +1,4 @@
-const userSeed = require('./userSeed');
+
 const donationSeed = require('./donationSeed');
 const CompaignSeed = require('./Campaign.seeds');
 const EventSeed = require('./seed-events');
@@ -8,8 +8,7 @@ const CategorySeed = require('./categorySeed');
 
 const runSeeds = async () => {
   try {
-    console.log('Seeding users...');
-    await userSeed();
+  
     console.log('Seeding categories...');
     await CategorySeed();
     console.log('Seeding donations...');

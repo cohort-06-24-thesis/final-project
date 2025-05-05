@@ -10,6 +10,7 @@ import {
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from '../firebase';
 import axios from 'axios';
+import {API_BASE} from '../config.js'
 
 export default function Signup({ navigation }) {
   const [email, setEmail] = useState('');
@@ -26,14 +27,18 @@ export default function Signup({ navigation }) {
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log('User signed up successfully:', userCredential.user.email);
+      console.log('User signed up successfully:', userCredential);
+      
       
       // Add name field since it's required by the backend
-      await axios.post('http://192.168.248.252:3000/api/users/add', {
+      await axios.post(`${API_BASE}/user/add`, {
+        // await axios.post(`http://localhost:3000/api/user/add`, {
+        id:userCredential.user.uid,
         name: name, 
         email: userCredential.user.email,
         password: password,
-        role: 'user'
+        role: 'user',
+        rating:0
       });
       
       navigation.navigate('Login');

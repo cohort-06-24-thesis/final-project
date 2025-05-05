@@ -2,7 +2,7 @@ const { User } = require("../Database/index.js");
 
 const createUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password , id } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ 
@@ -11,11 +11,13 @@ const createUser = async (req, res) => {
     }
 
     const newUser = await User.create({
+      id,
       name,
       email,
       password,
       role: 'user',
-      rating: 0
+      rating: 0,
+      
     });
 
     res.status(201).json({

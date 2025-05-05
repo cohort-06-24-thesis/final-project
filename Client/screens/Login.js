@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from '../firebase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
@@ -21,12 +22,18 @@ export default function Login({ navigation }) {
       setError('Please enter both email and password');
       return;
     }
-
+  
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log('User logged in successfully:', userCredential.user.email);
-      setError(''); // Clear any existing errors
-     navigation.replace('MainApp');
+      const uid = userCredential.user.uid;
+  
+      console.log('User logged in successfully:', uid);
+  
+      // Store UID in AsyncStorage
+      await AsyncStorage.setItem('userUID', uid);
+  
+      setError('');
+      navigation.replace('MainApp');
     } catch (error) {
       console.error('Login error:', error);
       switch (error.code) {
@@ -44,6 +51,7 @@ export default function Login({ navigation }) {
       }
     }
   };
+  
 
   return (
     <View style={styles.container}>
