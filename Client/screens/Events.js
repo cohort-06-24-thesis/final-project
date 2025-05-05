@@ -13,13 +13,13 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { API_BASE } from '../config';
 
-const EventCard = ({ title, description, date, location, participators, images }) => (
+const EventCard = ({ event, onPress }) => (
   <View style={styles.card}>
     <View style={styles.imageContainer}>
-      {images && images.length > 0 ? (
+      {event.images && event.images.length > 0 ? (
         <Image
           style={styles.eventImage}
-          source={{ uri: images[0] }}
+          source={{ uri: event.images[0] }}
           resizeMode="cover"
         />
       ) : (
@@ -27,14 +27,14 @@ const EventCard = ({ title, description, date, location, participators, images }
           <Text style={{ color: '#666' }}>No Image</Text>
         </View>
       )}
-      <Text style={styles.dateText}>{new Date(date).toLocaleDateString()}</Text>
+      <Text style={styles.dateText}>{new Date(event.date).toLocaleDateString()}</Text>
     </View>
     <View style={styles.contentContainer}>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description}>{description}</Text>
-      <Text style={styles.location}>📍 {location}</Text>
-      <Text style={styles.participators}>👥 {participators}</Text>
-      <TouchableOpacity style={styles.viewDetailsButton}>
+      <Text style={styles.title}>{event.title}</Text>
+      <Text style={styles.description}>{event.description}</Text>
+      <Text style={styles.location}>📍 {event.location}</Text>
+      <Text style={styles.participators}>👥 {event.participators}</Text>
+      <TouchableOpacity style={styles.viewDetailsButton} onPress={onPress}>
         <Text style={styles.viewDetailsText}>View Details</Text>
       </TouchableOpacity>
     </View>
@@ -44,6 +44,7 @@ const EventCard = ({ title, description, date, location, participators, images }
 
 
 const EventsScreen = ({navigation}) => {
+
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -54,7 +55,12 @@ const EventsScreen = ({navigation}) => {
 
   const fetchEvents = async () => {
     try {
+
       const response = await axios.get(`${API_BASE}/event/getAllEvents`);
+
+
+
+
       if (response.data.success) {
         setEvents(response.data.data);
       } else {
@@ -97,7 +103,11 @@ const EventsScreen = ({navigation}) => {
           </Text>
         ) : (
           events.map(event => (
-            <EventCard key={event.id || event.title} {...event} />
+            <EventCard 
+              key={event.id || event.title} 
+              event={event}
+              onPress={() => navigation.navigate('EventDetails', { event })}
+            />
           ))
         )}
       </ScrollView>

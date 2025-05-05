@@ -20,7 +20,11 @@ export default function Campaign() {
 
   const fetchCampaigns = async () => {
     try {
+
+   
+
       const response = await axios.get(`${API_BASE}/campaignDonation`);
+
       setCampaigns(response.data);
     } catch (error) {
       console.error('Error fetching campaigns:', error);
