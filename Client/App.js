@@ -156,7 +156,7 @@ export default function App() {
     headerShown: false
   }}
 />
-
+        <Stack.Screen
             name="InNeedDetails" 
             component={InNeedDetails} 
             options={{ title: 'Need Details' }}
