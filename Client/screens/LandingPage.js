@@ -22,8 +22,8 @@ const LandingPage = ({ onFinish }) => {
     >
       <View style={styles.slide}>
         <Image source={require('../assets/logo.png')} style={styles.image} />
-        <Text style={styles.text}>Welcome to SADAQAH</Text>
-        <Text style={styles.subText}>For charity, please come to SADAQAH!</Text>
+        <Text style={styles.text}>Welcome to Sadaꓘa</Text>
+        <Text style={styles.subText}>For charity, please come to Sadaꓘa!</Text>
         <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           <Text style={styles.nextButtonText}>Next</Text>
         </TouchableOpacity>

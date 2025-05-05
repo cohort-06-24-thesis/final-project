@@ -288,7 +288,7 @@ export default function Home({ navigation }) {
               { opacity: headerTitleOpacity }
             ]}
           >
-            <Text style={styles.headerTitle}>SADAKA</Text>
+            <Text style={styles.headerTitle}>Sadaꓘa</Text>
           </Animated.View>
           
           {/* Expanded header content (visible when not scrolled) */}
@@ -305,7 +305,7 @@ export default function Home({ navigation }) {
               zIndex: -1,
             }} />
             {/* <Text style={styles.welcomeText}>Welcome to</Text> */}
-            <Text style={styles.appName}>SADAKA</Text>
+            <Text style={styles.appName}>Sadaꓘa</Text>
             <Text style={styles.subtitle}>Making a difference together</Text>
           </Animated.View>
         </LinearGradient>
@@ -575,7 +575,6 @@ export default function Home({ navigation }) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
