@@ -12,7 +12,7 @@ import {
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 
-const API_URL = 'http://192.168.42.3:3000';
+const API_URL = 'http://192.168.1.19:3000';
 
 export default function AddEvent({ navigation }) {
   const [title, setTitle] = useState('');

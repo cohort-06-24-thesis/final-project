@@ -51,7 +51,7 @@ const EventsScreen = ({ navigation }) => {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('http://192.168.42.3:3000/api/event/getAllEvents');
+      const response = await axios.get('http://192.168.1.19:3000/api/event/getAllEvents');
       if (response.data.success) {
         setEvents(response.data.data);
       } else {
