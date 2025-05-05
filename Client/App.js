@@ -8,7 +8,6 @@ import { StyleSheet, View } from 'react-native';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
-
 import Login from './screens/Login';
 import Signup from './screens/Signup';
 import ForgotPassword from './screens/ForgotPassword';
@@ -20,10 +19,20 @@ import InNeed from './screens/InNeed';
 import Campaign from './screens/Campaign';
 import Events from './screens/Events';
 import AddEvent from './screens/AddEvent';
+
 import	AddCampaign from './screens/AddCampaign'
 import AddInNeed from './screens/AddInNeed'
 import AddDonation from './screens/AddDonation'
 import EventDetails from './screens/EventDetails';
+
+
+import CampaignDetails from './screens/CampaignDetails';
+import AddInNeed from './screens/AddInNeed';
+
+import InNeedDetails from './screens/InNeedDetails';
+import DonationDetails from './screens/DonationDetails';
+import FullScreenMap from './screens/FullScreenMap';
+
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -78,89 +87,100 @@ export default function App() {
   return (
     <View style={{ flex: 1 }}>
       <NavigationContainer>
-        <Stack.Navigator 
+        <Stack.Navigator
           initialRouteName="Login"
           screenOptions={{
-            headerShown: true,
-            headerStyle: {
-              backgroundColor: '#fff',
-            },
+            headerShown: false,
+            headerStyle: { backgroundColor: '#fff' },
             headerTintColor: '#4CAF50',
             headerBackTitle: ' ',
-            headerLeftContainerStyle: {
-              paddingLeft: 10,
-            },
+            headerLeftContainerStyle: { paddingLeft: 10 },
           }}
         >
           <Stack.Screen 
             name="Login" 
             component={Login} 
-            options={{ 
-              headerShown: false 
-            }}
+            options={{ headerShown: false }}
           />
           <Stack.Screen 
             name="Signup" 
             component={Signup}
-            options={{ 
-              title: 'Create Account',
-            }}
+            options={{ title: 'Create Account' }}
           />
           <Stack.Screen 
             name="ForgotPassword" 
             component={ForgotPassword}
-            options={{ 
-              title: 'Reset Password',
-            }}
+            options={{ title: 'Reset Password' }}
           />
           <Stack.Screen 
             name="MainApp" 
             component={TabNavigator} 
-            options={{ 
-              headerShown: false,
-            }}
+            options={{ headerShown: false }}
           />
           <Stack.Screen 
             name="AddEvent" 
             component={AddEvent} 
-            options={{ 
-              title: 'Add Event',
-            }}
+            options={{ title: 'Add Event'  }}
           />
           <Stack.Screen 
             name="AddCampaign" 
             component={AddCampaign} 
-            options={{ 
-              title: 'Add Campaign',
-            }}
+            options={{ title: 'Add Campaign', headerShown: true }}
           />
-           <Stack.Screen 
-            name="AddInNeed" 
-            component={AddInNeed} 
-            options={{ 
-              title: 'AddInNeed',
-            }}
-          />
-           <Stack.Screen 
-            name="AddDonation" 
-            component={AddDonation} 
-            options={{ 
-              title: 'AddDonation',
+          <Stack.Screen 
+            name="CampaignDetails" 
+            component={CampaignDetails}
+            options={{
+              title: 'Campaign Details',
+              headerShown: true,
+              headerStyle: { backgroundColor: '#fff' },
+              headerTintColor: '#4CAF50',
+              headerTitleStyle: { fontWeight: 'bold' },
             }}
           />
           <Stack.Screen 
+            name="AddInNeed" 
+            component={AddInNeed} 
+            options={{ title: 'Add In Need', headerShown: true  }}
+          />
+          <Stack.Screen 
+            name="AddDonation" 
+            component={AddDonation} 
+            options={{ title: 'Add Donation' }}
+          />
+          <Stack.Screen 
+
   name="EventDetails" 
   component={EventDetails}
   options={{
     headerShown: false
   }}
 />
+
+            name="InNeedDetails" 
+            component={InNeedDetails} 
+            options={{ title: 'Need Details' }}
+          /> 
+          <Stack.Screen 
+           name="DonationDetails" 
+           component={DonationDetails}
+           options={{ 
+           title: 'Donation Details',
+  }}
+/>
+         <Stack.Screen 
+          name="FullScreenMap" 
+          component={FullScreenMap} 
+          options={{ title: 'Map', headerShown: true }}
+/>
+
         </Stack.Navigator>
       </NavigationContainer>
       <StatusBar style="auto" />
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

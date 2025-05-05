@@ -1,29 +1,62 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Image, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import { API_BASE } from '../config'
+
+// Map category names to Ionicons icon names
+const categoryIcons = {
+  Furniture: 'bed-outline',
+  Home: 'home-outline',
+  Garden: 'leaf-outline',
+  DIY: 'construct-outline',
+  Appliances: 'tv-outline',
+  Electronics: 'phone-portrait-outline',
+  Clothes: 'shirt-outline',
+  Toys: 'game-controller-outline',
+  Books: 'book-outline',
+  Leisure: 'bicycle-outline',
+  // Add more mappings as needed
+};
 
 export default function DonationItems({ navigation }) {
   const [items, setItems] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get('http://192.168.1.19:3000/api/donationItems/getAllItems');
-      console.log('Fetched items:', response.data);
+
+      const response = await axios.get(`${API_BASE}/donationItems/getAllItems`);
+
       setItems(response.data);
     } catch (error) {
       console.error('Error fetching items:', error);
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API_BASE}/category/getAll`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
   useEffect(() => {
     fetchItems();
+    fetchCategories();
   }, []);
+
+  const handleCategoryPress = (category) => {
+    console.log('Selected category:', category.name);
+    // Filter items based on the selected category
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>SADAQAH</Text>
+      <Text style={styles.headerText}>SADAKA</Text>
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
@@ -36,41 +69,94 @@ export default function DonationItems({ navigation }) {
         />
       </View>
 
-      {/* Items Grid */}
-      <ScrollView style={styles.itemsContainer}>
-        <View style={styles.itemsGrid}>
-          {items.map((item, index) => (
-            <View key={index} style={styles.itemCard}>
-              <Image 
-                source={{ uri: item.image?.[0] || 'https://via.placeholder.com/150' }}
-                style={styles.itemImage}
-              />
-              <View style={styles.itemInfo}>
-                <Text style={styles.itemTitle}>{item.title}</Text>
-                <Text style={styles.itemLocation}>{item.location}</Text>
-                <Text style={[
-                  styles.itemStatus,
-                  { color: item.status === 'available' ? '#4CAF50' : '#666' }
-                ]}>
-                  {item.status}
-                </Text>
-                <TouchableOpacity 
-                  style={styles.claimButton}
-                  onPress={() => {
-                    if (item.status === 'claimed') {
-                      navigation.navigate('ItemDetails', { item });
-                    } else {
-                      // Handle claim action
-                    }
-                  }}
-                >
-                  <Text style={styles.claimButtonText}>
-                    {item.status === 'claimed' ? 'View' : 'Claim'}
-                  </Text>
-                </TouchableOpacity>
+      {/* Main ScrollView for categories and items */}
+      <ScrollView
+        style={styles.itemsContainer}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+        {/* Categories - horizontal scroll */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesContainer}
+          style={{ marginBottom: 10 }}
+        >
+          {categories.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.categoryCard}
+              onPress={() => handleCategoryPress(item)}
+            >
+              <View style={styles.categoryIcon}>
+                <Ionicons
+                  name={categoryIcons[item.name] || 'cube-outline'}
+                  size={30}
+                  color="#4CAF50"
+                />
               </View>
-            </View>
+              <Text style={styles.categoryText}>{item.name}</Text>
+            </TouchableOpacity>
           ))}
+        </ScrollView>
+
+        {/* Items Grid */}
+        <View style={styles.itemsGrid}>
+          {items
+            .filter((item) =>
+              item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.location?.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map((item, index) => (
+              <TouchableOpacity 
+                key={index} 
+                style={styles.itemCard}
+                onPress={() => navigation.navigate('DonationDetails', { item })}
+              >
+                <Image 
+                  source={{ uri: item.image?.[0] || 'https://via.placeholder.com/150' }}
+                  style={styles.itemImage}
+                />
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemTitle}>{item.title}</Text>
+                  <View style={styles.rowBetween}>
+                    <Text style={styles.itemLocation}>{item.location}</Text>
+                    <Text
+                      style={[
+                        styles.itemStatusBadge,
+                        {
+                          backgroundColor:
+                            item.status === 'available'
+                              ? '#E6F4EA'
+                              : item.status === 'reserved'
+                              ? '#F3DE78'
+                              : '#eee',
+                          color: item.status === 'available' ? '#2E7D32' : '#666',
+                        },
+                      ]}
+                    >
+                      {item.status}
+                    </Text>
+                  </View>
+                  {/* Spacer to push the button to the bottom */}
+                  <View style={{ flex: 1 }} />
+                  <TouchableOpacity
+                    style={[
+                      styles.claimButtonLarge,
+                      { backgroundColor: item.status === 'claimed' ? '#666' : '#00C44F' }
+                    ]}
+                    disabled={item.status !== 'available'}
+                    onPress={() => {
+                      // Add your claim logic here
+                      console.log('Claiming item:', item.id);
+                    }}
+                  >
+                    <Text style={styles.claimButtonText}>
+                      {item.status === 'claimed' ? 'Claimed' : 'Claim'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            ))}
         </View>
       </ScrollView>
 
@@ -110,8 +196,31 @@ const styles = {
     marginLeft: 8,
     fontSize: 16,
   },
+  categoriesContainer: {
+    paddingVertical: 5, // Reduce padding
+    paddingHorizontal: 5,
+  },
+  categoryCard: {
+    alignItems: 'center',
+    marginHorizontal: 8, // Reduce margin
+    width: 90, // Increased width for longer names
+  },
+  categoryIcon: {
+    backgroundColor: '#C7F9CC',
+    padding: 11, // Slightly larger for better appearance
+    borderRadius: 50,
+    marginBottom: 4, // Reduce margin
+  },
+  categoryText: {
+    fontSize: 13,
+    color: '#333',
+    textAlign: 'center',
+    flexWrap: 'wrap', // Allow wrapping
+    width: '100%',    // Take full width of card
+    minHeight: 32,    // Ensure space for 2 lines
+  },
   itemsContainer: {
-    flex: 1,
+    marginTop: 5, // Add small margin top
   },
   itemsGrid: {
     flexDirection: 'row',
@@ -133,6 +242,8 @@ const styles = {
   },
   itemInfo: {
     padding: 12,
+    flex: 1,
+    justifyContent: 'flex-start',
   },
   itemTitle: {
     fontSize: 16,
@@ -149,7 +260,6 @@ const styles = {
     marginBottom: 8,
   },
   claimButton: {
-    backgroundColor: '#00C44F',
     paddingVertical: 8,
     borderRadius: 20,
     alignItems: 'center',
@@ -170,5 +280,36 @@ const styles = {
     bottom: 20,
     right: 20,
     elevation: 5,
+  },
+  rowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  itemStatusBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  claimButtonSmall: {
+    paddingVertical: 11,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  claimButtonLarge: {
+    marginTop: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 28, // Adjust for button width
+    borderRadius: 16,
+    alignItems: 'center',
+    alignSelf: 'flex-start', // Left align the button
+    marginLeft: 0,           // Add a little left margin
+  },
+  claimButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 };

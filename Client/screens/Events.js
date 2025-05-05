@@ -40,7 +40,10 @@ const EventCard = ({ event, onPress }) => (
   </View>
 );
 
-const EventsScreen = ({ navigation }) => {
+
+
+const EventsScreen = ({navigation}) => {
+
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -51,7 +54,11 @@ const EventsScreen = ({ navigation }) => {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('http://192.168.1.19:3000/api/event/getAllEvents');
+
+
+
+      const response = await axios.get('http://192.168.50.252:3000/api/event/getAllEvents');
+
       if (response.data.success) {
         setEvents(response.data.data);
       } else {
