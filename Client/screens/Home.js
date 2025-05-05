@@ -47,7 +47,7 @@ export default function Home({ navigation }) {
       setCampaigns(campaignRes.data || []);
       setInNeeds(inNeedRes.data || []);
       setDonationItems(donationRes.data || []);
-      setEvents(eventsRes.data || []);
+      setEvents(eventsRes.data.data || []);
     } catch (err) {
       console.error("Error fetching data:", err);
       setCampaigns([]);
@@ -366,26 +366,26 @@ export default function Home({ navigation }) {
         ) : (
           <>
             {/* Stats Grid */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 20, marginBottom: 28, marginTop: 10 }} contentContainerStyle={{ paddingRight: 20 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 20, marginBottom: 20, marginTop: 10 }} contentContainerStyle={{ paddingRight: 20 }}>
               {featuredItems.map((item) => (
                 <TouchableOpacity
                   key={item.id}
-                  style={[styles.statCard, { width: 110, height: 160, marginRight: 16, paddingVertical: 0 }]}
+                  style={styles.statCard}
                   onPress={() => navigation.navigate(item.screen)}
                 >
                   <LinearGradient
                     colors={item.gradient}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={[styles.statGradient, { height: '100%', justifyContent: 'center', alignItems: 'center', padding: 0 }]}
+                    style={styles.statGradient}
                   >
-                    <View style={[styles.statIconContainer, { marginBottom: 4, width: 32, height: 32 }] }>
-                      <FontAwesome5 name={item.icon} size={16} color="#fff" />
+                    <View style={styles.statIconContainer}>
+                      <FontAwesome5 name={item.icon} size={12} color="#fff" />
                     </View>
-                    <Text style={[styles.statCount, { fontSize: 18, marginVertical: 2 }]}>
+                    <Text style={styles.statCount}>
                       {Array.isArray(item.data) ? item.data.length : 0}
                     </Text>
-                    <Text style={[styles.statTitle, { fontSize: 11, marginTop: 0 }]}>{item.title}</Text>
+                    <Text style={styles.statTitle}>{item.title}</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               ))}
@@ -423,32 +423,6 @@ export default function Home({ navigation }) {
               </ScrollView>
             </View>
 
-            {/* Recent In-Needs */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionTitleContainer}>
-                  <FontAwesome5 name="users" size={16} color="#4ECDC4" style={styles.sectionIcon} />
-                  <Text style={styles.sectionTitle}>People In Need</Text>
-                </View>
-                <TouchableOpacity 
-                  style={styles.seeAllButton}
-                  onPress={() => navigation.navigate("InNeed")}
-                >
-                  <Text style={styles.seeAllText}>See All</Text>
-                  <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
-                </TouchableOpacity>
-              </View>
-              
-              {Array.isArray(inNeeds) && inNeeds.length > 0 ? (
-                inNeeds.slice(0, 3).map((inNeed, index) => renderInNeedCard(inNeed, index))
-              ) : (
-                <View style={styles.emptyStateContainer}>
-                  <FontAwesome5 name="users" size={40} color="#ddd" />
-                  <Text style={styles.emptyStateText}>No in-needs available</Text>
-                </View>
-              )}
-            </View>
-
             {/* Donation Items */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
@@ -478,6 +452,90 @@ export default function Home({ navigation }) {
                   </View>
                 )}
               </View>
+            </View>
+
+            {/* Recent In-Needs */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionTitleContainer}>
+                  <FontAwesome5 name="users" size={16} color="#4ECDC4" style={styles.sectionIcon} />
+                  <Text style={styles.sectionTitle}>People In Need</Text>
+                </View>
+                <TouchableOpacity 
+                  style={styles.seeAllButton}
+                  onPress={() => navigation.navigate("InNeed")}
+                >
+                  <Text style={styles.seeAllText}>See All</Text>
+                  <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
+                </TouchableOpacity>
+              </View>
+              
+              {Array.isArray(inNeeds) && inNeeds.length > 0 ? (
+                inNeeds.slice(0, 3).map((inNeed, index) => renderInNeedCard(inNeed, index))
+              ) : (
+                <View style={styles.emptyStateContainer}>
+                  <FontAwesome5 name="users" size={40} color="#ddd" />
+                  <Text style={styles.emptyStateText}>No in-needs available</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Events Section (like Featured Campaigns) */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionTitleContainer}>
+                  <FontAwesome5 name="calendar-alt" size={16} color="#9C27B0" style={styles.sectionIcon} />
+                  <Text style={styles.sectionTitle}>Events</Text>
+                </View>
+                <TouchableOpacity 
+                  style={styles.seeAllButton}
+                  onPress={() => navigation.navigate("Events")}
+                >
+                  <Text style={styles.seeAllText}>See All</Text>
+                  <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
+                </TouchableOpacity>
+              </View>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.campaignsScrollContent}
+              >
+                {Array.isArray(events) && events.length > 0 ? (
+                  events.slice(0, 5).map((event, index) => (
+                    <TouchableOpacity
+                      key={event.id || index}
+                      style={styles.campaignCard}
+                      onPress={() => navigation.navigate("Events")}
+                    >
+                      <View style={styles.campaignImageContainer}>
+                        {event.images && event.images.length > 0 ? (
+                          <Image
+                            source={{ uri: event.images[0] }}
+                            style={{ width: '100%', height: '100%' }}
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View style={styles.campaignImagePlaceholder}>
+                            <FontAwesome5 name="calendar-alt" size={24} color="#fff" />
+                          </View>
+                        )}
+                      </View>
+                      <View style={styles.campaignContent}>
+                        <Text style={styles.campaignTitle} numberOfLines={1}>{event.title || "Untitled Event"}</Text>
+                        <Text style={styles.campaignDescription} numberOfLines={1}>{event.location || "Unknown location"}</Text>
+                        <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                          {event.date ? new Date(event.date).toLocaleDateString() : "No date"}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <View style={styles.emptyStateContainer}>
+                    <FontAwesome5 name="calendar-alt" size={40} color="#ddd" />
+                    <Text style={styles.emptyStateText}>No events available</Text>
+                  </View>
+                )}
+              </ScrollView>
             </View>
 
             {/* Impact Stats */}
@@ -628,39 +686,44 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   statCard: {
-    width: '48%',
-    marginBottom: 15,
-    borderRadius: 16,
+    width: 120,
+    height: 70,
+    marginBottom: 10,
+    borderRadius: 8,
     overflow: 'hidden',
-    elevation: 4,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    marginRight: 12,
   },
   statGradient: {
-    padding: 20,
+    padding: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
   },
   statIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 24,
+    height: 24,
+    borderRadius: 6,
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 2,
   },
   statCount: {
-    fontSize: 28,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
-    marginVertical: 5,
+    marginVertical: 1,
   },
   statTitle: {
-    fontSize: 16,
+    fontSize: 10,
     color: 'rgba(255,255,255,0.9)',
     fontWeight: '500',
+    marginTop: 0,
   },
   section: {
     marginTop: 25,
