@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,23 +7,43 @@ import {
   Alert,
   Image,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { API_BASE } from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios'
 
 export default function AddInNeed({ navigation }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [locationCoords, setLocationCoords] = useState({
-    latitude: 36.8065,  // Tunis default
+    latitude: 36.8065, // Tunis default
     longitude: 10.1815,
   });
   const [locationStr, setLocationStr] = useState('');
   const [images, setImages] = useState([]);
+  const [Uid, setUid] = useState('');
+
+  useEffect(() => {
+    const loadUid = async () => {
+      const storedUid = await AsyncStorage.getItem('userUID');
+      if (storedUid) {
+        setUid(storedUid);
+        
+      } else {
+        Alert.alert('Error', 'User ID not found. Please log in again.');
+        navigation.goBack();
+      }
+    };
+    loadUid();
+  }, []);
+  console.log(Uid)
+
+  
 
   const pickImage = async (fromCamera = false) => {
     let result;
@@ -55,33 +75,37 @@ export default function AddInNeed({ navigation }) {
     }
 
     const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-    setLocationCoords({
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-    });
-    setLocationStr(`${location.coords.latitude}, ${location.coords.longitude}`);
+    const { latitude, longitude } = location.coords;
+    setLocationCoords({ latitude, longitude });
+    setLocationStr(`${latitude}, ${longitude}`);
   };
 
   const handleSubmit = async () => {
     if (!title || !description || !locationStr) {
       return Alert.alert('Error', 'Please fill all required fields.');
     }
+    // console.log(userId)
 
     const payload = {
       title,
       description,
       location: locationStr,
       images,
+      UserId: Uid,
     };
 
+    console.log("payload",payload);
+    
     try {
-      const res = await fetch((`${API_BASE}/inNeed/create`), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const res = await axios.post(`${API_BASE}/inNeed/create`,payload
+      //    {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(payload),
+      // }
+    );
 
-      if (!res.ok) throw new Error('Error creating InNeed');
+      // if (!res.ok) throw new Error('Error creating InNeed');
 
       Alert.alert('Success', 'In-Need created!');
       navigation.goBack();
@@ -122,6 +146,12 @@ export default function AddInNeed({ navigation }) {
         <Marker coordinate={locationCoords} />
       </MapView>
 
+      {locationStr ? (
+        <Text style={{ fontSize: 14, color: '#555', marginBottom: 8 }}>
+          Selected Location: {locationStr}
+        </Text>
+      ) : null}
+
       <TouchableOpacity style={styles.locationButton} onPress={getCurrentLocation}>
         <Text style={styles.locationButtonText}>Use My Current Location</Text>
       </TouchableOpacity>
@@ -140,7 +170,12 @@ export default function AddInNeed({ navigation }) {
 
       <View style={styles.imagePreview}>
         {images.map((uri, index) => (
-          <Image key={index} source={{ uri }} style={styles.imageThumb} />
+          <TouchableOpacity key={index} onLongPress={() => {
+            const filtered = images.filter((_, i) => i !== index);
+            setImages(filtered);
+          }}>
+            <Image source={{ uri }} style={styles.imageThumb} />
+          </TouchableOpacity>
         ))}
       </View>
 
