@@ -36,9 +36,10 @@ dist/
 
 # React Native specific
 android/app/build/
-ios/Pods/
+ios/Pod
 
 
+config.js
 
 
 

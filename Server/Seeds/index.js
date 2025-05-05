@@ -10,6 +10,8 @@ const runSeeds = async () => {
   try {
     console.log('Seeding users...');
     await userSeed();
+    console.log('Seeding categories...');
+    await CategorySeed();
     console.log('Seeding donations...');
     await donationSeed();
     console.log('Seeding campaigns...');
@@ -18,8 +20,6 @@ const runSeeds = async () => {
     await EventSeed();
     console.log('Seeding inNeed...');
     await inNeedSeed();
-    console.log('Seeding categories...');
-    await CategorySeed();
     console.log('All seeds executed successfully.');
   } catch (error) {
     console.error('Error running seeds:', error);

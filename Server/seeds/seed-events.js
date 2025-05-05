@@ -4,7 +4,9 @@ const events = [
   {
     title: 'Community Food Drive',
     description: 'Join us for a community-wide food collection drive to help local families in need.',
+
     images: ['https://www.willistonfoodshelf.com/uploads/1/3/4/3/134363529/vsecu-donation-boxes-at-branch_orig.jpg'],
+
     date: new Date('2024-04-15'),
     location: 'Tunis Central Community Center',
     status: 'upcoming',
@@ -13,7 +15,9 @@ const events = [
   {
     title: 'Children\'s Book Fair',
     description: 'Annual book fair collecting and distributing books to underprivileged children.',
+
     images: ['https://english.news.cn/20250427/0a3c9bf155254ab7b1ae4bd6568bf52c/202504270a3c9bf155254ab7b1ae4bd6568bf52c_202504270945b823282d4d7ab2ed6c244a4c7c44.jpg'],
+
     date: new Date('2024-05-01'),
     location: 'Sfax Public Library',
     status: 'upcoming',
@@ -22,13 +26,16 @@ const events = [
   {
     title: 'Medical Outreach Program',
     description: 'Free medical checkups and consultations for elderly residents.',
+
     images: ['https://www.providertech.com/wp-content/uploads/2018/12/AdobeStock_179244223-1080x675.jpeg'],
+
     date: new Date('2024-04-20'),
     location: 'Sousse Medical Center',
     status: 'upcoming',
     participators: '20 medical professionals needed'
   },
   {
+
     title: 'Beach Cleanup Initiative',
     description: 'Help us clean and preserve our beautiful coastline for future generations.',
     images: ['https://images.ctfassets.net/f7tuyt85vtoa/HlFT09bB1nX1KaBwf4iod/b3d38fd109a3b88def6d3eaf1d478de8/AFEMEA_Venturina_resized.JPG'],
@@ -68,6 +75,7 @@ const events = [
     title: 'Community Garden Project',
     description: 'Create and maintain a sustainable community garden for local produce.',
     images: ['https://www.startts.org.au/media/Karen-Gardens-1200-x-700-5.jpg'],
+
     date: new Date('2024-05-15'),
     location: 'Kairouan Green Space',
     status: 'upcoming',
@@ -83,11 +91,13 @@ const events = [
     participators: '10 programming instructors needed'
   },
   {
+
     title: 'Arts and Crafts Fair',
     description: 'Showcase local artisans and support traditional craftsmanship.',
     images: ['https://static1.squarespace.com/static/5e71036b8bb60b55f6cf2873/t/6133d2250ed21f4e573067a6/1630786091068/craftfair.jpg'],
     date: new Date('2024-07-15'),
     location: 'Sidi Bou Said Cultural Center',
+
     status: 'upcoming',
     participators: '45 artists and volunteers needed'
   }
