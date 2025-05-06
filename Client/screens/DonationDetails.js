@@ -1,10 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
+import axios from 'axios';
+import { API_BASE } from '../config';
 
 export default function DonationDetails({ route, navigation }) {
-  const { item } = route.params;
+  const { item: initialItem } = route.params;
+  const [item, setItem] = useState(initialItem);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchItemDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${API_BASE}/donationItems/${initialItem.id}`);
+        console.log('Fetched item details:', response.data); // Debug log
+        setItem(response.data);
+      } catch (error) {
+        console.error('Error fetching item details:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchItemDetails();
+  }, [initialItem.id]);
 
   const handleFavorite = () => {
     console.log('Added to favorites');
@@ -99,12 +119,12 @@ export default function DonationDetails({ route, navigation }) {
       {/* Fixed User Details Section */}
       <View style={styles.userContainer}>
         <Image 
-          source={{ uri: item.user?.profilePic || 'https://via.placeholder.com/100' }}
+          source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
           style={styles.userImage}
         />
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{item.user?.name || 'Anonymous'}</Text>
-          <Text style={styles.userRating}>⭐ {item.user?.rating || '0.0'}</Text>
+          <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
+          <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
         </View>
         <TouchableOpacity style={styles.contactButton} onPress={handleContact}>
           <Text style={styles.contactButtonText}>Contact</Text>

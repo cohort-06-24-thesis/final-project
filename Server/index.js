@@ -1,25 +1,53 @@
 const express = require('express');
 const cors = require('cors');
-// require("./Database/index.js")
 const routers = require('./routers');
+const http = require('http'); // Add this
+const { Server } = require('socket.io'); // Add this
 
+const app = express();
+const Port = 3000;
 
-const app=express();
-const Port=3000;
-
-app.use(cors()) 
-app.use(express.json())
-app.use(express.urlencoded({extended:true}))
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use('/api', routers);
 
+// Create HTTP server and attach Socket.IO
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*', // Adjust as needed for security
+    methods: ['GET', 'POST']
+  }
+});
 
-// Start the server
-app.listen(Port, () => {
-    console.log(`Server is running on http://localhost:${Port}`);
+// Socket.IO logic
+io.on('connection', (socket) => {
+  console.log('A user connected:', socket.id);
+
+  socket.on('join_room', (roomId) => {
+    socket.join(roomId);
+    console.log(`User ${socket.id} joined room ${roomId}`);
   });
 
+  socket.on('leave_room', (roomId) => {
+    socket.leave(roomId);
+    console.log(`User ${socket.id} left room ${roomId}`);
+  });
+
+  socket.on('send_message', (data) => {
+    // data: { roomId, message, userId }
+    io.to(data.roomId).emit('receive_message', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+});
+
+// Start the server
+server.listen(Port, () => {
+  console.log(`Server is running on http://localhost:${Port}`);
+});
 
 
-// app.listen(Port, '0.0.0.0', () => {
-//   console.log('Server running...');
-// });

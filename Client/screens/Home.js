@@ -13,6 +13,7 @@ import {
   Image,
   StatusBar,
   Platform,
+  SafeAreaView,
 } from "react-native";
 import { MaterialIcons, Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import axios from "axios";
@@ -271,7 +272,7 @@ export default function Home({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#00C44F" }}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       
       {/* Animated Header */}
@@ -313,239 +314,241 @@ export default function Home({ navigation }) {
         </View>
       </Animated.View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-        refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
-            onRefresh={onRefresh}
-            colors={["#4CAF50"]}
-            tintColor="#4CAF50"
-          />
-        }
-      >
-        {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#4CAF50"
-            style={styles.loader}
-          />
-        ) : (
-          <>
-            {/* Stats Grid */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 20, marginBottom: 20, marginTop: 10 }} contentContainerStyle={{ paddingRight: 20 }}>
-              {featuredItems.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.statCard}
-                  onPress={() => navigation.navigate(item.screen)}
-                >
-                  <LinearGradient
-                    colors={item.gradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.statGradient}
+      <View style={{ flex: 1, backgroundColor: "#f8f9fa", borderTopLeftRadius: 24, borderTopRightRadius: 24, overflow: "hidden" }}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={[styles.scrollContent, { paddingTop: HEADER_MAX_HEIGHT - 25 }]}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+          refreshControl={
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh}
+              colors={["#4CAF50"]}
+              tintColor="#4CAF50"
+            />
+          }
+        >
+          {loading ? (
+            <ActivityIndicator
+              size="large"
+              color="#4CAF50"
+              style={styles.loader}
+            />
+          ) : (
+            <>
+              {/* Stats Grid */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 20, marginBottom: 20, marginTop: 10 }} contentContainerStyle={{ paddingRight: 20 }}>
+                {featuredItems.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.statCard}
+                    onPress={() => navigation.navigate(item.screen)}
                   >
-                    <View style={styles.statIconContainer}>
-                      <FontAwesome5 name={item.icon} size={12} color="#fff" />
-                    </View>
-                    <Text style={styles.statCount}>
-                      {Array.isArray(item.data) ? item.data.length : 0}
-                    </Text>
-                    <Text style={styles.statTitle}>{item.title}</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            {/* Featured Campaigns */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionTitleContainer}>
-                  <FontAwesome5 name="star" size={16} color="#4CAF50" style={styles.sectionIcon} />
-                  <Text style={styles.sectionTitle}>Featured Campaigns</Text>
-                </View>
-                <TouchableOpacity 
-                  style={styles.seeAllButton}
-                  onPress={() => navigation.navigate("Campaign")}
-                >
-                  <Text style={styles.seeAllText}>See All</Text>
-                  <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
-                </TouchableOpacity>
-              </View>
-              
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.campaignsScrollContent}
-              >
-                {Array.isArray(campaigns) && campaigns.length > 0 ? (
-                  campaigns.slice(0, 5).map((campaign, index) => renderCampaignCard(campaign, index))
-                ) : (
-                  <View style={styles.emptyStateContainer}>
-                    <FontAwesome5 name="hand-holding-heart" size={40} color="#ddd" />
-                    <Text style={styles.emptyStateText}>No campaigns available</Text>
-                  </View>
-                )}
-              </ScrollView>
-            </View>
-
-            {/* Donation Items */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionTitleContainer}>
-                  <FontAwesome5 name="gift" size={16} color="#FFD166" style={styles.sectionIcon} />
-                  <Text style={styles.sectionTitle}>Donation Items</Text>
-                </View>
-                <TouchableOpacity 
-                  style={styles.seeAllButton}
-                  onPress={() => navigation.navigate("Donations")}
-                >
-                  <Text style={styles.seeAllText}>See All</Text>
-                  <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
-                </TouchableOpacity>
-              </View>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                {Array.isArray(donationItems) && donationItems.length > 0 ? (
-                  donationItems.slice(0, 4).map((item, index) => (
-                    <View key={item.id || index} style={{ width: '48%', marginBottom: 20 }}>
-                      {renderDonationItemCard(item, index)}
-                    </View>
-                  ))
-                ) : (
-                  <View style={styles.emptyStateContainer}>
-                    <FontAwesome5 name="gift" size={40} color="#ddd" />
-                    <Text style={styles.emptyStateText}>No donation items available</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-
-            {/* Recent In-Needs */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionTitleContainer}>
-                  <FontAwesome5 name="users" size={16} color="#4ECDC4" style={styles.sectionIcon} />
-                  <Text style={styles.sectionTitle}>People In Need</Text>
-                </View>
-                <TouchableOpacity 
-                  style={styles.seeAllButton}
-                  onPress={() => navigation.navigate("InNeed")}
-                >
-                  <Text style={styles.seeAllText}>See All</Text>
-                  <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
-                </TouchableOpacity>
-              </View>
-              
-              {Array.isArray(inNeeds) && inNeeds.length > 0 ? (
-                inNeeds.slice(0, 3).map((inNeed, index) => renderInNeedCard(inNeed, index))
-              ) : (
-                <View style={styles.emptyStateContainer}>
-                  <FontAwesome5 name="users" size={40} color="#ddd" />
-                  <Text style={styles.emptyStateText}>No in-needs available</Text>
-                </View>
-              )}
-            </View>
-
-            {/* Events Section (like Featured Campaigns) */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionTitleContainer}>
-                  <FontAwesome5 name="calendar-alt" size={16} color="#9C27B0" style={styles.sectionIcon} />
-                  <Text style={styles.sectionTitle}>Events</Text>
-                </View>
-                <TouchableOpacity 
-                  style={styles.seeAllButton}
-                  onPress={() => navigation.navigate("Events")}
-                >
-                  <Text style={styles.seeAllText}>See All</Text>
-                  <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
-                </TouchableOpacity>
-              </View>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.campaignsScrollContent}
-              >
-                {Array.isArray(events) && events.length > 0 ? (
-                  events.slice(0, 5).map((event, index) => (
-                    <TouchableOpacity
-                      key={event.id || index}
-                      style={styles.campaignCard}
-                      onPress={() => navigation.navigate("Events")}
+                    <LinearGradient
+                      colors={item.gradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.statGradient}
                     >
-                      <View style={styles.campaignImageContainer}>
-                        {event.images && event.images.length > 0 ? (
-                          <Image
-                            source={{ uri: event.images[0] }}
-                            style={{ width: '100%', height: '100%' }}
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <View style={styles.campaignImagePlaceholder}>
-                            <FontAwesome5 name="calendar-alt" size={24} color="#fff" />
-                          </View>
-                        )}
+                      <View style={styles.statIconContainer}>
+                        <FontAwesome5 name={item.icon} size={12} color="#fff" />
                       </View>
-                      <View style={styles.campaignContent}>
-                        <Text style={styles.campaignTitle} numberOfLines={1}>{event.title || "Untitled Event"}</Text>
-                        <Text style={styles.campaignDescription} numberOfLines={1}>{event.location || "Unknown location"}</Text>
-                        <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
-                          {event.date ? new Date(event.date).toLocaleDateString() : "No date"}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))
-                ) : (
-                  <View style={styles.emptyStateContainer}>
-                    <FontAwesome5 name="calendar-alt" size={40} color="#ddd" />
-                    <Text style={styles.emptyStateText}>No events available</Text>
-                  </View>
-                )}
+                      <Text style={styles.statCount}>
+                        {Array.isArray(item.data) ? item.data.length : 0}
+                      </Text>
+                      <Text style={styles.statTitle}>{item.title}</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                ))}
               </ScrollView>
-            </View>
 
-            {/* Impact Stats */}
-            <View style={styles.impactSection}>
-              <Text style={styles.impactTitle}>Your Impact</Text>
-              <Text style={styles.impactSubtitle}>Together we're making a difference</Text>
-              
-              <View style={styles.impactStats}>
-                <View style={styles.impactStatCard}>
-                  <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}>
-                    <FontAwesome5 name="hand-holding-usd" size={20} color="#FF6B6B" />
+              {/* Featured Campaigns */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <View style={styles.sectionTitleContainer}>
+                    <FontAwesome5 name="star" size={16} color="#4CAF50" style={styles.sectionIcon} />
+                    <Text style={styles.sectionTitle}>Featured Campaigns</Text>
                   </View>
-                  <Text style={styles.impactStatValue}>$120K+</Text>
-                  <Text style={styles.impactStatLabel}>Funds Raised</Text>
+                  <TouchableOpacity 
+                    style={styles.seeAllButton}
+                    onPress={() => navigation.navigate("Campaign")}
+                  >
+                    <Text style={styles.seeAllText}>See All</Text>
+                    <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
+                  </TouchableOpacity>
                 </View>
                 
-                <View style={styles.impactStatCard}>
-                  <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(78, 205, 196, 0.1)' }]}>
-                    <FontAwesome5 name="users" size={20} color="#4ECDC4" />
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.campaignsScrollContent}
+                >
+                  {Array.isArray(campaigns) && campaigns.length > 0 ? (
+                    campaigns.slice(0, 5).map((campaign, index) => renderCampaignCard(campaign, index))
+                  ) : (
+                    <View style={styles.emptyStateContainer}>
+                      <FontAwesome5 name="hand-holding-heart" size={40} color="#ddd" />
+                      <Text style={styles.emptyStateText}>No campaigns available</Text>
+                    </View>
+                  )}
+                </ScrollView>
+              </View>
+
+              {/* Donation Items */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <View style={styles.sectionTitleContainer}>
+                    <FontAwesome5 name="gift" size={16} color="#FFD166" style={styles.sectionIcon} />
+                    <Text style={styles.sectionTitle}>Donation Items</Text>
                   </View>
-                  <Text style={styles.impactStatValue}>5,000+</Text>
-                  <Text style={styles.impactStatLabel}>People Helped</Text>
+                  <TouchableOpacity 
+                    style={styles.seeAllButton}
+                    onPress={() => navigation.navigate("Donations")}
+                  >
+                    <Text style={styles.seeAllText}>See All</Text>
+                    <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
+                  </TouchableOpacity>
                 </View>
-                
-                <View style={styles.impactStatCard}>
-                  <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 209, 102, 0.1)' }]}>
-                    <FontAwesome5 name="globe-americas" size={20} color="#FFD166" />
-                  </View>
-                  <Text style={styles.impactStatValue}>12+</Text>
-                  <Text style={styles.impactStatLabel}>Countries</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                  {Array.isArray(donationItems) && donationItems.length > 0 ? (
+                    donationItems.slice(0, 4).map((item, index) => (
+                      <View key={item.id || index} style={{ width: '48%', marginBottom: 20 }}>
+                        {renderDonationItemCard(item, index)}
+                      </View>
+                    ))
+                  ) : (
+                    <View style={styles.emptyStateContainer}>
+                      <FontAwesome5 name="gift" size={40} color="#ddd" />
+                      <Text style={styles.emptyStateText}>No donation items available</Text>
+                    </View>
+                  )}
                 </View>
               </View>
-            </View>
-          </>
-        )}
-      </ScrollView>
-    </View>
+
+              {/* Recent In-Needs */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <View style={styles.sectionTitleContainer}>
+                    <FontAwesome5 name="users" size={16} color="#4ECDC4" style={styles.sectionIcon} />
+                    <Text style={styles.sectionTitle}>People In Need</Text>
+                  </View>
+                  <TouchableOpacity 
+                    style={styles.seeAllButton}
+                    onPress={() => navigation.navigate("InNeed")}
+                  >
+                    <Text style={styles.seeAllText}>See All</Text>
+                    <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
+                  </TouchableOpacity>
+                </View>
+                
+                {Array.isArray(inNeeds) && inNeeds.length > 0 ? (
+                  inNeeds.slice(0, 3).map((inNeed, index) => renderInNeedCard(inNeed, index))
+                ) : (
+                  <View style={styles.emptyStateContainer}>
+                    <FontAwesome5 name="users" size={40} color="#ddd" />
+                    <Text style={styles.emptyStateText}>No in-needs available</Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Events Section (like Featured Campaigns) */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <View style={styles.sectionTitleContainer}>
+                    <FontAwesome5 name="calendar-alt" size={16} color="#9C27B0" style={styles.sectionIcon} />
+                    <Text style={styles.sectionTitle}>Events</Text>
+                  </View>
+                  <TouchableOpacity 
+                    style={styles.seeAllButton}
+                    onPress={() => navigation.navigate("Events")}
+                  >
+                    <Text style={styles.seeAllText}>See All</Text>
+                    <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
+                  </TouchableOpacity>
+                </View>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.campaignsScrollContent}
+                >
+                  {Array.isArray(events) && events.length > 0 ? (
+                    events.slice(0, 5).map((event, index) => (
+                      <TouchableOpacity
+                        key={event.id || index}
+                        style={styles.campaignCard}
+                        onPress={() => navigation.navigate("Events")}
+                      >
+                        <View style={styles.campaignImageContainer}>
+                          {event.images && event.images.length > 0 ? (
+                            <Image
+                              source={{ uri: event.images[0] }}
+                              style={{ width: '100%', height: '100%' }}
+                              resizeMode="cover"
+                            />
+                          ) : (
+                            <View style={styles.campaignImagePlaceholder}>
+                              <FontAwesome5 name="calendar-alt" size={24} color="#fff" />
+                            </View>
+                          )}
+                        </View>
+                        <View style={styles.campaignContent}>
+                          <Text style={styles.campaignTitle} numberOfLines={1}>{event.title || "Untitled Event"}</Text>
+                          <Text style={styles.campaignDescription} numberOfLines={1}>{event.location || "Unknown location"}</Text>
+                          <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                            {event.date ? new Date(event.date).toLocaleDateString() : "No date"}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))
+                  ) : (
+                    <View style={styles.emptyStateContainer}>
+                      <FontAwesome5 name="calendar-alt" size={40} color="#ddd" />
+                      <Text style={styles.emptyStateText}>No events available</Text>
+                    </View>
+                  )}
+                </ScrollView>
+              </View>
+
+              {/* Impact Stats */}
+              <View style={styles.impactSection}>
+                <Text style={styles.impactTitle}>Your Impact</Text>
+                <Text style={styles.impactSubtitle}>Together we're making a difference</Text>
+                
+                <View style={styles.impactStats}>
+                  <View style={styles.impactStatCard}>
+                    <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}>
+                      <FontAwesome5 name="hand-holding-usd" size={20} color="#FF6B6B" />
+                    </View>
+                    <Text style={styles.impactStatValue}>$120K+</Text>
+                    <Text style={styles.impactStatLabel}>Funds Raised</Text>
+                  </View>
+                  
+                  <View style={styles.impactStatCard}>
+                    <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(78, 205, 196, 0.1)' }]}>
+                      <FontAwesome5 name="users" size={20} color="#4ECDC4" />
+                    </View>
+                    <Text style={styles.impactStatValue}>5,000+</Text>
+                    <Text style={styles.impactStatLabel}>People Helped</Text>
+                  </View>
+                  
+                  <View style={styles.impactStatCard}>
+                    <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 209, 102, 0.1)' }]}>
+                      <FontAwesome5 name="globe-americas" size={20} color="#FFD166" />
+                    </View>
+                    <Text style={styles.impactStatValue}>12+</Text>
+                    <Text style={styles.impactStatLabel}>Countries</Text>
+                  </View>
+                </View>
+              </View>
+            </>
+          )}
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
@@ -645,7 +648,6 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    marginTop: HEADER_MAX_HEIGHT - 25,
   },
   scrollContent: {
     paddingBottom: 30,
