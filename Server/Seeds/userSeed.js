@@ -18,14 +18,6 @@ const users = [
     rating: 4.6,
   },
   {
-    id: 'vEoeitHhNdTFv9kAlU0Q0zHie8D3',
-    name: 'benali mouin',
-    email: 'benalimouin@gmail.com',
-    password: '12346789',
-    role: 'user',
-    rating: 4.5,
-  },
-  {
     id: 'uAsdlgTBGtatrpxhUAnw7Grnxj73',
     name: 'benali mouin',
     email: 'benalimouin@gmail.com',

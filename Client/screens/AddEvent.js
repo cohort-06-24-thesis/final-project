@@ -110,7 +110,9 @@ export default function AddEvent({ navigation }) {
         location,
         participators,
         images: images ? [images] : [],
-        status: 'upcoming'
+        status: 'upcoming',
+        UserId: Uid,
+
       };
 
       const response = await axios.post(`${API_URL}/api/event/addEvent`, eventData, {
