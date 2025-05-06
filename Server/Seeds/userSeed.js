@@ -2,6 +2,9 @@ const { User } = require('../Database/index');
 
 const seedUsers = async () => {
   try {
+    // Clear existing users to avoid unique constraint errors
+    await User.destroy({ where: {} });
+
     const users = [
       {
         name: 'John Doe',
@@ -24,6 +27,13 @@ const seedUsers = async () => {
         role: 'user',
         rating: 3.8,
       },
+      {
+        name: 'Rayeen',
+        email: 'rayeen@gmail.com',
+        password: '1234567',
+        role: 'user',
+        rating: 4.2,
+      }
     ];
 
     await User.bulkCreate(users);

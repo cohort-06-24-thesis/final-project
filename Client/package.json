@@ -20,7 +20,6 @@
     "expo-blur": "^14.1.4",
     "expo-camera": "~16.0.18",
     "expo-font": "~13.3.0",
-    "expo-image-picker": "~16.0.6",
     "expo-linear-gradient": "^14.1.4",
     "expo-location": "~18.0.10",
     "expo-status-bar": "~2.0.1",
