@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = 'http://192.168.1.19:3000';
 
@@ -22,6 +23,20 @@ export default function AddEvent({ navigation }) {
   const [images, setImages] = useState('');
   const [date, setDate] = useState('');
   const [imageUri, setImageUri] = useState(null);
+  const [Uid, setUid] = useState('');
+
+  useEffect(() => {
+    const loadUid = async () => {
+      const storedUid = await AsyncStorage.getItem('userUID');
+      if (storedUid) {
+        setUid(storedUid);
+      } else {
+        Alert.alert('Error', 'User ID not found. Please log in again.');
+        navigation.goBack();
+      }
+    };
+    loadUid();
+  }, []);
 
   useEffect(() => {
     (async () => {
