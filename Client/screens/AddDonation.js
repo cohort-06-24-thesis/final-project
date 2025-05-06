@@ -14,12 +14,31 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { Camera } from 'expo-camera';
 import { API_BASE } from '../config'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AddDonation({ navigation }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
   const [image, setImage] = useState(null);
+  const [Uid, setUid] = useState('');
+
+
+  useEffect(() => {
+    const loadUid = async () => {
+      const storedUid = await AsyncStorage.getItem('userUID');
+      if (storedUid) {
+        setUid(storedUid);
+        
+      } else {
+        Alert.alert('Error', 'User ID not found. Please log in again.');
+        navigation.goBack();
+      }
+    };
+    loadUid();
+  }, []);
+  console.log(Uid)
+
 
   const handleImagePick = async () => {
     const options = [
@@ -80,6 +99,7 @@ export default function AddDonation({ navigation }) {
         description,
         location,
         image: [image],
+        UserId: Uid
       });
       Alert.alert('Success', 'Donation item added successfully!');
       navigation.goBack();

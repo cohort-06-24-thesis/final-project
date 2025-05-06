@@ -10,7 +10,8 @@ const events = [
     date: new Date('2024-04-15'),
     location: 'Tunis Central Community Center',
     status: 'upcoming',
-    participators: '50 volunteers needed'
+    participators: '50 volunteers needed',
+    UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   },
   {
     title: 'Children\'s Book Fair',
@@ -21,7 +22,8 @@ const events = [
     date: new Date('2024-05-01'),
     location: 'Sfax Public Library',
     status: 'upcoming',
-    participators: '30 volunteers needed'
+    participators: '30 volunteers needed',
+    UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   },
   {
     title: 'Medical Outreach Program',
@@ -32,7 +34,8 @@ const events = [
     date: new Date('2024-04-20'),
     location: 'Sousse Medical Center',
     status: 'upcoming',
-    participators: '20 medical professionals needed'
+    participators: '20 medical professionals needed',
+    UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
   },
   {
 
@@ -42,7 +45,8 @@ const events = [
     date: new Date('2024-06-10'),
     location: 'Hammamet Beach',
     status: 'upcoming',
-    participators: '100 volunteers needed'
+    participators: '100 volunteers needed',
+    UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
   },
   {
     title: 'Senior Tech Workshop',
@@ -51,7 +55,8 @@ const events = [
     date: new Date('2024-05-20'),
     location: 'Nabeul Community Center',
     status: 'upcoming',
-    participators: '15 tech-savvy volunteers needed'
+    participators: '15 tech-savvy volunteers needed',
+    UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   },
   {
     title: 'Youth Mentorship Program',
@@ -60,7 +65,8 @@ const events = [
     date: new Date('2024-07-01'),
     location: 'Mahdia Youth Center',
     status: 'upcoming',
-    participators: '25 professional mentors needed'
+    participators: '25 professional mentors needed',
+    UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   },
   {
     title: 'Animal Shelter Support Day',
@@ -69,7 +75,8 @@ const events = [
     date: new Date('2024-04-30'),
     location: 'Monastir Animal Shelter',
     status: 'upcoming',
-    participators: '40 animal lovers needed'
+    participators: '40 animal lovers needed',
+    UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
   },
   {
     title: 'Community Garden Project',
@@ -79,7 +86,8 @@ const events = [
     date: new Date('2024-05-15'),
     location: 'Kairouan Green Space',
     status: 'upcoming',
-    participators: '35 gardening enthusiasts needed'
+    participators: '35 gardening enthusiasts needed',
+    UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
   },
   {
     title: 'Coding Workshop for Kids',
@@ -88,7 +96,8 @@ const events = [
     date: new Date('2024-06-05'),
     location: 'Bizerte Tech Hub',
     status: 'upcoming',
-    participators: '10 programming instructors needed'
+    participators: '10 programming instructors needed',
+    UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   },
   {
 
@@ -99,7 +108,8 @@ const events = [
     location: 'Sidi Bou Said Cultural Center',
 
     status: 'upcoming',
-    participators: '45 artists and volunteers needed'
+    participators: '45 artists and volunteers needed',
+    UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   }
 ];
 

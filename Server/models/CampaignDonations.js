@@ -31,6 +31,10 @@ module.exports = (sequelize, DataTypes) => {
         endDate: {
             type: DataTypes.DATE,
             allowNull: false
+        },
+        UserId: {
+            type: DataTypes.STRING,
+            allowNull: false
         }
     });
     return CampaignDonations;

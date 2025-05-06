@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,23 +13,60 @@ import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
-import { API_BASE } from '../config'
-
+import { API_BASE } from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AddCampaign() {
   const navigation = useNavigation();
+  const [Uid, setUid] = useState('');
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     goal: '',
     images: [],
     startDate: new Date(),
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
   });
+
+  useEffect(() => {
+    const loadUid = async () => {
+      const storedUid = await AsyncStorage.getItem('userUID');
+      if (storedUid) {
+        setUid(storedUid);
+        setFormData(prev => ({ ...prev, UserId: storedUid }));
+      } else {
+        Alert.alert('Error', 'User ID not found. Please log in again.');
+        navigation.goBack();
+      }
+    };
+    loadUid();
+  }, []);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets[0].uri) {
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, result.assets[0].uri]
+      }));
+    }
+  };
+
+  const takePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (permission.status !== 'granted') {
+      Alert.alert('Permission denied', 'Camera access is required to take photos');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [16, 9],
       quality: 1,
@@ -59,32 +95,9 @@ export default function AddCampaign() {
       Alert.alert('Error', 'Failed to create campaign');
     }
   };
-  const takePhoto = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (permission.status !== 'granted') {
-      Alert.alert('Permission denied', 'Camera access is required to take photos');
-      return;
-    }
-  
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [16, 9],
-      quality: 1,
-    });
-  
-    if (!result.canceled && result.assets[0].uri) {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, result.assets[0].uri]
-      }));
-    }
-  };
-  
 
   return (
     <ScrollView style={styles.container}>
-      {/* <Text style={styles.header}>Create New Campaign</Text> */}
-
       <View style={styles.formContainer}>
         <Text style={styles.label}>Campaign Title*</Text>
         <TextInput
@@ -115,11 +128,11 @@ export default function AddCampaign() {
 
         <Text style={styles.label}>Campaign Images</Text>
         <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
-  <View style={styles.imageButtonContent}>
-    <Ionicons name="image" size={24} color="white" />
-    <Text style={styles.imageButtonText}>Add Image</Text>
-  </View>
-</TouchableOpacity>
+          <View style={styles.imageButtonContent}>
+            <Ionicons name="image" size={24} color="white" />
+            <Text style={styles.imageButtonText}>Add Image</Text>
+          </View>
+        </TouchableOpacity>
 
         <View style={styles.imagePreviewContainer}>
           {formData.images.map((uri, index) => (
@@ -130,13 +143,13 @@ export default function AddCampaign() {
             />
           ))}
         </View>
-        <TouchableOpacity style={styles.imageButton} onPress={takePhoto}>
-  <View style={styles.imageButtonContent}>
-    <Ionicons name="camera" size={24} color="white" />
-    <Text style={styles.imageButtonText}>Take Photo</Text>
-  </View>
-</TouchableOpacity>
 
+        <TouchableOpacity style={styles.imageButton} onPress={takePhoto}>
+          <View style={styles.imageButtonContent}>
+            <Ionicons name="camera" size={24} color="white" />
+            <Text style={styles.imageButtonText}>Take Photo</Text>
+          </View>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Text style={styles.submitButtonText}>Create Campaign</Text>
@@ -145,7 +158,6 @@ export default function AddCampaign() {
     </ScrollView>
   );
 }
-// ... keep all the existing imports and component code ...
 
 const styles = StyleSheet.create({
   container: {

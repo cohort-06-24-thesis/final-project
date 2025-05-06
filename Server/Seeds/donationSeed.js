@@ -36,6 +36,7 @@ const seedDonationItems = async () => {
         latitude: 36.8065,
         longitude: 10.1815,
         categoryId: Fashion.id,
+        UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
       },
       {
         title: 'School Supplies',
@@ -46,6 +47,7 @@ const seedDonationItems = async () => {
         latitude: 34.7405,
         longitude: 10.7603,
         categoryId: Kids.id,
+        UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
       },
       {
         title: 'Food Packages',
@@ -56,6 +58,7 @@ const seedDonationItems = async () => {
         latitude: 35.8256,
         longitude: 10.6368,
         categoryId: Food.id,
+        UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
       },
       {
         title: 'Medical Supplies',
@@ -66,6 +69,7 @@ const seedDonationItems = async () => {
         latitude: 37.2707,
         longitude: 9.8739,
         categoryId: Health.id,
+        UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
       },
       {
         title: 'Books Collection',
@@ -76,6 +80,7 @@ const seedDonationItems = async () => {
         latitude: 36.4575,
         longitude: 10.7382,
         categoryId: Books.id,
+        UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
       },
       {
         title: 'Furniture Set',
@@ -86,6 +91,7 @@ const seedDonationItems = async () => {
         latitude: 35.7624,
         longitude: 10.8312,
         categoryId: Furniture.id,
+        UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
       },
       {
         title: 'Toys and Games',
@@ -96,6 +102,7 @@ const seedDonationItems = async () => {
         latitude: 33.8839,
         longitude: 10.0971,
         categoryId: Kids.id,
+        UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
       },
       {
         title: 'Hygiene Kits',
@@ -106,6 +113,7 @@ const seedDonationItems = async () => {
         latitude: 35.6782,
         longitude: 10.1011,
         categoryId: Beauty.id,
+        UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
       },
       {
         title: 'Chauffage',
@@ -116,6 +124,7 @@ const seedDonationItems = async () => {
         latitude: 35.5042,
         longitude: 11.0628,
         categoryId: Appliances.id,
+        UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
       },
       {
         title: 'Sports Equipment',
@@ -126,6 +135,7 @@ const seedDonationItems = async () => {
         latitude: 36.4002,
         longitude: 10.1482,
         categoryId: Sports.id,
+        UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
       },
       {
         title: 'Baby Essentials',
@@ -136,6 +146,7 @@ const seedDonationItems = async () => {
         latitude: 36.8663,
         longitude: 10.1956,
         categoryId: Kids.id,
+        UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
       },
       {
         title: 'Art Supplies',
@@ -146,6 +157,7 @@ const seedDonationItems = async () => {
         latitude: 36.4002,
         longitude: 10.6122,
         categoryId: Leisure.id,
+        UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
       },
       {
         title: 'Musical Instruments',
@@ -156,6 +168,7 @@ const seedDonationItems = async () => {
         latitude: 33.8792,
         longitude: 10.8578,
         categoryId: Leisure.id,
+        UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
       },
       {
         title: 'Gardening Tools',
@@ -166,6 +179,7 @@ const seedDonationItems = async () => {
         latitude: 33.9012,
         longitude: 8.1134,
         categoryId: Garden.id,
+        UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
       },
       {
         title: 'Office Supplies',
@@ -176,6 +190,7 @@ const seedDonationItems = async () => {
         latitude: 34.4214,
         longitude: 8.7802,
         categoryId: Office.id,
+        UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
       },
       {
         title: 'Cooking Equipment',
@@ -186,6 +201,7 @@ const seedDonationItems = async () => {
         latitude: 35.1667,
         longitude: 8.8342,
         categoryId: Appliances.id,
+        UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
       },
       {
         title: 'Bicycle',
@@ -196,6 +212,7 @@ const seedDonationItems = async () => {
         latitude: 36.7375,
         longitude: 9.1815,
         categoryId: Sports.id,
+        UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
       },
       {
         title: 'Emergency Kits',
@@ -206,6 +223,7 @@ const seedDonationItems = async () => {
         latitude: 36.5000,
         longitude: 8.7800,
         categoryId: Health.id,
+        UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
       },
       {
         title: 'Language Learning Materials',
@@ -216,6 +234,7 @@ const seedDonationItems = async () => {
         latitude: 32.9300,
         longitude: 10.4500,
         categoryId: Books.id,
+        UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
       },
       {
         title: 'Recycling Bins',
@@ -226,6 +245,7 @@ const seedDonationItems = async () => {
         latitude: 33.3500,
         longitude: 10.5000,
         categoryId: DIY.id,
+        UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
       }
     ];
 
