@@ -19,6 +19,7 @@ import axios from "axios";
 import { API_BASE } from '../config';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import LottieView from 'lottie-react-native';
 
 const { width, height } = Dimensions.get('window');
 const HEADER_MAX_HEIGHT = 220;
@@ -275,57 +276,29 @@ export default function Home({ navigation }) {
       
       {/* Animated Header */}
       <Animated.View style={[styles.header, { height: headerHeight }]}>
-        <LinearGradient
-          colors={[ '#FFE97F','#00C44F']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradient}
+        <Animated.View 
+          style={[styles.headerContent, { opacity: headerContentOpacity, backgroundColor: '#00C44F', borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }]}
         >
-          {/* Compact header title (visible on scroll) */}
-          <Animated.View 
-            style={[
-              styles.headerTitleContainer, 
-              { opacity: headerTitleOpacity }
-            ]}
-          >
-            <Text style={styles.headerTitle}>Sadaꓘa</Text>
-          </Animated.View>
-          
-          {/* Expanded header content (visible when not scrolled) */}
-          <Animated.View 
-            style={[
-              styles.headerContent, 
-              { opacity: headerContentOpacity }
-            ]}
-          >
-            <View style={{
-              ...StyleSheet.absoluteFillObject,
-              backgroundColor: 'rgba(0,0,0,0.08)',
-              borderRadius: 24,
-              zIndex: -1,
-            }} />
-            {/* <Text style={styles.welcomeText}>Welcome to</Text> */}
-            <Text style={styles.appName}>Sadaꓘa</Text>
-            <Text style={styles.subtitle}>Making a difference together</Text>
-          </Animated.View>
-        </LinearGradient>
+          <LottieView
+            source={require('../assets/lottie.json')}
+            autoPlay
+            loop
+            style={{ width: 300, height: 300, backgroundColor: 'transparent', alignSelf: 'center' }}
+          />
+        </Animated.View>
+        {/* Compact header title (visible on scroll) */}
+        <Animated.View 
+          style={[styles.headerTitleContainer, { opacity: headerTitleOpacity }]}
+        >
+          <Text style={styles.headerTitle}>Sadaꓘa</Text>
+        </Animated.View>
       </Animated.View>
 
-      {/* Search Bar */}
-      <Animated.View 
+      {/* Search Bar (visible only at top) */}
+      <Animated.View
         style={[
           styles.searchContainer,
-          {
-            transform: [
-              {
-                translateY: scrollY.interpolate({
-                  inputRange: [0, HEADER_SCROLL_DISTANCE],
-                  outputRange: [0, -50],
-                  extrapolate: 'clamp',
-                }),
-              },
-            ],
-          },
+          { opacity: headerContentOpacity }
         ]}
       >
         <View style={styles.searchBar}>
@@ -342,7 +315,7 @@ export default function Home({ navigation }) {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: 60 }]}
+        contentContainerStyle={styles.scrollContent}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
@@ -600,6 +573,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    backgroundColor: '#00C44F',
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    paddingHorizontal: 24,
   },
   headerTitle: {
     color: '#fff',
@@ -671,7 +648,6 @@ const styles = StyleSheet.create({
     marginTop: HEADER_MAX_HEIGHT - 25,
   },
   scrollContent: {
-    paddingTop: 40,
     paddingBottom: 30,
   },
   loader: {
