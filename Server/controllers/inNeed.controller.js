@@ -5,12 +5,12 @@ const { inNeed } = require('../Database/index'); // Adjust the import based on y
 // Create a new InNeed
 exports.createInNeed = async (req, res) => {
     try {
-        const { title, description, images, location } = req.body;
-        const newInNeed = await inNeed.create({ title, description, images, location });
+        const { title, description, images, location , UserId} = req.body;
+        const [latitude, longitude] = location.split(',').map(coord => parseFloat(coord))
+        const newInNeed = await inNeed.create({ title, description, images, location,latitude,longitude,UserId });
         res.status(201).json(newInNeed);
-    } catch (error) {
-        console.error('Error creating InNeed:', error);
-        res.status(500).json({ error: 'Something went wrong while creating the record.' });
+    } catch (error) {   
+     res.status(500).json(error);
     }
 };
 
@@ -20,7 +20,7 @@ exports.getAllInNeeds = async (req, res) => {
         const inNeeds = await inNeed.findAll();
         res.status(200).json(inNeeds);
     } catch (error) {
-        console.error('Error fetching InNeeds:', error);
+       
         res.status(500).json({ error: 'Something went wrong while fetching records.' });
     }
 };

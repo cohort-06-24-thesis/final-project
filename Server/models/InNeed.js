@@ -24,6 +24,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.FLOAT,
             allowNull: true
         },
+        UserId: {
+            type: DataTypes.STRING,
+            allowNull: false,
+          }
         
     });
     return InNeed;
