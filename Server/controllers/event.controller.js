@@ -48,9 +48,9 @@ module.exports = {
 
   createEvent: async (req, res) => {
     try {
-      const { title, description, date, location, images, participators } = req.body;
+      const { title, description, date, location, images, participators, UserId } = req.body;
 
-      if (!title || !description || !date || !location || !participators) {
+      if (!title || !description || !date || !location || !participators || !UserId) {
         return res.status(400).json({
           success: false,
           message: 'Missing required fields: title, description, date, location, and participators are required'
@@ -64,7 +64,8 @@ module.exports = {
         location,
         images: Array.isArray(images) ? images : [images], // Handle single image string
         participators, // Fixed spelling here
-        status: 'upcoming'
+        status: 'upcoming',
+        UserId
       });
 
       res.status(201).json({

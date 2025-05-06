@@ -7,7 +7,8 @@ const inNeedSeeds = [
     images: ['https://www.shutterstock.com/shutterstock/photos/2014505123/display_1500/stock-photo-single-parent-family-with-three-children-sitting-on-tree-stumpand-leaning-on-mother-mom-playing-2014505123.jpg'],
     location: 'Tunis',
     latitude: 36.8065,
-    longitude: 10.1815
+    longitude: 10.1815,
+    UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'  
   },
   {
     title: 'Medical Support Required',
@@ -15,7 +16,8 @@ const inNeedSeeds = [
     images: ['https://www.moneytalksnews.com/workers/images/width=730/wp-content/uploads/2018/03/30125529/shutterstock_371623984.jpg?s=9d0e1f868aa4bce2fbaff2ef7542190588362c27801ce53478cfcb5b8c887f15'],
     location: 'Sfax',
     latitude: 34.7405,
-    longitude: 10.7603
+    longitude: 10.7603,
+    UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   },
   {
     title: 'Education Support',
@@ -23,7 +25,8 @@ const inNeedSeeds = [
     images: ['https://www.moneytalksnews.com/workers/images/width=730/wp-content/uploads/2018/03/30125529/shutterstock_371623984.jpg?s=9d0e1f868aa4bce2fbaff2ef7542190588362c27801ce53478cfcb5b8c887f15'],
     location: 'Sousse',
     latitude: 35.8256,
-    longitude: 10.6368
+    longitude: 10.6368,
+    UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
   },
   {
     title: 'Housing Assistance',
@@ -31,7 +34,8 @@ const inNeedSeeds = [
     images: ['https://missioneurasia.org/wp-content/uploads/2023/08/Family-in-front-of-destroyed-home-1-1.jpg'],
     location: 'Bizerte',
     latitude: 37.2707,
-    longitude: 9.8739
+    longitude: 9.8739,
+    UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
   },
   {
     title: 'Food Support',
@@ -39,7 +43,8 @@ const inNeedSeeds = [
     images: ['https://www.moneytalksnews.com/workers/images/width=730/wp-content/uploads/2018/03/30125529/shutterstock_371623984.jpg?s=9d0e1f868aa4bce2fbaff2ef7542190588362c27801ce53478cfcb5b8c887f15'],
     location: 'Kairouan',
     latitude: 35.6782,
-    longitude: 10.1012
+    longitude: 10.1012,
+    UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   },
   {
     title: 'Disability Support',
@@ -47,7 +52,8 @@ const inNeedSeeds = [
     images: ['https://www.timotion.com/_upload/images/Banni%C3%A8re_Disabled_W800xH420.jpg?v='],
     location: 'Gabes',
     latitude: 33.8839,
-    longitude: 10.0959
+    longitude: 10.0959,
+    UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   },
   {
     title: 'Winter Clothing Need',
@@ -55,7 +61,8 @@ const inNeedSeeds = [
     images: ['https://imageio.forbes.com/specials-images/imageserve/659822e9083be8c7a99187a1/A-family-holds-boxes-of-warm-winter-clothes-and-blankets-distributed-by-UNICEF-/960x0.jpg?format=jpg&width=1440'],
     location: 'Monastir',
     latitude: 35.7624,
-    longitude: 10.8312
+    longitude: 10.8312,
+    UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
   },
   {
     title: 'Job Training Request',
@@ -63,7 +70,8 @@ const inNeedSeeds = [
     images: ['https://studentassembly.org/wp-content/uploads/2023/02/images4045-63efdd7969b1d.jpg'],
     location: 'Nabeul',
     latitude: 36.4575,
-    longitude: 10.7382
+    longitude: 10.7382,
+    UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
   }
 ];
 

@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
         participators : {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        UserId: {
+            type: DataTypes.STRING,
+            allowNull: false
         }
     });
     return Event;

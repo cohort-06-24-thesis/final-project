@@ -9,7 +9,8 @@ const campaigns = [
     goal: 10000,
     totalRaised: 4550,
     startDate: new Date('2024-03-01'),
-    endDate: new Date('2024-05-01')
+    endDate: new Date('2024-05-01'),
+    UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   },
   {
     title: 'School Building Project',
@@ -19,7 +20,8 @@ const campaigns = [
     goal: 50000,
     totalRaised: 37500,
     startDate: new Date('2024-03-15'),
-    endDate: new Date('2024-06-15')
+    endDate: new Date('2024-06-15'),
+    UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   },
   {
     title: 'Clean Water Initiative',
@@ -29,7 +31,8 @@ const campaigns = [
     goal: 15000,
     totalRaised: 4500,
     startDate: new Date('2024-04-01'),
-    endDate: new Date('2024-07-01')
+    endDate: new Date('2024-07-01'),
+    UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
   },
   {
     title: 'Food Bank Support',
@@ -39,7 +42,8 @@ const campaigns = [
     goal: 8000,
     totalRaised: 4800,
     startDate: new Date('2024-03-10'),
-    endDate: new Date('2024-04-10')
+    endDate: new Date('2024-04-10'),
+    UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
   },
   {
     title: 'Orphanage Renovation',
@@ -49,7 +53,8 @@ const campaigns = [
     goal: 20000,
     totalRaised: 5000,
     startDate: new Date('2024-05-01'),
-    endDate: new Date('2024-08-01')
+    endDate: new Date('2024-08-01'),
+    UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   }
 ];
 

@@ -7,14 +7,15 @@ const { CampaignDonations } = require('../Database/index.js');
 module.exports = {
     add : async (req, res) => {
     try {
-        const { title, description, images, goal, startDate, endDate } = req.body;
+        const { title, description, images, goal, startDate, endDate, UserId } = req.body;
         const newCampaign = await CampaignDonations.create({
             title,
             description,
             images,
             goal,
             startDate: new Date(startDate),
-            endDate: new Date(endDate)
+            endDate: new Date(endDate),
+            UserId
         });
         res.status(201).json(newCampaign);
     } catch (error) {

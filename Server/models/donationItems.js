@@ -29,6 +29,10 @@ module.exports=(sequelize, DataTypes) => {
             type: DataTypes.FLOAT, // Longitude as a float
             allowNull: true, // Optional field
         },
+        UserId: {
+            type: DataTypes.STRING,
+            allowNull: false,
+          }
         
     })
     return DonationItem
