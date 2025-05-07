@@ -5,10 +5,13 @@ const { Message } = require('../Database/index');
 // Create a new message
 exports.createMessage = async (req, res) => {
     try {
-        const { content, isRead } = req.body;
+        const { text, isRead, roomId, senderId, receiverId } = req.body;
         const newMessage = await Message.create({ 
-            content, 
-            isRead 
+            text, 
+            isRead,
+            roomId,
+            senderId,
+            receiverId
         });
         res.status(201).json(newMessage);
     } catch (error) {
@@ -25,6 +28,21 @@ exports.getAllMessages = async (req, res) => {
     } catch (error) {
         console.error('Error fetching messages:', error);
         res.status(500).json({ error: 'Something went wrong while fetching messages.' });
+    }
+};
+
+// Get messages by room ID
+exports.getMessagesByRoomId = async (req, res) => {
+    try {
+        const { roomId } = req.params;
+        const messages = await Message.findAll({
+            where: { roomId },
+            order: [['createdAt', 'ASC']]
+        });
+        res.status(200).json(messages);
+    } catch (error) {
+        console.error('Error fetching messages by room:', error);
+        res.status(500).json({ error: 'Something went wrong while fetching room messages.' });
     }
 };
 
@@ -49,7 +67,7 @@ exports.getMessageById = async (req, res) => {
 exports.updateMessage = async (req, res) => {
     try {
         const { id } = req.params;
-        const { content, isRead } = req.body;
+        const { text, isRead } = req.body;
 
         const message = await Message.findByPk(id);
 
@@ -58,7 +76,7 @@ exports.updateMessage = async (req, res) => {
         }
 
         await message.update({ 
-            content, 
+            text, 
             isRead 
         });
 
