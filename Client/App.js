@@ -19,6 +19,7 @@ import InNeed from "./screens/InNeed";
 import Campaign from "./screens/Campaign";
 import Events from "./screens/Events";
 import AddEvent from "./screens/AddEvent";
+import Chat from "./screens/Chat";
 
 import AddCampaign from "./screens/AddCampaign";
 import AddInNeed from "./screens/AddInNeed";
@@ -171,6 +172,16 @@ export default function App() {
             name="FullScreenMap"
             component={FullScreenMap}
             options={{ title: "Map", headerShown: true }}
+          />
+          <Stack.Screen
+            name="Chat"
+            component={Chat}
+            options={{
+              headerShown: true,
+              headerStyle: { backgroundColor: "#fff" },
+              headerTintColor: "#4CAF50",
+              headerTitleStyle: { fontWeight: "bold" },
+            }}
           />
         </Stack.Navigator>
       </NavigationContainer>

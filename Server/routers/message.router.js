@@ -10,6 +10,9 @@ router.post('/', messageController.createMessage);
 // Get all messages
 router.get('/', messageController.getAllMessages);
 
+// Get messages by room ID
+router.get('/room/:roomId', messageController.getMessagesByRoomId);
+
 // Get a single message by ID
 router.get('/:id', messageController.getMessageById);
 

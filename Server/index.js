@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const routers = require('./routers');
-const http = require('http'); // Add this
-const { Server } = require('socket.io'); // Add this
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 const Port = 3000;

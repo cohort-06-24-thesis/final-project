@@ -35,7 +35,16 @@ export default function DonationDetails({ route, navigation }) {
   };
 
   const handleContact = () => {
-    console.log('Contact user');
+    if (item?.User) {
+      navigation.navigate('Chat', {
+        recipientId: item.User.id,
+        recipientName: item.User.name,
+        recipientProfilePic: item.User.profilePic,
+        itemTitle: item.title
+      });
+    } else {
+      console.log('User information not available');
+    }
   };
 
   return (
