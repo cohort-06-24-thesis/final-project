@@ -31,6 +31,9 @@ import CampaignDetails from "./screens/CampaignDetails";
 import InNeedDetails from "./screens/InNeedDetails";
 import DonationDetails from "./screens/DonationDetails";
 import FullScreenMap from "./screens/FullScreenMap";
+import UserProfile from "./screens/UserProfile";
+import EditProfile from './screens/EditProfile';
+import Settings from './screens/Settings';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -181,6 +184,38 @@ export default function App() {
               headerStyle: { backgroundColor: "#fff" },
               headerTintColor: "#4CAF50",
               headerTitleStyle: { fontWeight: "bold" },
+            }}
+          />
+          <Stack.Screen
+            name="UserProfile"
+            component={UserProfile}
+            options={{
+              title: "Profile",
+              headerShown: true
+            }}
+          />
+          <Stack.Screen
+            name="EditProfile"
+            component={EditProfile}
+            options={{
+              title: 'Edit Profile',
+              headerShown: true,
+              headerTintColor: '#fff',
+              headerStyle: {
+                backgroundColor: '#4CAF50',
+              }
+            }}
+          />
+          <Stack.Screen
+            name="Settings"
+            component={Settings}
+            options={{
+             title: 'Edit Profile',
+              headerShown: true,
+              headerTintColor: '#fff',
+              headerStyle: {
+                backgroundColor: '#4CAF50',
+              }
             }}
           />
         </Stack.Navigator>
