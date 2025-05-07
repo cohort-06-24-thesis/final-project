@@ -8,7 +8,10 @@ const inNeedSeeds = [
     location: 'Tunis',
     latitude: 36.8065,
     longitude: 10.1815,
-    UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'  
+    UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1',
+    isApproved: true,
+    isDone: false,
+    doneReason: null
   },
   {
     title: 'Medical Support Required',
@@ -17,7 +20,10 @@ const inNeedSeeds = [
     location: 'Sfax',
     latitude: 34.7405,
     longitude: 10.7603,
-    UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
+    UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1',
+    isApproved: true,
+    isDone: false,
+    doneReason: null
   },
   {
     title: 'Education Support',
@@ -26,7 +32,10 @@ const inNeedSeeds = [
     location: 'Sousse',
     latitude: 35.8256,
     longitude: 10.6368,
-    UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
+    UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73',
+    isApproved: false,
+    isDone: false,
+    doneReason: null
   },
   {
     title: 'Housing Assistance',
@@ -35,7 +44,10 @@ const inNeedSeeds = [
     location: 'Bizerte',
     latitude: 37.2707,
     longitude: 9.8739,
-    UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
+    UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1',
+    isApproved: true,
+    isDone: false,
+    doneReason: null
   },
   {
     title: 'Food Support',
@@ -44,7 +56,10 @@ const inNeedSeeds = [
     location: 'Kairouan',
     latitude: 35.6782,
     longitude: 10.1012,
-    UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
+    UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1',
+    isApproved: true,
+    isDone: false,
+    doneReason: null
   },
   {
     title: 'Disability Support',
@@ -53,7 +68,10 @@ const inNeedSeeds = [
     location: 'Gabes',
     latitude: 33.8839,
     longitude: 10.0959,
-    UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
+    UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1',
+    isApproved: true,
+    isDone: false,
+    doneReason: null
   },
   {
     title: 'Winter Clothing Need',
@@ -62,7 +80,10 @@ const inNeedSeeds = [
     location: 'Monastir',
     latitude: 35.7624,
     longitude: 10.8312,
-    UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
+    UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73',
+    isApproved: true,
+    isDone: false,
+    doneReason: null
   },
   {
     title: 'Job Training Request',
@@ -71,7 +92,10 @@ const inNeedSeeds = [
     location: 'Nabeul',
     latitude: 36.4575,
     longitude: 10.7382,
-    UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
+    UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1',
+    isApproved: true,
+    isDone: false,
+    doneReason: null
   }
 ];
 
