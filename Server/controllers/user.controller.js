@@ -129,5 +129,47 @@ const getUserById= async (req, res) => {
   }
 }
 
+const getUserActivity = async (req, res) => {
+  try {
+    const { userId } = req.params;
 
-module.exports = { createUser, deleteUser, updateUser, getUser, getAllUsers, getUserByEmail, getUserByName, getUserById };
+    // Get user's recent donations
+    const donations = await DonationItems.findAll({
+      where: { UserId: userId },
+      limit: 5,
+      order: [['createdAt', 'DESC']]
+    });
+
+    // Get user's recent events
+    const events = await Event.findAll({
+      where: { UserId: userId },
+      limit: 5,
+      order: [['createdAt', 'DESC']]
+    });
+
+    // Combine and format activities
+    const activities = [...donations, ...events].map(item => ({
+      type: item.constructor.name === 'DonationItems' ? 'donation' : 'event',
+      description: item.title,
+      date: item.createdAt
+    }))
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 5);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalHelped: donations.length + events.length,
+        recent: activities
+      }
+    });
+  } catch (error) {
+    console.error('Error getting user activity:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching user activity'
+    });
+  }
+};
+
+module.exports = { createUser, deleteUser, updateUser, getUser, getAllUsers, getUserByEmail, getUserByName, getUserById, getUserActivity };

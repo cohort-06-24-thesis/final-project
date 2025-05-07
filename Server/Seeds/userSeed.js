@@ -21,6 +21,7 @@ const users = [
   {
     id: 'uAsdlgTBGtatrpxhUAnw7Grnxj73',
     name: 'benali mouin',
+    profilePic: 'https://lh3.googleusercontent.com/a/ACg8ocLhWYNIEBXdGhaKIIM_LR838F5fzRZ4Ozsq0FoALVbO1wkpA9b8=s360-c-no',
     email: 'benalimouin@gmail.com',
     password: '12346789',
     role: 'user',
