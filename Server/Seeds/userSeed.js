@@ -4,10 +4,11 @@ const users = [
   {
     id: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1',
     name: 'Mohamed',
+    profilePic: 'https://lh3.googleusercontent.com/a/ACg8ocIDWaj4C5_t0KMSUXsHlR-TCusICZoHB3pz7GsJ70N3B4VsFf0H=s288-c-no',
     email: 'medjemai4go@gmail.com',
     password: '123456',
     role: 'user',
-    rating: 2,
+    rating: 4.6,
   },
   {
     id: 'uDVoIeFDpVWDWisqxM76uP5MHcs1',

@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
     const InNeed = sequelize.define('InNeed', {
-    title: {
+        title: {
             type: DataTypes.STRING,
             allowNull: false
         },
@@ -27,8 +27,22 @@ module.exports = (sequelize, DataTypes) => {
         UserId: {
             type: DataTypes.STRING,
             allowNull: false,
-          }
-        
+        },
+        isApproved: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
+        isDone: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
+        doneReason: {
+            type: DataTypes.STRING,
+            allowNull: true
+        }
     });
+
     return InNeed;
 };

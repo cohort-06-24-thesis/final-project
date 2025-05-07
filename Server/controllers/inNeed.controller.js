@@ -1,82 +1,165 @@
-// controllers/inNeedController.js
-
-const { inNeed } = require('../Database/index'); // Adjust the import based on your file structure
+const { inNeed, User } = require('../Database/index');
 
 // Create a new InNeed
 exports.createInNeed = async (req, res) => {
     try {
-        const { title, description, images, location , UserId} = req.body;
-        const [latitude, longitude] = location.split(',').map(coord => parseFloat(coord))
-        const newInNeed = await inNeed.create({ title, description, images, location,latitude,longitude,UserId });
+        const {
+          title,
+          description,
+          images,
+          location,
+          latitude,
+          longitude,
+          UserId
+        } = req.body;
+    
+        const newInNeed = await inNeed.create({
+          title,
+          description,
+          images,
+          location,
+          latitude,
+          longitude,
+          UserId,
+          isApproved: false,  
+          isDone: false,      
+          doneReason: null    
+        });
+    
         res.status(201).json(newInNeed);
-    } catch (error) {   
-     res.status(500).json(error);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-// Get all InNeed entries
+// Get all InNeed entries with user info
 exports.getAllInNeeds = async (req, res) => {
     try {
-        const inNeeds = await inNeed.findAll();
-        res.status(200).json(inNeeds);
+        const items = await inNeed.findAll({
+            include: [{ model: User, attributes: ['id', 'name', 'email', 'rating', 'profilePic'] }]
+        });
+        res.status(200).json(items);
     } catch (error) {
-       
-        res.status(500).json({ error: 'Something went wrong while fetching records.' });
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-// Get a single InNeed by ID
+// Get an InNeed by ID
 exports.getInNeedById = async (req, res) => {
     try {
         const { id } = req.params;
-        const item = await inNeed.findByPk(id);
-
-        if (!item) {
-            return res.status(404).json({ error: 'InNeed not found' });
-        }
-
+        const item = await inNeed.findByPk(id, {
+            include: [{ model: User, attributes: ['id', 'name', 'email', 'rating', 'profilePic'] }]
+        });
+        if (!item) return res.status(404).json({ message: 'InNeed item not found' });
         res.status(200).json(item);
     } catch (error) {
-        console.error('Error fetching InNeed:', error);
-        res.status(500).json({ error: 'Something went wrong while fetching the record.' });
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-// Update an InNeed by ID
+// Update an InNeed
 exports.updateInNeed = async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, images, location } = req.body;
-
         const item = await inNeed.findByPk(id);
+        if (!item) return res.status(404).json({ message: 'InNeed item not found' });
 
-        if (!item) {
-            return res.status(404).json({ error: 'item not found' });
-        }
-
-        await item.update({ title, description, images, location });
+        item.title = title;
+        item.description = description;
+        item.images = images;
+        item.location = location;
+        await item.save();
 
         res.status(200).json(item);
     } catch (error) {
-        console.error('Error updating item:', error);
-        res.status(500).json({ error: 'Something went wrong while updating the record.' });
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-// Delete an InNeed by ID
+// Delete an InNeed
 exports.deleteInNeed = async (req, res) => {
     try {
-      const { id } = req.params;
-      const inNeedItem = await inNeed.findByPk(id);
-  
-      if (!inNeedItem) {
-        return res.status(404).json({ error: 'InNeed not found' });
-      }
-  
-      await inNeedItem.destroy();
-      res.status(200).json({ message: 'InNeed deleted successfully.' });
+        const { id } = req.params;
+        const item = await inNeed.findByPk(id);
+        if (!item) return res.status(404).json({ message: 'InNeed item not found' });
+        await item.destroy();
+        res.status(200).json({ message: 'InNeed deleted successfully' });
     } catch (error) {
-      console.error('Error deleting InNeed:', error);
-      res.status(500).json({ error: 'Something went wrong while deleting the record.' });
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
-  };
+};
+
+// Reserve an InNeed
+exports.reserveInNeed = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const item = await inNeed.findByPk(id);
+        if (!item) return res.status(404).json({ message: 'InNeed item not found' });
+
+        item.status = 'reserved';
+        await item.save();
+        res.status(200).json(item);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+// Fulfill (claim) an InNeed
+exports.fulfillInNeed = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const item = await inNeed.findByPk(id);
+        if (!item) return res.status(404).json({ message: 'InNeed item not found' });
+
+        item.status = 'fulfilled';
+        await item.save();
+        res.status(200).json(item);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+// Get InNeed items by status
+exports.getInNeedsByStatus = async (req, res) => {
+    try {
+        const { status } = req.params;
+        const items = await inNeed.findAll({ where: { status } });
+        res.status(200).json(items);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+// Get InNeed items by location
+exports.getInNeedsByLocation = async (req, res) => {
+    try {
+        const { location } = req.params;
+        const items = await inNeed.findAll({ where: { location } });
+        res.status(200).json(items);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+// Get InNeed items by title
+exports.getInNeedsByTitle = async (req, res) => {
+    try {
+        const { title } = req.params;
+        const items = await inNeed.findAll({ where: { title } });
+        res.status(200).json(items);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};

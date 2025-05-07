@@ -61,7 +61,8 @@ const InNeedScreen = ({ navigation }) => {
         }
       >
         <Text style={styles.header}>People In Need</Text>
-        {needs.map((item, index) => (
+        {needs.filter(item => item.isApproved).map((item, index) => (
+
           <TouchableOpacity
             key={index}
             style={styles.card}
