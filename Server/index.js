@@ -18,7 +18,9 @@ const io = new Server(server, {
   cors: {
     origin: '*', // Adjust as needed for security
     methods: ['GET', 'POST']
-  }
+  },
+  transports: ['websocket'],
+  pingTimeout: 60000
 });
 
 // Socket.IO logic
@@ -36,8 +38,27 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send_message', (data) => {
-    // data: { roomId, message, userId }
-    io.to(data.roomId).emit('receive_message', data);
+    console.log('Message received on server:', data);
+    const roomId = data.roomId;
+    console.log(`Broadcasting to room: ${roomId}`);
+    
+    // Broadcast to everyone in the room
+    io.in(roomId).emit('receive_message', {
+      ...data,
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  // Handle message read status
+  socket.on('mark_as_read', (data) => {
+    console.log('Marking messages as read:', data);
+    const { roomId, messageIds } = data;
+    
+    // Broadcast read status to all users in the room
+    io.in(roomId).emit('messages_read', {
+      messageIds,
+      timestamp: new Date().toISOString()
+    });
   });
 
   socket.on('disconnect', () => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import io from 'socket.io-client';
 import { API_BASE } from '../config';
 
+// Extract base URL without /api
+const SOCKET_BASE = API_BASE.replace('/api', '');
+
 export default function Chat({ route, navigation }) {
   const { recipientId, recipientName, recipientProfilePic, itemTitle } = route.params;
   const [message, setMessage] = useState('');
@@ -23,9 +26,22 @@ export default function Chat({ route, navigation }) {
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [socket, setSocket] = useState(null);
+  const flatListRef = useRef(null);
+  const roomIdRef = useRef(null);
+
+  const scrollToBottom = () => {
+    if (flatListRef.current) {
+      setTimeout(() => {
+        flatListRef.current.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  };
 
   useEffect(() => {
-    // Set the header title
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
     navigation.setOptions({
       headerTitle: () => (
         <View style={styles.headerTitle}>
@@ -38,11 +54,15 @@ export default function Chat({ route, navigation }) {
       ),
     });
 
-    // Initialize socket and fetch messages
     initializeChat();
 
     return () => {
       if (socket) {
+        socket.off('receive_message');
+        socket.off('messages_read');
+        if (roomIdRef.current) {
+          socket.emit('leave_room', roomIdRef.current);
+        }
         socket.disconnect();
       }
     };
@@ -50,24 +70,86 @@ export default function Chat({ route, navigation }) {
 
   const initializeChat = async () => {
     try {
-      // Get current user ID from AsyncStorage
       const userId = await AsyncStorage.getItem('userUID');
       setCurrentUserId(userId);
 
-      // Initialize socket connection
-      const socketInstance = io(API_BASE);
-      setSocket(socketInstance);
-
-      // Join chat room
-      const roomId = [userId, recipientId].sort().join('-');
-      socketInstance.emit('join_room', roomId);
-
-      // Listen for new messages
-      socketInstance.on('receive_message', (data) => {
-        setMessages(prev => [...prev, data]);
+      // Initialize socket connection with correct base URL
+      const socketInstance = io(SOCKET_BASE, {
+        transports: ['websocket'],
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 60000,
+        path: '/socket.io',
+        forceNew: true,
+        autoConnect: true
       });
 
-      // Fetch chat history
+      // Handle connection events
+      socketInstance.on('connect', () => {
+        console.log('Socket connected successfully');
+      });
+
+      socketInstance.on('connect_error', (error) => {
+        console.error('Socket connection error:', error.message);
+      });
+
+      socketInstance.on('disconnect', (reason) => {
+        console.log('Socket disconnected:', reason);
+      });
+
+      setSocket(socketInstance);
+
+      // Set up room
+      const roomId = [userId, recipientId].sort().join('-');
+      roomIdRef.current = roomId;
+      
+      // Join room with acknowledgment
+      socketInstance.emit('join_room', roomId, (response) => {
+        if (response && response.success) {
+          console.log('Successfully joined room:', roomId);
+        } else {
+          console.error('Failed to join room:', response?.error || 'Unknown error');
+        }
+      });
+
+      // Remove existing listeners
+      socketInstance.off('receive_message');
+      socketInstance.off('messages_read');
+
+      // Listen for new messages with acknowledgment
+      socketInstance.on('receive_message', (data, callback) => {
+        console.log('Received message:', data);
+        
+        setMessages(prevMessages => {
+          const messageExists = prevMessages.some(msg => 
+            msg.id === data.id || 
+            (msg.senderId === data.senderId && msg.timestamp === data.timestamp)
+          );
+          
+          if (!messageExists) {
+            const newMessages = [...prevMessages, data];
+            // Acknowledge receipt
+            if (callback) callback({ success: true });
+            return newMessages;
+          }
+          return prevMessages;
+        });
+      });
+
+      // Listen for message read status
+      socketInstance.on('messages_read', (data) => {
+        console.log('Messages marked as read:', data);
+        setMessages(prevMessages => 
+          prevMessages.map(msg => 
+            data.messageIds.includes(msg.id) 
+              ? { ...msg, isRead: true }
+              : msg
+          )
+        );
+      });
+
+      // Fetch initial messages
       const response = await axios.get(`${API_BASE}/message/room/${roomId}`);
       setMessages(response.data);
       setLoading(false);
@@ -81,20 +163,11 @@ export default function Chat({ route, navigation }) {
     if (!message.trim() || !socket || !currentUserId) return;
 
     try {
-      const roomId = [currentUserId, recipientId].sort().join('-');
-      const messageData = {
-        roomId,
-        senderId: currentUserId,
-        receiverId: recipientId,
-        text: message,
-        timestamp: new Date().toISOString()
-      };
-
-      // Emit message through socket
-      socket.emit('send_message', messageData);
+      const roomId = roomIdRef.current;
+      console.log('Sending message to room:', roomId);
 
       // Save message to database
-      await axios.post(`${API_BASE}/message`, {
+      const savedMessage = await axios.post(`${API_BASE}/message`, {
         text: message,
         isRead: false,
         roomId,
@@ -102,9 +175,22 @@ export default function Chat({ route, navigation }) {
         receiverId: recipientId
       });
 
-      // Update local state
-      setMessages(prev => [...prev, messageData]);
+      // Update local state immediately with delivered status
+      const messageWithStatus = {
+        ...savedMessage.data,
+        isDelivered: true
+      };
+      setMessages(prev => [...prev, messageWithStatus]);
       setMessage('');
+
+      // Emit message with acknowledgment
+      socket.emit('send_message', messageWithStatus, (response) => {
+        if (response && response.success) {
+          console.log('Message sent successfully');
+        } else {
+          console.error('Failed to send message:', response?.error || 'Unknown error');
+        }
+      });
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -122,9 +208,32 @@ export default function Chat({ route, navigation }) {
         <Text style={styles.timestamp}>
           {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </Text>
+        {isCurrentUser && (
+          <Text style={styles.messageStatus}>
+            {item.isRead ? 'Seen' : 'Delivered'}
+          </Text>
+        )}
       </View>
     );
   };
+
+  // Update message read status when messages are viewed
+  useEffect(() => {
+    if (socket && roomIdRef.current && messages.length > 0) {
+      const unreadMessages = messages.filter(msg => 
+        !msg.isRead && 
+        msg.senderId !== currentUserId
+      );
+
+      if (unreadMessages.length > 0) {
+        console.log('Marking messages as read:', unreadMessages);
+        socket.emit('mark_as_read', {
+          roomId: roomIdRef.current,
+          messageIds: unreadMessages.map(msg => msg.id)
+        });
+      }
+    }
+  }, [messages, socket, currentUserId]);
 
   return (
     <KeyboardAvoidingView
@@ -133,11 +242,14 @@ export default function Chat({ route, navigation }) {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <FlatList
+        ref={flatListRef}
         data={messages}
         renderItem={renderMessage}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.id ? item.id.toString() : `${item.senderId}-${item.timestamp}`}
         contentContainerStyle={styles.messagesList}
         inverted={false}
+        onContentSizeChange={scrollToBottom}
+        onLayout={scrollToBottom}
       />
 
       <View style={styles.inputContainer}>
@@ -225,5 +337,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#EFD13D',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  messageStatus: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+    alignSelf: 'flex-end',
   },
 });
