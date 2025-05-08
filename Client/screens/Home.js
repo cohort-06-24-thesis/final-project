@@ -291,13 +291,21 @@ export default function Home({ navigation }) {
           style={[styles.headerTitleContainer, { opacity: headerTitleOpacity }]}
         >
           <Text style={styles.headerTitle}>Sadaꓘa</Text>
+        </Animated.View>
+        <View style={styles.headerButtons}>
           <TouchableOpacity 
-            style={styles.profileButton}
+            style={[styles.headerButton, { marginRight: 12 }]}
+            onPress={() => navigation.navigate('Conversation')}
+          >
+            <Ionicons name="chatbubble-outline" size={30} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.headerButton}
             onPress={() => navigation.navigate('UserProfile')}
           >
             <Ionicons name="person-circle-outline" size={30} color="#fff" />
           </TouchableOpacity>
-        </Animated.View>
+        </View>
       </Animated.View>
 
       {/* Search Bar (visible only at top) */}
@@ -596,7 +604,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     paddingBottom: 40,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingTop: Platform.OS === 'ios' ? 80 : 60,
   },
   welcomeText: {
     fontSize: 20,
@@ -941,7 +949,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
-  profileButton: {
+  headerButtons: {
+    position: 'absolute',
+    right: 16,
+    top: Platform.OS === 'ios' ? 50 : 30,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerButton: {
     padding: 8,
     borderRadius: 20,
   },
