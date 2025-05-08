@@ -57,7 +57,7 @@ export default function DonationItems({ navigation }) {
   // Log all category names for debugging
   useEffect(() => {
     if (categories && categories.length > 0) {
-      console.log('Category names from backend:', categories.map(c => c.name));
+       categories.map(c => c.name)
     }
   }, [categories]);
 
@@ -126,9 +126,10 @@ export default function DonationItems({ navigation }) {
             .filter((item) => {
               const matchesSearch =
                 item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                item.location?.toLowerCase().includes(searchQuery.toLowerCase());
-              const matchesCategory =
-                !selectedCategory || item.category === selectedCategory;
+                item.location?.toLowerCase().includes(searchQuery.toLowerCase())
+
+                
+                const matchesCategory = !selectedCategory || (item.Category?.name === selectedCategory);
               return matchesSearch && matchesCategory;
             })
             .map((item, index) => (
@@ -213,27 +214,27 @@ const styles = {
     fontSize: 16,
   },
   categoriesContainer: {
-    paddingVertical: 5, // Reduce padding
-    paddingHorizontal: 5,
+    paddingVertical: 2, // Reduced from 5
+    paddingHorizontal: 2, // Reduced from 5
   },
   categoryCard: {
     alignItems: 'center',
-    marginHorizontal: 8, // Reduce margin
-    width: 90, // Increased width for longer names
+    marginHorizontal: 4, // Reduced from 8
+    width: 85, // Slightly reduced from 90
   },
   categoryIcon: {
     backgroundColor: '#C7F9CC',
-    padding: 11, // Slightly larger for better appearance
+    padding: 10, // Reduced from 11
     borderRadius: 50,
-    marginBottom: 4, // Reduce margin
+    marginBottom: 2, // Reduced from 4
   },
   categoryText: {
-    fontSize: 13,
+    fontSize: 12, // Reduced from 13
     color: '#333',
     textAlign: 'center',
-    flexWrap: 'wrap', // Allow wrapping
-    width: '100%',    // Take full width of card
-    minHeight: 32,    // Ensure space for 2 lines
+    flexWrap: 'wrap',
+    width: '100%',
+    minHeight: 28, // Reduced from 32
   },
   itemsContainer: {
     marginTop: 5, // Add small margin top
