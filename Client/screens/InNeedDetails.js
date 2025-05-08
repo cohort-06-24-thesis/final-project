@@ -34,6 +34,7 @@ export default function InNeedDetails({ route, navigation }) {
     };
     loadUid();
   }, []);
+ 
 
   if (!item) {
     return (
@@ -64,7 +65,7 @@ export default function InNeedDetails({ route, navigation }) {
     }
   };
 
-  const handleFulfilledSubmit = (itemId) => {
+  const handleFulfilledSubmit = () => {
     Alert.alert(
       'Confirm Fulfillment',
       'Are you sure you want to mark this request as fulfilled?',
@@ -73,12 +74,12 @@ export default function InNeedDetails({ route, navigation }) {
         {
           text: 'Yes',
           onPress: () => {
-            console.log('Marking as fulfilled');
+              ;
             setModalVisible(false);
   
             // Make the PUT request to update the item
             axios
-              .put(`${API_BASE}/inNeed/${itemId}`, {
+              .put(`${API_BASE}/inNeed/${item.id}`, {
                 isDone: true,
                 doneReason: fulfilledMessage, // Include fulfilled message here
               })
