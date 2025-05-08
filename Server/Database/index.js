@@ -53,8 +53,7 @@ Notification.belongsTo(User, { foreignKey: 'userId' });
 User.hasMany(Comment, { foreignKey: 'userId' });
 Comment.belongsTo(User, { foreignKey: 'userId' });
 
-DonationItem.hasMany(Comment, { foreignKey: 'donationItemId' });
-Comment.belongsTo(DonationItem, { foreignKey: 'donationItemId' });
+
 
 User.hasMany(inNeed, { foreignKey: 'UserId' });
 inNeed.belongsTo(User, { foreignKey: 'UserId' })
@@ -83,6 +82,23 @@ DonationItem.belongsTo(Event, { foreignKey: 'eventId' });
 Category.hasMany(DonationItem , { foreignKey: 'categoryId' });
 DonationItem.belongsTo(Category , { foreignKey: 'categoryId' });
 
+// Add these relationships
+User.hasMany(Comment, { foreignKey: 'userId' });
+Comment.belongsTo(User, { foreignKey: 'userId' });
+
+inNeed.hasMany(Comment, { foreignKey: 'inNeedId' });
+Comment.belongsTo(inNeed, { foreignKey: 'inNeedId' });
+
+// Set up associations
+Comment.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
+});
+
+Comment.belongsTo(inNeed, {
+    foreignKey: 'inNeedId',
+    as: 'inNeed'
+});
 
   try {
    sequelize.authenticate();
