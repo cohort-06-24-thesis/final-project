@@ -8,8 +8,8 @@ const app = express();
 const Port = 3000;
 
 app.use(cors());
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use('/api', routers);
 
 // Create HTTP server and attach Socket.IO
@@ -87,5 +87,7 @@ io.on('connection', (socket) => {
 server.listen(Port, () => {
   console.log(`Server is running on http://localhost:${Port}`);
 });
+
+
 
 
