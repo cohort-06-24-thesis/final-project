@@ -213,10 +213,35 @@ export default function UserProfile({ navigation }) {
       >
         <View style={styles.header}>
           <View style={styles.profileImageContainer}>
-            <Image
-              source={{ uri: user?.profilePic || 'https://via.placeholder.com/150' }}
-              style={styles.profileImage}
-            />
+            <LinearGradient
+              colors={['#4CAF50', '#45a049', '#388E3C']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.imageGradientBorder}
+            >
+              <View style={styles.imageWrapper}>
+                <Image
+                  source={{ uri: user?.profilePic || 'https://via.placeholder.com/150' }}
+                  style={styles.profileImage}
+                />
+              </View>
+            </LinearGradient>
+            <TouchableOpacity 
+              style={styles.editImageButton}
+              onPress={() => navigation.navigate('EditProfile')}
+            >
+              <LinearGradient
+                colors={['#4CAF50', '#388E3C']}
+                style={styles.editButtonGradient}
+              >
+                <MaterialCommunityIcons name="pencil" size={16} color="#fff" />
+              </LinearGradient>
+            </TouchableOpacity>
+            {user?.verified && (
+              <View style={styles.verifiedBadge}>
+                <MaterialCommunityIcons name="check-decagram" size={24} color="#4CAF50" />
+              </View>
+            )}
           </View>
           <Text style={styles.name}>{user?.name || 'Anonymous'}</Text>
           <Text style={styles.email}>{user?.email}</Text>
@@ -400,25 +425,64 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   profileImageContainer: {
-    position: 'relative',
-    marginBottom: 15,
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 10,
+  },
+  imageGradientBorder: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    padding: 4,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  imageWrapper: {
+    backgroundColor: '#fff',
+    borderRadius: 76,
+    padding: 3,
+    width: '100%',
+    height: '100%',
   },
   profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 4,
-    borderColor: '#fff',
+    width: '100%',
+    height: '100%',
+    borderRadius: 73,
   },
   editImageButton: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#4CAF50',
-    padding: 8,
-    borderRadius: 20,
-    borderWidth: 3,
+    bottom: 5,
+    right: 5,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  editButtonGradient: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
     borderColor: '#fff',
+  },
+  verifiedBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 2,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   name: {
     fontSize: 24,
