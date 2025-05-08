@@ -1,4 +1,4 @@
-const { DonationItem, User } = require("../Database/index.js")
+const { DonationItem, User, Category } = require("../Database/index.js")
 
 module.exports = {
     createDonationItem: async (req, res) => {
@@ -20,7 +20,10 @@ module.exports = {
     getAllDonationItems: async (req, res) => {
         try {
             const donationItems = await DonationItem.findAll({
-                include: [{ model: User, attributes: ['id', 'name', 'email', 'rating', 'profilePic'] }]
+                include: [
+                  { model: User, attributes: ['id', 'name', 'email', 'rating', 'profilePic'] },
+                  { model: Category, attributes: ['name'] }
+                ]
             });
             res.status(200).json(donationItems);
         } catch (error) {

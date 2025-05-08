@@ -1,18 +1,47 @@
 // controllers/messageController.js
 
-const { Message } = require('../Database/index');
+const { Message, Conversation } = require('../Database/index');
+const { Op } = require('sequelize');
 
 // Create a new message
 exports.createMessage = async (req, res) => {
     try {
         const { text, isRead, roomId, senderId, receiverId } = req.body;
+        
+        // First, find or create a conversation
+        let conversation = await Conversation.findOne({
+            where: {
+                members: {
+                    [Op.contains]: [senderId, receiverId]
+                }
+            }
+        });
+
+        if (!conversation) {
+            console.log('Creating new conversation for users:', senderId, receiverId);
+            conversation = await Conversation.create({
+                members: [senderId, receiverId],
+                lastMessage: text,
+                lastMessageTime: new Date()
+            });
+        } else {
+            // Update last message
+            await conversation.update({
+                lastMessage: text,
+                lastMessageTime: new Date()
+            });
+        }
+
+        // Create the message with the conversation ID
         const newMessage = await Message.create({ 
             text, 
             isRead,
             roomId,
             senderId,
-            receiverId
+            receiverId,
+            ConversationId: conversation.id
         });
+
         res.status(201).json(newMessage);
     } catch (error) {
         console.error('Error creating message:', error);

@@ -235,6 +235,17 @@ export default function Chat({ route, navigation }) {
     }
   }, [messages, socket, currentUserId]);
 
+  // User info header for the chat
+  const renderUserHeader = () => (
+    <View style={styles.userHeader}>
+      <Image
+        source={{ uri: recipientProfilePic || 'https://via.placeholder.com/100' }}
+        style={styles.userAvatar}
+      />
+      <Text style={styles.userName}>{recipientName}</Text>
+    </View>
+  );
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -250,8 +261,9 @@ export default function Chat({ route, navigation }) {
         inverted={false}
         onContentSizeChange={scrollToBottom}
         onLayout={scrollToBottom}
+        ListHeaderComponent={renderUserHeader}
+        showsVerticalScrollIndicator={false}
       />
-
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -343,5 +355,23 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
     alignSelf: 'flex-end',
+  },
+  userHeader: {
+    alignItems: 'center',
+    marginTop: 32,
+    marginBottom: 16,
+  },
+  userAvatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    marginBottom: 12,
+    backgroundColor: '#e0e0e0',
+  },
+  userName: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#111',
+    textAlign: 'center',
   },
 });

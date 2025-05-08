@@ -12,23 +12,28 @@ const categoryIcons = {
   DIY: 'construct-outline',
   Appliances: 'tv-outline',
   Electronics: 'phone-portrait-outline',
-  Clothes: 'shirt-outline',
-  Toys: 'game-controller-outline',
+  Fashion: 'shirt-outline',
+  Beauty: 'rose-outline',
+  Kids: 'happy-outline',
   Books: 'book-outline',
+  Office: 'briefcase-outline',
   Leisure: 'bicycle-outline',
-  // Add more mappings as needed
+  Sports: 'football-outline',
+  Pets: 'paw-outline',
+  Health: 'medkit-outline',
+  Automotive: 'car-outline',
+  Food: 'fast-food-outline',
 };
 
 export default function DonationItems({ navigation }) {
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const fetchItems = async () => {
     try {
-
       const response = await axios.get(`${API_BASE}/donationItems/getAllItems`);
-
       setItems(response.data);
     } catch (error) {
       console.error('Error fetching items:', error);
@@ -49,9 +54,15 @@ export default function DonationItems({ navigation }) {
     fetchCategories();
   }, []);
 
+  // Log all category names for debugging
+  useEffect(() => {
+    if (categories && categories.length > 0) {
+       categories.map(c => c.name)
+    }
+  }, [categories]);
+
   const handleCategoryPress = (category) => {
-    console.log('Selected category:', category.name);
-    // Filter items based on the selected category
+    setSelectedCategory(category.name);
   };
 
   return (
@@ -81,20 +92,48 @@ export default function DonationItems({ navigation }) {
           contentContainerStyle={styles.categoriesContainer}
           style={{ marginBottom: 10 }}
         >
+          {/* All category */}
+          <TouchableOpacity
+            style={[
+              styles.categoryCard,
+              selectedCategory === null && styles.categoryCardSelected
+            ]}
+            onPress={() => setSelectedCategory(null)}
+          >
+            <View style={[
+              styles.categoryIcon,
+              selectedCategory === null && styles.categoryIconSelected
+            ]}>
+              <Ionicons name="grid-outline" size={30} color={selectedCategory === null ? "#fff" : "#00C44F"} />
+            </View>
+            <Text style={[
+              styles.categoryText,
+              selectedCategory === null && styles.categoryTextSelected
+            ]}>All</Text>
+          </TouchableOpacity>
           {categories.map((item) => (
             <TouchableOpacity
               key={item.id}
-              style={styles.categoryCard}
+              style={[
+                styles.categoryCard,
+                selectedCategory === item.name && styles.categoryCardSelected
+              ]}
               onPress={() => handleCategoryPress(item)}
             >
-              <View style={styles.categoryIcon}>
+              <View style={[
+                styles.categoryIcon,
+                selectedCategory === item.name && styles.categoryIconSelected
+              ]}>
                 <Ionicons
-                  name={categoryIcons[item.name] || 'cube-outline'}
+                  name={categoryIcons[item.name] ? categoryIcons[item.name] : 'cube-outline'}
                   size={30}
-                  color="#4CAF50"
+                  color={selectedCategory === item.name ? "#fff" : "#00C44F"}
                 />
               </View>
-              <Text style={styles.categoryText}>{item.name}</Text>
+              <Text style={[
+                styles.categoryText,
+                selectedCategory === item.name && styles.categoryTextSelected
+              ]}>{item.name}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -102,10 +141,15 @@ export default function DonationItems({ navigation }) {
         {/* Items Grid */}
         <View style={styles.itemsGrid}>
           {items
-            .filter((item) =>
-              item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              item.location?.toLowerCase().includes(searchQuery.toLowerCase())
-            )
+            .filter((item) => {
+              const matchesSearch =
+                item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                item.location?.toLowerCase().includes(searchQuery.toLowerCase())
+
+                
+                const matchesCategory = !selectedCategory || (item.Category?.name === selectedCategory);
+              return matchesSearch && matchesCategory;
+            })
             .map((item, index) => (
               <TouchableOpacity 
                 key={index} 
@@ -139,21 +183,12 @@ export default function DonationItems({ navigation }) {
                   </View>
                   {/* Spacer to push the button to the bottom */}
                   <View style={{ flex: 1 }} />
-                  <TouchableOpacity
-                    style={[
-                      styles.claimButtonLarge,
-                      { backgroundColor: item.status === 'claimed' ? '#666' : '#00C44F' }
-                    ]}
-                    disabled={item.status !== 'available'}
-                    onPress={() => {
-                      // Add your claim logic here
-                      console.log('Claiming item:', item.id);
-                    }}
-                  >
-                    <Text style={styles.claimButtonText}>
-                      {item.status === 'claimed' ? 'Claimed' : 'Claim'}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                    <Ionicons name="time-outline" size={16} color="#999" style={{ marginRight: 5 }} />
+                    <Text style={{ color: '#999', fontSize: 13 }}>
+                      {item.createdAt ? `${new Date(item.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : ''}
                     </Text>
-                  </TouchableOpacity>
+                  </View>
                 </View>
               </TouchableOpacity>
             ))}
@@ -197,27 +232,37 @@ const styles = {
     fontSize: 16,
   },
   categoriesContainer: {
-    paddingVertical: 5, // Reduce padding
-    paddingHorizontal: 5,
+    paddingVertical: 2, // Reduced from 5
+    paddingHorizontal: 2, // Reduced from 5
   },
   categoryCard: {
     alignItems: 'center',
-    marginHorizontal: 8, // Reduce margin
-    width: 90, // Increased width for longer names
+    marginHorizontal: 4,
+    width: 85,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+    elevation: 2,
   },
   categoryIcon: {
-    backgroundColor: '#C7F9CC',
-    padding: 11, // Slightly larger for better appearance
+    backgroundColor: '#fff',
+    padding: 10,
     borderRadius: 50,
-    marginBottom: 4, // Reduce margin
+    marginBottom: 2,
+    borderWidth: 2,
+    borderColor: '#00C44F',
   },
   categoryText: {
-    fontSize: 13,
-    color: '#333',
+    fontSize: 12,
+    color: '#00C44F',
     textAlign: 'center',
-    flexWrap: 'wrap', // Allow wrapping
-    width: '100%',    // Take full width of card
-    minHeight: 32,    // Ensure space for 2 lines
+    flexWrap: 'wrap',
+    width: '100%',
+    minHeight: 28,
+    fontWeight: 'bold',
   },
   itemsContainer: {
     marginTop: 5, // Add small margin top
@@ -230,10 +275,17 @@ const styles = {
   itemCard: {
     width: '48%',
     marginBottom: 16,
-    backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    // 3D shadow effect:
+    elevation: 8, // Android
+    shadowColor: '#000', // iOS
+    shadowOffset: { width: 0, height: 6 }, // iOS
+    shadowOpacity: 0.18, // iOS
+    shadowRadius: 12, // iOS
+    backgroundColor: '#fff', // Optional: helps the shadow stand out
   },
   itemImage: {
     width: '100%',
@@ -244,6 +296,9 @@ const styles = {
     padding: 12,
     flex: 1,
     justifyContent: 'flex-start',
+    // backgroundColor: '#C7F9CC', // Remove or comment out this line if you want no bg for the info section too
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
   },
   itemTitle: {
     fontSize: 16,
@@ -310,6 +365,19 @@ const styles = {
   claimButtonText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  categoryCardSelected: {
+    borderColor: '#00C44F',
+    backgroundColor: '#E9FFF2', // subtle green background for selected
+    elevation: 4,
+  },
+  categoryIconSelected: {
+    backgroundColor: '#00C44F',
+    borderColor: '#00C44F',
+  },
+  categoryTextSelected: {
+    color: '#00C44F',
     fontWeight: 'bold',
   },
 };

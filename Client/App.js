@@ -34,6 +34,7 @@ import FullScreenMap from "./screens/FullScreenMap";
 import UserProfile from "./screens/UserProfile";
 import EditProfile from './screens/EditProfile';
 import Settings from './screens/Settings';
+import Conversation from "./screens/Conversation";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -216,6 +217,17 @@ export default function App() {
               headerStyle: {
                 backgroundColor: '#4CAF50',
               }
+            }}
+          />
+          <Stack.Screen
+            name="Conversation"
+            component={Conversation}
+            options={{
+              title: "Chat",
+              headerShown: true,
+              headerStyle: { backgroundColor: "#fff" },
+              headerTintColor: "#4CAF50",
+              headerTitleStyle: { fontWeight: "bold" },
             }}
           />
         </Stack.Navigator>

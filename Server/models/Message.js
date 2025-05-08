@@ -19,6 +19,14 @@ module.exports = (sequelize, DataTypes) => {
     timestamp: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
+    },
+    ConversationId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'conversations',
+        key: 'id'
+      }
     }
   });
   return Message;
