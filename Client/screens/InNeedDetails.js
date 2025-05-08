@@ -12,6 +12,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE } from '../config';
+import axios from "axios"
+
 
 export default function InNeedDetails({ route, navigation }) {
   const { item } = route.params;
@@ -61,7 +64,7 @@ export default function InNeedDetails({ route, navigation }) {
     }
   };
 
-  const handleFulfilledSubmit = () => {
+  const handleFulfilledSubmit = (itemId) => {
     Alert.alert(
       'Confirm Fulfillment',
       'Are you sure you want to mark this request as fulfilled?',
@@ -70,15 +73,29 @@ export default function InNeedDetails({ route, navigation }) {
         {
           text: 'Yes',
           onPress: () => {
-            console.log('Fulfilled message:', fulfilledMessage);
+            console.log('Marking as fulfilled');
             setModalVisible(false);
-            // You can call an API here to update the post status
+  
+            // Make the PUT request to update the item
+            axios
+              .put(`${API_BASE}/inNeed/${itemId}`, {
+                isDone: true,
+                doneReason: fulfilledMessage, // Include fulfilled message here
+              })
+              .then((response) => {
+                console.log('Item updated:', response.data);
+                // Handle success (e.g., update UI)
+              })
+              .catch((error) => {
+                console.error('Error updating item:', error);
+                // Handle error (e.g., show error message)
+              });
           },
         },
       ]
     );
   };
-
+  
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -146,7 +163,7 @@ export default function InNeedDetails({ route, navigation }) {
         </View>
       </ScrollView>
 
-      {/* Fixed Bottom User Section */}
+     
       <View style={styles.userContainer}>
         <Image
           source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
@@ -186,10 +203,10 @@ export default function InNeedDetails({ route, navigation }) {
               multiline
             />
             <TouchableOpacity
-              style={[styles.contactButton, { marginTop: 16 }]}
+              style={styles.modalSubmitButton} 
               onPress={handleFulfilledSubmit}
             >
-              <Text style={styles.contactButtonText}>Submit</Text>
+              <Text style={styles.modalSubmitButtonText}>Submit</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 12 }}>
               <Text style={{ color: 'red', textAlign: 'center' }}>Cancel</Text>
@@ -205,12 +222,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   scrollContent: { paddingBottom: 120 },
   imageContainer: { width: '100%', height: 300 },
-  image: { width: '100%', height: '100%', resizeMode: 'cover' },
+  image: { width: '100%', height: '100%', resizeMode: 'cover', borderRadius: 12 },
   content: { padding: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 8 },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 8 },
   infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   infoText: { marginLeft: 8, fontSize: 16, color: '#666' },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 8, color: '#333' },
   description: { fontSize: 16, color: '#666', lineHeight: 24, marginBottom: 24 },
   actionButtons: {
     flexDirection: 'row',
@@ -222,9 +239,14 @@ const styles = StyleSheet.create({
   actionButtonText: { color: '#666', fontSize: 12, marginTop: 4 },
   mapContainer: {
     height: 200,
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
     marginTop: 16,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
   map: { flex: 1 },
   userContainer: {
@@ -241,13 +263,13 @@ const styles = StyleSheet.create({
   },
   userImage: { width: 60, height: 60, borderRadius: 30, marginRight: 16 },
   userInfo: { flex: 1 },
-  userName: { fontSize: 18, fontWeight: 'bold' },
+  userName: { fontSize: 18, fontWeight: 'bold', color: '#333' },
   userRating: { fontSize: 14, color: '#666' },
   contactButton: {
     backgroundColor: '#EFD13D',
-    paddingVertical: 20,
-    paddingHorizontal: 38,
-    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 24,
   },
   contactButtonText: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
   errorText: {
@@ -271,6 +293,11 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 12,
     width: '90%',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
   },
   input: {
     borderColor: '#ccc',
@@ -284,9 +311,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#4CAF50',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -298,5 +325,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginRight: 6,
+  },
+  modalSubmitButton: {
+    backgroundColor: '#4CAF50',  
+    paddingVertical: 14,  
+    paddingHorizontal: 40,  
+    borderRadius: 30,  
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,  
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  modalSubmitButtonText: {
+    color: '#fff',  
+    fontSize: 16,  
+    fontWeight: 'bold',
   },
 });

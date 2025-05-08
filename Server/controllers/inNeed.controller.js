@@ -65,14 +65,20 @@ exports.getInNeedById = async (req, res) => {
 exports.updateInNeed = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, images, location } = req.body;
+        const { title, description, images, location, isDone, isApproved, doneReason } = req.body;
+
         const item = await inNeed.findByPk(id);
         if (!item) return res.status(404).json({ message: 'InNeed item not found' });
 
-        item.title = title;
-        item.description = description;
-        item.images = images;
-        item.location = location;
+       
+        if (title) item.title = title;
+        if (description) item.description = description;
+        if (images) item.images = images;
+        if (location) item.location = location;
+        if (isDone !== undefined) item.isDone = isDone; 
+        if (isApproved !== undefined) item.isApproved = isApproved; 
+        if (doneReason) item.doneReason = doneReason; 
+
         await item.save();
 
         res.status(200).json(item);
@@ -81,6 +87,7 @@ exports.updateInNeed = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 // Delete an InNeed
 exports.deleteInNeed = async (req, res) => {
