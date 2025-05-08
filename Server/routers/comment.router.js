@@ -1,11 +1,38 @@
-const express = require("express");
-const {create,remove,findAll,findOne,update}= require("../controllers/comment.controller");
-const Router = express.Router();
+const router = require('express').Router();
+const commentController = require('../controllers/comment.controller');
 
-Router.post('/createComment',create);
-Router.get('/findAllComments',findAll);
-Router.get('/findOneComment/:id',findOne);
-Router.put('/updateComment/:id',update);
-Router.delete('/deleteComment/:id',remove);
+// Create a new comment
+router.post('/createComment', async (req, res) => {
+    try {
+        const comment = await commentController.createComment(req.body);
+        res.status(201).json(comment);
+    } catch (error) {
+        console.error('Error creating comment:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error creating comment'
+        });
+    }
+});
 
-module.exports = Router;
+// Get all comments for an inNeed
+router.get('/findAllComments', async (req, res) => {
+    try {
+        const comments = await commentController.findAllComments(req.query.inNeedId);
+        res.status(200).json(comments);
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error fetching comments'
+        });
+    }
+});
+
+// Delete a comment
+router.delete('/delete/:id', commentController.deleteComment);
+
+// Update a comment
+router.put('/update/:id', commentController.updateComment);
+
+module.exports = router;

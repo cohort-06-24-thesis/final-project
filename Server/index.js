@@ -61,6 +61,23 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('join_inNeed', (inNeedId) => {
+    socket.join(`inNeed_${inNeedId}`);
+    console.log(`User ${socket.id} joined inNeed room ${inNeedId}`);
+  });
+
+  socket.on('leave_inNeed', (inNeedId) => {
+    socket.leave(`inNeed_${inNeedId}`);
+    console.log(`User ${socket.id} left inNeed room ${inNeedId}`);
+  });
+
+  socket.on('post_comment', (comment) => {
+    io.in(`inNeed_${comment.inNeedId}`).emit('new_comment', {
+      ...comment,
+      timestamp: new Date().toISOString()
+    });
+  });
+
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
