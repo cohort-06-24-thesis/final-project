@@ -94,28 +94,46 @@ export default function DonationItems({ navigation }) {
         >
           {/* All category */}
           <TouchableOpacity
-            style={styles.categoryCard}
+            style={[
+              styles.categoryCard,
+              selectedCategory === null && styles.categoryCardSelected
+            ]}
             onPress={() => setSelectedCategory(null)}
           >
-            <View style={styles.categoryIcon}>
-              <Ionicons name="apps-outline" size={30} color="#4CAF50" />
+            <View style={[
+              styles.categoryIcon,
+              selectedCategory === null && styles.categoryIconSelected
+            ]}>
+              <Ionicons name="grid-outline" size={30} color={selectedCategory === null ? "#fff" : "#00C44F"} />
             </View>
-            <Text style={styles.categoryText}>All</Text>
+            <Text style={[
+              styles.categoryText,
+              selectedCategory === null && styles.categoryTextSelected
+            ]}>All</Text>
           </TouchableOpacity>
           {categories.map((item) => (
             <TouchableOpacity
               key={item.id}
-              style={styles.categoryCard}
+              style={[
+                styles.categoryCard,
+                selectedCategory === item.name && styles.categoryCardSelected
+              ]}
               onPress={() => handleCategoryPress(item)}
             >
-              <View style={styles.categoryIcon}>
+              <View style={[
+                styles.categoryIcon,
+                selectedCategory === item.name && styles.categoryIconSelected
+              ]}>
                 <Ionicons
                   name={categoryIcons[item.name] ? categoryIcons[item.name] : 'cube-outline'}
                   size={30}
-                  color="#4CAF50"
+                  color={selectedCategory === item.name ? "#fff" : "#00C44F"}
                 />
               </View>
-              <Text style={styles.categoryText}>{item.name}</Text>
+              <Text style={[
+                styles.categoryText,
+                selectedCategory === item.name && styles.categoryTextSelected
+              ]}>{item.name}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -219,22 +237,32 @@ const styles = {
   },
   categoryCard: {
     alignItems: 'center',
-    marginHorizontal: 4, // Reduced from 8
-    width: 85, // Slightly reduced from 90
+    marginHorizontal: 4,
+    width: 85,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+    elevation: 2,
   },
   categoryIcon: {
-    backgroundColor: '#C7F9CC',
-    padding: 10, // Reduced from 11
+    backgroundColor: '#fff',
+    padding: 10,
     borderRadius: 50,
-    marginBottom: 2, // Reduced from 4
+    marginBottom: 2,
+    borderWidth: 2,
+    borderColor: '#00C44F',
   },
   categoryText: {
-    fontSize: 12, // Reduced from 13
-    color: '#333',
+    fontSize: 12,
+    color: '#00C44F',
     textAlign: 'center',
     flexWrap: 'wrap',
     width: '100%',
-    minHeight: 28, // Reduced from 32
+    minHeight: 28,
+    fontWeight: 'bold',
   },
   itemsContainer: {
     marginTop: 5, // Add small margin top
@@ -247,16 +275,17 @@ const styles = {
   itemCard: {
     width: '48%',
     marginBottom: 16,
-    backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    // 3D shadow effect:
+    elevation: 8, // Android
+    shadowColor: '#000', // iOS
+    shadowOffset: { width: 0, height: 6 }, // iOS
+    shadowOpacity: 0.18, // iOS
+    shadowRadius: 12, // iOS
+    backgroundColor: '#fff', // Optional: helps the shadow stand out
   },
   itemImage: {
     width: '100%',
@@ -267,7 +296,7 @@ const styles = {
     padding: 12,
     flex: 1,
     justifyContent: 'flex-start',
-    backgroundColor: '#C7F9CC',
+    // backgroundColor: '#C7F9CC', // Remove or comment out this line if you want no bg for the info section too
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
   },
@@ -336,6 +365,19 @@ const styles = {
   claimButtonText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  categoryCardSelected: {
+    borderColor: '#00C44F',
+    backgroundColor: '#E9FFF2', // subtle green background for selected
+    elevation: 4,
+  },
+  categoryIconSelected: {
+    backgroundColor: '#00C44F',
+    borderColor: '#00C44F',
+  },
+  categoryTextSelected: {
+    color: '#00C44F',
     fontWeight: 'bold',
   },
 };

@@ -3,14 +3,13 @@ const { DonationItem, User, Category } = require("../Database/index.js")
 module.exports = {
     createDonationItem: async (req, res) => {
         try {
-            const { title, description, image, location, UserId, categoryId } = req.body
+            const { title, description, image, location, UserId } = req.body
             const donationItem = await DonationItem.create({
                 title,
                 description,
                 image,
                 location,
-                UserId,
-                categoryId
+                UserId
             })
             res.status(201).json(donationItem)
         } catch (error) {
