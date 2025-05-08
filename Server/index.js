@@ -92,6 +92,7 @@ io.on('connection', (socket) => {
       ...comment,
       timestamp: new Date().toISOString()
     });
+    
   });
 
   socket.on('join_inNeed', (inNeedId) => {
@@ -109,6 +110,7 @@ io.on('connection', (socket) => {
       ...comment,
       timestamp: new Date().toISOString()
     });
+    
   });
 
   socket.on('disconnect', (reason) => {
