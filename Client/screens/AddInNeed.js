@@ -98,14 +98,9 @@ export default function AddInNeed({ navigation }) {
     
     try {
       const res = await axios.post(`${API_BASE}/inNeed/create`,payload
-      //    {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(payload),
-      // }
+
     );
 
-      // if (!res.ok) throw new Error('Error creating InNeed');
 
       Alert.alert('Success', 'In-Need created!');
       navigation.goBack();
