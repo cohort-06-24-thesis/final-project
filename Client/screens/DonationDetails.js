@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import axios from 'axios';
 import { API_BASE } from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function DonationDetails({ route, navigation }) {
   const { item: initialItem } = route.params;
   const [item, setItem] = useState(initialItem);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
     const fetchItemDetails = async () => {
@@ -25,6 +27,14 @@ export default function DonationDetails({ route, navigation }) {
     };
     fetchItemDetails();
   }, [initialItem.id]);
+
+  useEffect(() => {
+    const loadUserId = async () => {
+      const storedUid = await AsyncStorage.getItem('userUID');
+      setCurrentUserId(storedUid);
+    };
+    loadUserId();
+  }, []);
 
   const handleFavorite = () => {
     console.log('Added to favorites');
@@ -47,6 +57,20 @@ export default function DonationDetails({ route, navigation }) {
     }
   };
 
+  const handleClaim = async () => {
+    try {
+      await axios.put(`${API_BASE}/donationItems/claim/${item.id}`);
+      // Refresh the item details to get the updated status
+      const response = await axios.get(`${API_BASE}/donationItems/${item.id}`);
+      setItem(response.data);
+      // Add some feedback for the user
+      Alert.alert('Success', 'Item has been marked as claimed');
+    } catch (error) {
+      console.error('Error claiming item:', error);
+      Alert.alert('Error', 'Failed to claim item');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
@@ -57,41 +81,35 @@ export default function DonationDetails({ route, navigation }) {
             style={styles.image}
           />
         </View>
-
-        {/* Content */}
         <View style={styles.content}>
           <Text style={styles.title}>{item.title}</Text>
-
-          {/* Status Badge */}
+          {/* Add this status badge */}
           <View style={styles.statusBadgeContainer}>
-            <Text style={[
-              styles.statusBadge,
-              { backgroundColor: item.status === 'available' ? '#4CAF50' : item.status === 'reserved' ? '#FFC107' : '#FF5722' }
-            ]}>
-              {item.status.toUpperCase()}
+            <Text 
+              style={[
+                styles.statusBadge,
+                { backgroundColor: item.status === 'claimed' ? '#666' : '#4CAF50' }
+              ]}
+            >
+              {item.status === 'claimed' ? 'Claimed' : 'Available'}
             </Text>
           </View>
-
           <View style={styles.infoRow}>
             <Ionicons name="location-outline" size={20} color="#666" />
             <Text style={styles.infoText}>{item.location}</Text>
           </View>
-
           <Text style={styles.sectionTitle}>Description</Text>
           <Text style={styles.description}>{item.description}</Text>
-
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.actionButton} onPress={handleFavorite}>
               <Ionicons name="heart-outline" size={24} color="#666" />
               <Text style={styles.actionButtonText}>Favorite</Text>
             </TouchableOpacity>
-
             <TouchableOpacity style={styles.actionButton} onPress={handleReport}>
               <Ionicons name="flag-outline" size={24} color="#666" />
               <Text style={styles.actionButtonText}>Report</Text>
             </TouchableOpacity>
           </View>
-
           {/* Map Section */}
           <Text style={styles.sectionTitle}>Location</Text>
           <TouchableOpacity
@@ -124,7 +142,6 @@ export default function DonationDetails({ route, navigation }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-
       {/* Fixed User Details Section */}
       <View style={styles.userContainer}>
         <Image 
@@ -135,9 +152,41 @@ export default function DonationDetails({ route, navigation }) {
           <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
           <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
         </View>
-        <TouchableOpacity style={styles.contactButton} onPress={handleContact}>
-          <Text style={styles.contactButtonText}>Contact</Text>
-        </TouchableOpacity>
+        {String(item?.User?.id) === String(currentUserId) ? (
+          <TouchableOpacity 
+            style={[
+              styles.contactButton, 
+              { backgroundColor: item.status === 'claimed' ? '#666' : '#4CAF50' }
+            ]}
+            onPress={handleClaim}
+            disabled={item.status === 'claimed'}
+          >
+            <Text style={styles.contactButtonText}>
+              {item.status === 'claimed' ? 'Claimed' : 'Mark as Claimed'}
+            </Text>
+            <Ionicons 
+              name={item.status === 'claimed' ? "checkmark-circle" : "checkmark-circle-outline"} 
+              size={18} 
+              color="#fff" 
+            />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity 
+            style={[
+              styles.contactButton,
+              { backgroundColor: item.status === 'claimed' ? '#666' : '#EFD13D' }
+            ]} 
+            onPress={handleContact}
+            disabled={item.status === 'claimed'}
+          >
+            <Text style={styles.contactButtonText}>
+              {item.status === 'claimed' ? 'Item Claimed' : 'Contact'}
+            </Text>
+            {item.status === 'claimed' && (
+              <Ionicons name="checkmark-circle" size={18} color="#fff" />
+            )}
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -220,12 +269,17 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     height: 200,
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
     marginTop: 16,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
-  map: {
-    flex: 1,
+  map: { 
+    flex: 1 
   },
   userContainer: {
     position: 'absolute',
@@ -257,15 +311,17 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   contactButton: {
+    flexDirection: 'row', // Add this to align text and icon
+    alignItems: 'center', // Add this to center vertically
     backgroundColor: '#EFD13D',
-    paddingVertical: 20,
-    paddingHorizontal: 38,
-    right: 8,
-    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 24,
   },
   contactButtonText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
+    marginRight: 6, // Add this to create space between text and icon
   },
 });
