@@ -9,6 +9,7 @@ module.exports = {
                 description,
                 image,
                 location,
+                isApproved: false, 
                 UserId
             })
             res.status(201).json(donationItem)
