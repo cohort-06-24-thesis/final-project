@@ -16,6 +16,7 @@ const createUser = async (req, res) => {
       email,
       password,
       role: 'user',
+      status:"active",
       rating: 0,
       
     });
