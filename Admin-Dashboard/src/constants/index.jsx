@@ -22,7 +22,7 @@ import {
       title: "Management",
       links: [
         { label: "Manage Users", icon: Users, path: "/manage-users" },
-        { label: "Manage Donation Items", icon: Boxes, path: "/manage-donation-items" },
+        { label: "Manage Donations ", icon: Boxes, path: "/manage-donation-items" },
         { label: "Manage InNeed", icon: HandHelping, path: "/manage-inneed" },
         { label: "Manage Campaigns", icon: Flag, path: "/manage-campaigns" },
         { label: "Manage Events", icon: CalendarCheck, path: "/manage-events" },

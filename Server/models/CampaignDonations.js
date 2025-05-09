@@ -32,6 +32,16 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DATE,
             allowNull: false
         },
+        isApproved: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
+        status: {
+            type: DataTypes.ENUM('active', 'completed'),
+            allowNull: false,
+            defaultValue: 'active'
+        },
         UserId: {
             type: DataTypes.STRING,
             allowNull: false

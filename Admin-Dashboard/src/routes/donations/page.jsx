@@ -415,7 +415,7 @@ const DonationItemsPage = () => {
                                         </button>
                                         <button
                                             onClick={confirmUpdate}
-                                            className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+                                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
                                         >
                                             Save Changes
                                         </button>
@@ -440,7 +440,7 @@ const DonationItemsPage = () => {
                                         </button>
                                         <button
                                             onClick={handleUpdate}
-                                            className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+                                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
                                         >
                                             Confirm Update
                                         </button>
