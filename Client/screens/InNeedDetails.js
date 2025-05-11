@@ -9,6 +9,8 @@ import {
   Alert,
   TextInput,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
@@ -498,71 +500,77 @@ export default function InNeedDetails({ route, navigation }) {
         visible={reportModalVisible}
         onRequestClose={() => setReportModalVisible(false)}
       >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>Report Item</Text>
-            <Text style={styles.modalSubtitle}>Why are you reporting this item?</Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalTitle}>Report Item</Text>
+              <Text style={styles.modalSubtitle}>Why are you reporting this item?</Text>
 
-            <TouchableOpacity
-              style={[styles.reasonButton, reportReason === 'inappropriate' && styles.selectedReason]}
-              onPress={() => setReportReason('inappropriate')}
-            >
-              <Text style={styles.reasonText}>Inappropriate content</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.reasonButton, reportReason === 'spam' && styles.selectedReason]}
-              onPress={() => setReportReason('spam')}
-            >
-              <Text style={styles.reasonText}>Spam or misleading</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.reasonButton, reportReason === 'duplicate' && styles.selectedReason]}
-              onPress={() => setReportReason('duplicate')}
-            >
-              <Text style={styles.reasonText}>Duplicate listing</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.reasonButton, reportReason === 'other' && styles.selectedReason]}
-              onPress={() => setReportReason('other')}
-            >
-              <Text style={styles.reasonText}>Other reason</Text>
-            </TouchableOpacity>
-
-            {reportReason === 'other' && (
-              <TextInput
-                style={styles.customReasonInput}
-                placeholder="Please specify your reason"
-                value={customReason}
-                onChangeText={setCustomReason}
-                multiline
-                numberOfLines={3}
-              />
-            )}
-
-            <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => {
-                  setReportModalVisible(false);
-                  setReportReason('');
-                  setCustomReason('');
-                }}
+                style={[styles.reasonButton, reportReason === 'inappropriate' && styles.selectedReason]}
+                onPress={() => setReportReason('inappropriate')}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.reasonText}>Inappropriate content</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.modalButton, styles.submitButton]}
-                onPress={submitReport}
+                style={[styles.reasonButton, reportReason === 'spam' && styles.selectedReason]}
+                onPress={() => setReportReason('spam')}
               >
-                <Text style={styles.submitButtonText}>Submit Report</Text>
+                <Text style={styles.reasonText}>Spam or misleading</Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.reasonButton, reportReason === 'duplicate' && styles.selectedReason]}
+                onPress={() => setReportReason('duplicate')}
+              >
+                <Text style={styles.reasonText}>Duplicate listing</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.reasonButton, reportReason === 'other' && styles.selectedReason]}
+                onPress={() => setReportReason('other')}
+              >
+                <Text style={styles.reasonText}>Other reason</Text>
+              </TouchableOpacity>
+
+              {reportReason === 'other' && (
+                <TextInput
+                  style={styles.customReasonInput}
+                  placeholder="Please specify your reason"
+                  value={customReason}
+                  onChangeText={setCustomReason}
+                  multiline
+                  numberOfLines={3}
+                />
+              )}
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => {
+                    setReportModalVisible(false);
+                    setReportReason('');
+                    setCustomReason('');
+                  }}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.submitButton]}
+                  onPress={submitReport}
+                >
+                  <Text style={styles.submitButtonText}>Submit Report</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
