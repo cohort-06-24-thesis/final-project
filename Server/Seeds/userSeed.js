@@ -8,6 +8,7 @@ const users = [
     email: 'medjemai4go@gmail.com',
     password: '123456',
     role: 'user',
+    status:"active",
     rating: 4.6,
   },
   {
@@ -17,6 +18,7 @@ const users = [
     email: 'rdamdoum@gmail.com',
     password: '112233',
     role: 'user',
+    status:"active",
     rating: 4.6,
   },
   {
@@ -26,6 +28,7 @@ const users = [
     email: 'benalimouin@gmail.com',
     password: '12346789',
     role: 'user',
+    status:"active",
     rating: 4.5,
   },
   {
@@ -34,6 +37,7 @@ const users = [
     email: 'garanassira@gmail.com',
     password: '123456',
     role: 'user',
+    status:"active",
     rating: 4.5,
   }
 ];

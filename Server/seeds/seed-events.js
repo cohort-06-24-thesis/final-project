@@ -11,6 +11,8 @@ const events = [
     location: 'Tunis Central Community Center',
     status: 'upcoming',
     participators: '50 volunteers needed',
+    isApproved: false,
+
     UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   },
   {
@@ -23,6 +25,8 @@ const events = [
     location: 'Sfax Public Library',
     status: 'upcoming',
     participators: '30 volunteers needed',
+    isApproved: true,
+
     UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   },
   {
@@ -35,6 +39,8 @@ const events = [
     location: 'Sousse Medical Center',
     status: 'upcoming',
     participators: '20 medical professionals needed',
+    isApproved: true,
+
     UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
   },
   {
@@ -46,6 +52,8 @@ const events = [
     location: 'Hammamet Beach',
     status: 'upcoming',
     participators: '100 volunteers needed',
+    isApproved: true,
+
     UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
   },
   {
@@ -56,6 +64,8 @@ const events = [
     location: 'Nabeul Community Center',
     status: 'upcoming',
     participators: '15 tech-savvy volunteers needed',
+    isApproved: true,
+
     UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   },
   {
@@ -66,6 +76,8 @@ const events = [
     location: 'Mahdia Youth Center',
     status: 'upcoming',
     participators: '25 professional mentors needed',
+    isApproved: true,
+
     UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   },
   {
@@ -76,6 +88,8 @@ const events = [
     location: 'Monastir Animal Shelter',
     status: 'upcoming',
     participators: '40 animal lovers needed',
+    isApproved: true,
+
     UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
   },
   {
@@ -87,6 +101,8 @@ const events = [
     location: 'Kairouan Green Space',
     status: 'upcoming',
     participators: '35 gardening enthusiasts needed',
+    isApproved: true,
+
     UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
   },
   {
@@ -97,6 +113,8 @@ const events = [
     location: 'Bizerte Tech Hub',
     status: 'upcoming',
     participators: '10 programming instructors needed',
+    isApproved: true,
+
     UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   },
   {
@@ -109,6 +127,8 @@ const events = [
 
     status: 'upcoming',
     participators: '45 artists and volunteers needed',
+    isApproved: true,
+
     UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   }
 ];

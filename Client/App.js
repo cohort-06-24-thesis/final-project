@@ -65,15 +65,17 @@ function TabNavigator() {
         headerShown: true,
       })}
     >
-      <Tab.Screen name="HomeTab" component={Home} options={{ title: "Home" }} />
-      <Tab.Screen name="Donations" component={DonationItems} />
+      <Tab.Screen name="HomeTab" component={Home} options={{ title: "" }} />
+      <Tab.Screen name="Donations" component={DonationItems} options={{ title: "" }}/>
       <Tab.Screen
         name="InNeed"
         component={InNeed}
-        options={{ title: "In Need" }}
+        options={{ title: "" }}
+          
+
       />
-      <Tab.Screen name="Campaign" component={Campaign} />
-      <Tab.Screen name="Events" component={Events} />
+      <Tab.Screen name="Campaign" component={Campaign} options={{ title: "" }}/>
+      <Tab.Screen name="Events" component={Events} options={{ title: "" }} />
     </Tab.Navigator>
   );
 }
