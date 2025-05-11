@@ -56,12 +56,12 @@ const deleteUser= async (req, res) => {
 const updateUser= async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, password } = req.body;
+    const { name, email, password,role,rating,status,profilePic } = req.body;
     const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
-    await user.update({ name, email, password });
+    await user.update({ name, email, password,role,rating,status,profilePic });
     res.status(200).json({ message: 'User updated successfully.', user });
   } catch (error) {
     console.error('Error updating user:', error);

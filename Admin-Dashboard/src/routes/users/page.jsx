@@ -75,6 +75,7 @@ const UserManagementPage = () => {
       setShowModal(false);
       setSelectedItem(null);
       setModalMode('');
+
     } catch (error) {
       console.log('Error updating data:', error);
     }
