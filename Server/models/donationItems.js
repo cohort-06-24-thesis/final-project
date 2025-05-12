@@ -29,6 +29,11 @@ module.exports=(sequelize, DataTypes) => {
             type: DataTypes.FLOAT, // Longitude as a float
             allowNull: true, // Optional field
         },
+        isApproved: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
         UserId: {
             type: DataTypes.STRING,
             allowNull: false,

@@ -35,6 +35,7 @@ const seedDonationItems = async () => {
         location: 'Tunis',
         latitude: 36.8065,
         longitude: 10.1815,
+        isApproved: true,
         categoryId: Fashion.id,
         UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
       },
@@ -46,6 +47,7 @@ const seedDonationItems = async () => {
         location: 'Sfax',
         latitude: 34.7405,
         longitude: 10.7603,
+        isApproved: true,
         categoryId: Kids.id,
         UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
       },
@@ -57,6 +59,7 @@ const seedDonationItems = async () => {
         location: 'Sousse',
         latitude: 35.8256,
         longitude: 10.6368,
+        isApproved: true,
         categoryId: Food.id,
         UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
       },
@@ -68,6 +71,7 @@ const seedDonationItems = async () => {
         location: 'Bizerte',
         latitude: 37.2707,
         longitude: 9.8739,
+        isApproved: true,
         categoryId: Health.id,
         UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
       },
@@ -79,6 +83,7 @@ const seedDonationItems = async () => {
         location: 'Nabeul',
         latitude: 36.4575,
         longitude: 10.7382,
+        isApproved: true,
         categoryId: Books.id,
         UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
       },
@@ -90,6 +95,7 @@ const seedDonationItems = async () => {
         location: 'Monastir',
         latitude: 35.7624,
         longitude: 10.8312,
+        isApproved: false,
         categoryId: Furniture.id,
         UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
       },
@@ -101,6 +107,8 @@ const seedDonationItems = async () => {
         location: 'Gabes',
         latitude: 33.8839,
         longitude: 10.0971,
+        isApproved: false,
+
         categoryId: Kids.id,
         UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
       },
@@ -112,6 +120,8 @@ const seedDonationItems = async () => {
         location: 'Kairouan',
         latitude: 35.6782,
         longitude: 10.1011,
+        isApproved: false,
+
         categoryId: Beauty.id,
         UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
       },
@@ -123,6 +133,8 @@ const seedDonationItems = async () => {
         location: 'Mahdia',
         latitude: 35.5042,
         longitude: 11.0628,
+        isApproved: false,
+
         categoryId: Appliances.id,
         UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
       },
@@ -134,6 +146,7 @@ const seedDonationItems = async () => {
         location: 'Zaghouan',
         latitude: 36.4002,
         longitude: 10.1482,
+        isApproved: true,
         categoryId: Sports.id,
         UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
       },
@@ -145,6 +158,8 @@ const seedDonationItems = async () => {
         location: 'Ariana',
         latitude: 36.8663,
         longitude: 10.1956,
+        isApproved: true,
+
         categoryId: Kids.id,
         UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
       },
@@ -156,6 +171,8 @@ const seedDonationItems = async () => {
         location: 'Hammamet',
         latitude: 36.4002,
         longitude: 10.6122,
+        isApproved: true,
+
         categoryId: Leisure.id,
         UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
       },
@@ -167,6 +184,8 @@ const seedDonationItems = async () => {
         location: 'Djerba',
         latitude: 33.8792,
         longitude: 10.8578,
+        isApproved: true,
+
         categoryId: Leisure.id,
         UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
       },
@@ -178,6 +197,8 @@ const seedDonationItems = async () => {
         location: 'Tozeur',
         latitude: 33.9012,
         longitude: 8.1134,
+        isApproved: true,
+
         categoryId: Garden.id,
         UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
       },
@@ -189,6 +210,8 @@ const seedDonationItems = async () => {
         location: 'Gafsa',
         latitude: 34.4214,
         longitude: 8.7802,
+        isApproved: true,
+
         categoryId: Office.id,
         UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
       },
@@ -200,6 +223,8 @@ const seedDonationItems = async () => {
         location: 'Kasserine',
         latitude: 35.1667,
         longitude: 8.8342,
+        isApproved: true,
+
         categoryId: Appliances.id,
         UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
       },
@@ -211,6 +236,8 @@ const seedDonationItems = async () => {
         location: 'Beja',
         latitude: 36.7375,
         longitude: 9.1815,
+        isApproved: true,
+
         categoryId: Sports.id,
         UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
       },
@@ -222,6 +249,8 @@ const seedDonationItems = async () => {
         location: 'Jendouba',
         latitude: 36.5000,
         longitude: 8.7800,
+        isApproved: true,
+
         categoryId: Health.id,
         UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
       },
@@ -234,6 +263,8 @@ const seedDonationItems = async () => {
         latitude: 32.9300,
         longitude: 10.4500,
         categoryId: Books.id,
+        isApproved: false,
+
         UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
       },
       {
@@ -244,6 +275,8 @@ const seedDonationItems = async () => {
         location: 'Medenine',
         latitude: 33.3500,
         longitude: 10.5000,
+        isApproved: true,
+
         categoryId: DIY.id,
         UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
       }
