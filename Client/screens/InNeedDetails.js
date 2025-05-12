@@ -8,6 +8,9 @@ import {
   TouchableOpacity,
   Alert,
   TextInput,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
@@ -27,6 +30,9 @@ export default function InNeedDetails({ route, navigation }) {
   const [editingComment, setEditingComment] = useState(null);
   const [editedContent, setEditedContent] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
 
   useEffect(() => {
     const loadUid = async () => {
@@ -94,7 +100,7 @@ export default function InNeedDetails({ route, navigation }) {
   };
 
   const handleReport = () => {
-    console.log('Report item');
+    setReportModalVisible(true);
   };
 
   const handleContact = () => {
@@ -203,6 +209,37 @@ export default function InNeedDetails({ route, navigation }) {
     } catch (error) {
       console.error('Error updating comment:', error);
       Alert.alert('Error', 'Failed to update comment');
+    }
+  };
+
+  const submitReport = async () => {
+    try {
+      const finalReason = reportReason === 'other' ? customReason : reportReason;
+
+      if (!finalReason) {
+        Alert.alert('Error', 'Please select or enter a reason for reporting');
+        return;
+      }
+
+      if (!Uid) {
+        Alert.alert('Error', 'You must be logged in to report an item');
+        return;
+      }
+
+      await axios.post(`${API_BASE}/report/createReport`, {
+        reason: finalReason,
+        userId: Uid,
+        itemId: item.id,
+        itemType: 'inNeed'
+      });
+
+      Alert.alert('Success', 'Thank you for your report. We will review it shortly.');
+      setReportModalVisible(false);
+      setReportReason('');
+      setCustomReason('');
+    } catch (error) {
+      console.error('Error submitting report:', error.response?.data || error.message);
+      Alert.alert('Error', 'Failed to submit report. Please try again.');
     }
   };
   
@@ -434,6 +471,86 @@ export default function InNeedDetails({ route, navigation }) {
           </View>
         </View>
       )}
+
+      {/* Report Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={reportModalVisible}
+        onRequestClose={() => setReportModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalTitle}>Report Item</Text>
+              <Text style={styles.modalSubtitle}>Why are you reporting this item?</Text>
+
+              <TouchableOpacity
+                style={[styles.reasonButton, reportReason === 'inappropriate' && styles.selectedReason]}
+                onPress={() => setReportReason('inappropriate')}
+              >
+                <Text style={styles.reasonText}>Inappropriate content</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.reasonButton, reportReason === 'spam' && styles.selectedReason]}
+                onPress={() => setReportReason('spam')}
+              >
+                <Text style={styles.reasonText}>Spam or misleading</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.reasonButton, reportReason === 'duplicate' && styles.selectedReason]}
+                onPress={() => setReportReason('duplicate')}
+              >
+                <Text style={styles.reasonText}>Duplicate listing</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.reasonButton, reportReason === 'other' && styles.selectedReason]}
+                onPress={() => setReportReason('other')}
+              >
+                <Text style={styles.reasonText}>Other reason</Text>
+              </TouchableOpacity>
+
+              {reportReason === 'other' && (
+                <TextInput
+                  style={styles.customReasonInput}
+                  placeholder="Please specify your reason"
+                  value={customReason}
+                  onChangeText={setCustomReason}
+                  multiline
+                  numberOfLines={3}
+                />
+              )}
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => {
+                    setReportModalVisible(false);
+                    setReportReason('');
+                    setCustomReason('');
+                  }}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.submitButton]}
+                  onPress={submitReport}
+                >
+                  <Text style={styles.submitButtonText}>Submit Report</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -839,6 +956,90 @@ const styles = StyleSheet.create({
   saveText: {
     color: '#fff',
     fontSize: 14,
+    fontWeight: '500',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalView: {
+    width: '90%',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    marginBottom: 15,
+    color: '#666',
+    textAlign: 'center',
+  },
+  reasonButton: {
+    width: '100%',
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 5,
+    backgroundColor: '#f0f0f0',
+  },
+  selectedReason: {
+    backgroundColor: '#e6f7ff',
+    borderColor: '#1890ff',
+    borderWidth: 1,
+  },
+  reasonText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  customReasonInput: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 10,
+    marginBottom: 15,
+    textAlignVertical: 'top',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 10,
+  },
+  modalButton: {
+    padding: 12,
+    borderRadius: 10,
+    minWidth: '45%',
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  submitButton: {
+    backgroundColor: '#EFD13D',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontWeight: '600',
+  },
+  submitButtonText: {
+    color: '#fff',
     fontWeight: '600',
   },
 });

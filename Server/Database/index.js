@@ -46,6 +46,9 @@ DonationItem.belongsTo(Category, { foreignKey: 'categoryId' });
 User.hasMany(report, { foreignKey: 'userId' });
 report.belongsTo(User, { foreignKey: 'userId' });
 
+DonationItem.hasMany(report, { foreignKey: 'itemId' });
+report.belongsTo(DonationItem, { foreignKey: 'itemId' });
+
 
 User.hasMany(Notification, { foreignKey: 'userId' });
 Notification.belongsTo(User, { foreignKey: 'userId' });
@@ -109,7 +112,7 @@ Comment.belongsTo(inNeed, {
   
 // const connection=async()=>{
 //   await sequelize.sync({force: true });
-// console.log('All models were synchronized successfully.');
+//   console.log('All models were synchronized successfully.');
 // }
 // connection()
 
