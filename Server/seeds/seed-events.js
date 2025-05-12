@@ -10,7 +10,7 @@ const events = [
     date: new Date('2024-04-15'),
     location: 'Tunis Central Community Center',
     status: 'upcoming',
-    participators: '50 volunteers needed',
+    participators: 0,
     UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   },
   {
@@ -22,7 +22,7 @@ const events = [
     date: new Date('2024-05-01'),
     location: 'Sfax Public Library',
     status: 'upcoming',
-    participators: '30 volunteers needed',
+    participators: 0,
     UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   },
   {
@@ -34,7 +34,7 @@ const events = [
     date: new Date('2024-04-20'),
     location: 'Sousse Medical Center',
     status: 'upcoming',
-    participators: '20 medical professionals needed',
+    participators: 0,
     UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
   },
   {
@@ -45,7 +45,7 @@ const events = [
     date: new Date('2024-06-10'),
     location: 'Hammamet Beach',
     status: 'upcoming',
-    participators: '100 volunteers needed',
+    participators: 0,
     UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
   },
   {
@@ -55,7 +55,7 @@ const events = [
     date: new Date('2024-05-20'),
     location: 'Nabeul Community Center',
     status: 'upcoming',
-    participators: '15 tech-savvy volunteers needed',
+    participators: 0,
     UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   },
   {
@@ -65,7 +65,7 @@ const events = [
     date: new Date('2024-07-01'),
     location: 'Mahdia Youth Center',
     status: 'upcoming',
-    participators: '25 professional mentors needed',
+    participators: 0,
     UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   },
   {
@@ -75,7 +75,7 @@ const events = [
     date: new Date('2024-04-30'),
     location: 'Monastir Animal Shelter',
     status: 'upcoming',
-    participators: '40 animal lovers needed',
+    participators: 0,
     UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
   },
   {
@@ -86,7 +86,7 @@ const events = [
     date: new Date('2024-05-15'),
     location: 'Kairouan Green Space',
     status: 'upcoming',
-    participators: '35 gardening enthusiasts needed',
+    participators: 0,
     UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
   },
   {
@@ -96,7 +96,7 @@ const events = [
     date: new Date('2024-06-05'),
     location: 'Bizerte Tech Hub',
     status: 'upcoming',
-    participators: '10 programming instructors needed',
+    participators: 0,
     UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   },
   {
@@ -108,7 +108,7 @@ const events = [
     location: 'Sidi Bou Said Cultural Center',
 
     status: 'upcoming',
-    participators: '45 artists and volunteers needed',
+    participators: 0,
     UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   }
 ];
