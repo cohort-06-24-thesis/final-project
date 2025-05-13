@@ -4,8 +4,6 @@ const {report} = require("../Database/index.js")
 module.exports= {
     createReport: async (req, res) => {
     try {
-        console.log('Report request body:', req.body); // Log the request body
-        
         const createdReport = await report.create({
             reason: req.body.reason,
             userId: req.body.userId,
