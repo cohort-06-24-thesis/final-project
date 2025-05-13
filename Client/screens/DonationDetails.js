@@ -119,6 +119,19 @@ export default function DonationDetails({ route, navigation }) {
     }
   };
 
+  // Add useEffect to get current user ID when component mounts
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userUID');
+        setCurrentUserId(userId);
+      } catch (error) {
+        console.error('Error getting current user:', error);
+      }
+    };
+    getCurrentUser();
+  }, []);
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
@@ -216,7 +229,13 @@ export default function DonationDetails({ route, navigation }) {
         />
         <TouchableOpacity 
           style={styles.userInfo}
-          onPress={() => navigation.navigate('OtherUser', { userId: item?.User?.id })}
+          onPress={() => {
+            if (String(item?.User?.id) === String(currentUserId)) {
+              navigation.navigate('UserProfile');
+            } else {
+              navigation.navigate('OtherUser', { userId: item?.User?.id });
+            }
+          }}
         >
           <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
           <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
