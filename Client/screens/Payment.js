@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,11 @@ export default function Payment({ route, navigation }) {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const { initPaymentSheet, presentPaymentSheet } = usePaymentSheet();
+   useEffect(() => {
+    initStripe({
+      publishableKey: 'pk_test_51RMTosPOIMZHYlJT7cZ0Vk2xPiP0XLE7x1lRX3iN8IY3AWmLu8aNiGcLsZT0bPN9jgE6PLbO9KxCDPWmNu6tlrdD00T7wLIMpB', 
+    });
+  }, []);
 
   const handlePayment = async () => {
     if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
