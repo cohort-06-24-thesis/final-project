@@ -32,9 +32,9 @@ export default function CampaignDetails({ route, navigation }) {
           <Text style={styles.donateButtonText}>I support</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.shareButton}>
+        {/* <TouchableOpacity style={styles.shareButton}>
           <Text style={styles.shareButtonText}>Share</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <Text style={styles.description}>{campaign.description}</Text>
       </View>

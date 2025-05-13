@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { initStripe, usePaymentSheet } from '@stripe/stripe-react-native';
 import axios from 'axios';
+import { API_BASE } from '../config'
 
 // Configure axios defaults
 axios.defaults.timeout = 10000;
@@ -31,7 +32,7 @@ export default function Payment({ route, navigation }) {
     //       // Create payment intent on backend
     //   const response = await axios.post(`${API_URL}/stripe/create-payment-intent`, {
       // Create payment intent on the server
-      const response = await axios.post('http://192.168.1.159:3000/api/payment/create-intent', {
+      const response = await axios.post(`${API_BASE}/payment/create-intent`, {
         amount: parseFloat(amount),
         campaignId: campaign.id
       });
