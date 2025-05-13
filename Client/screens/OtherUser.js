@@ -8,12 +8,15 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Dimensions
+  Dimensions,
+  Modal,
+  TextInput
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import { API_BASE } from '../config';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -31,6 +34,9 @@ export default function OtherUser({ route, navigation }) {
   const [showingAllActivities, setShowingAllActivities] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 3;
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
 
   useEffect(() => {
     fetchUserData();
@@ -101,6 +107,38 @@ export default function OtherUser({ route, navigation }) {
     }
   };
 
+  const submitReport = async () => {
+    try {
+      const finalReason = reportReason === 'other' ? customReason : reportReason;
+      
+      if (!finalReason) {
+        Alert.alert('Error', 'Please select or enter a reason for reporting');
+        return;
+      }
+
+      const currentUserId = await AsyncStorage.getItem('userUID');
+      if (!currentUserId) {
+        Alert.alert('Error', 'You must be logged in to report a user');
+        return;
+      }
+
+      await axios.post(`${API_BASE}/report/createReport`, {
+        reason: finalReason,
+        userId: currentUserId,
+        reportedUserId: userId,
+        itemType: 'user'
+      });
+
+      Alert.alert('Success', 'Thank you for your report. We will review it shortly.');
+      setReportModalVisible(false);
+      setReportReason('');
+      setCustomReason('');
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      Alert.alert('Error', 'Failed to submit report. Please try again.');
+    }
+  };
+
   const StatCard = ({ icon, label, value }) => (
     <View style={styles.statCard}>
       <LinearGradient
@@ -167,50 +205,20 @@ export default function OtherUser({ route, navigation }) {
                 />
               </View>
             </LinearGradient>
-            {user?.verified && (
-              <View style={styles.verifiedBadge}>
-                <MaterialCommunityIcons name="check-decagram" size={24} color="#4CAF50" />
-              </View>
-            )}
           </View>
-          <Text style={styles.name}>{user?.name || 'Anonymous'}</Text>
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={20} color="#FFD700" />
-            <Text style={styles.rating}>{user?.rating?.toFixed(1) || '0.0'}</Text>
+          <View style={styles.infoRow}>
+            <View style={styles.infoIconContainer}>
+              <Ionicons name="people" size={18} color="#4CAF50" />
+            </View>
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>Impact</Text>
+              <Text style={styles.infoText}>
+                Helped <Text style={styles.infoHighlight}>{user?.totalHelped}</Text> people
+              </Text>
+            </View>
           </View>
         </View>
       </LinearGradient>
-
-      <View style={styles.content}>
-        <View style={styles.bioSection}>
-          <View style={styles.infoHeader}>
-            <Text style={styles.infoTitle}>Profile Information</Text>
-          </View>
-          <View style={styles.infoContainer}>
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconContainer}>
-                <Ionicons name="calendar" size={18} color="#4CAF50" />
-              </View>
-              <View style={styles.infoTextContainer}>
-                <Text style={styles.infoLabel}>Member Since</Text>
-                <Text style={styles.infoText}>{user?.joinDate}</Text>
-              </View>
-            </View>
-            <View style={styles.infoDivider} />
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconContainer}>
-                <Ionicons name="people" size={18} color="#4CAF50" />
-              </View>
-              <View style={styles.infoTextContainer}>
-                <Text style={styles.infoLabel}>Impact</Text>
-                <Text style={styles.infoText}>
-                  Helped <Text style={styles.infoHighlight}>{user?.totalHelped}</Text> people
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      </View>
 
       <View style={styles.statsContainer}>
         <StatCard 
@@ -277,7 +285,86 @@ export default function OtherUser({ route, navigation }) {
           <MaterialCommunityIcons name="chat" size={24} color="#fff" />
           <Text style={styles.chatButtonText}>Send Message</Text>
         </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.reportButton}
+          onPress={() => setReportModalVisible(true)}
+        >
+          <MaterialCommunityIcons name="alert-circle-outline" size={24} color="#FF6B6B" />
+          <Text style={styles.reportButtonText}>Report User</Text>
+        </TouchableOpacity>
       </View>
+
+      {/* Report Modal */}
+      <Modal
+        visible={reportModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setReportModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Report User</Text>
+            <Text style={styles.modalSubtitle}>Why are you reporting this user?</Text>
+
+            <TouchableOpacity 
+              style={[styles.reportOption, reportReason === 'inappropriate' && styles.reportOptionSelected]}
+              onPress={() => setReportReason('inappropriate')}
+            >
+              <Text style={styles.reportOptionText}>Inappropriate Behavior</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.reportOption, reportReason === 'spam' && styles.reportOptionSelected]}
+              onPress={() => setReportReason('spam')}
+            >
+              <Text style={styles.reportOptionText}>Spam or Scam</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.reportOption, reportReason === 'harassment' && styles.reportOptionSelected]}
+              onPress={() => setReportReason('harassment')}
+            >
+              <Text style={styles.reportOptionText}>Harassment</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.reportOption, reportReason === 'other' && styles.reportOptionSelected]}
+              onPress={() => setReportReason('other')}
+            >
+              <Text style={styles.reportOptionText}>Other</Text>
+            </TouchableOpacity>
+
+            {reportReason === 'other' && (
+              <TextInput
+                style={styles.customInput}
+                placeholder="Please specify the reason"
+                value={customReason}
+                onChangeText={setCustomReason}
+                multiline
+              />
+            )}
+
+            <TouchableOpacity 
+              style={styles.submitButton} 
+              onPress={submitReport}
+            >
+              <Text style={styles.submitButtonText}>Submit Report</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.cancelButton}
+              onPress={() => {
+                setReportModalVisible(false);
+                setReportReason('');
+                setCustomReason('');
+              }}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -674,5 +761,93 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
     marginTop: 8,
+  },
+  reportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+  },
+  reportButtonText: {
+    color: '#FF6B6B',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 20,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#333',
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 20,
+  },
+  reportOption: {
+    padding: 15,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+    marginBottom: 10,
+  },
+  reportOptionSelected: {
+    backgroundColor: '#FF6B6B15',
+    borderColor: '#FF6B6B',
+    borderWidth: 1,
+  },
+  reportOptionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  customInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 10,
+    marginBottom: 20,
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  submitButton: {
+    backgroundColor: '#FF6B6B',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontSize: 16,
   }
 });
