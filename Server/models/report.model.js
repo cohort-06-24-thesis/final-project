@@ -5,20 +5,35 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         },
         userId: {
-            type: DataTypes.STRING,  // Changed to STRING to match User model's id type
+            type: DataTypes.STRING,  // The user who made the report
             allowNull: false
+        },
+        reportedUserId: {           // Add this new field
+            type: DataTypes.STRING,  // The user being reported
+            allowNull: true
         },
         itemId: {
-            type: DataTypes.INTEGER,  // This should be INTEGER if DonationItem uses SERIAL/INTEGER for id
-            allowNull: true  // Making it nullable for now to avoid constraints issues
+            type: DataTypes.INTEGER,
+            allowNull: true
         },
-        itemType: { // <--- Add this
+        itemType: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true,
         }
     }, {
         timestamps: true
     });
+
+    Report.associate = (models) => {
+        Report.belongsTo(models.User, {
+            foreignKey: 'userId',
+            as: 'reporter'
+        });
+        Report.belongsTo(models.User, {
+            foreignKey: 'reportedUserId',
+            as: 'reportedUser'
+        });
+    };
 
     return Report;
 };
