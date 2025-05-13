@@ -39,9 +39,11 @@ export default function UserProfile({ navigation }) {
   const [showingAllActivities, setShowingAllActivities] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 3;
+  const [wishlistItems, setWishlistItems] = useState([]);
 
   useEffect(() => {
     fetchUserData();
+    fetchWishlistItems();
   }, []);
 
   const fetchUserData = async () => {
@@ -122,6 +124,97 @@ export default function UserProfile({ navigation }) {
     }
   };
 
+  const fetchWishlistItems = async () => {
+    try {
+        const userId = await AsyncStorage.getItem('userUID');
+        if (!userId) return;
+
+        const favoritesResponse = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
+        console.log('Raw favorites:', favoritesResponse.data);
+
+        const wishlistDetails = await Promise.all(
+            favoritesResponse.data.map(async (favorite) => {
+                try {
+                    // Use the nested data from the favorite response
+                    if (favorite.donationItemId && favorite.DonationItem) {
+                        return {
+                            ...favorite.DonationItem,
+                            id: favorite.id,
+                            favoriteId: favorite.id,
+                            donationItemId: favorite.donationItemId,
+                            type: 'donation'
+                        };
+                    } 
+                    else if (favorite.eventId && favorite.Event) {
+                        return {
+                            ...favorite.Event,
+                            id: favorite.id,
+                            favoriteId: favorite.id,
+                            eventId: favorite.eventId,
+                            type: 'event'
+                        };
+                    }
+                    else if (favorite.inNeedId && favorite.InNeed) {
+                        return {
+                            ...favorite.InNeed,
+                            id: favorite.id,
+                            favoriteId: favorite.id,
+                            inNeedId: favorite.inNeedId,
+                            type: 'inNeed'
+                        };
+                    }
+                    return null;
+                } catch (error) {
+                    console.error('Error processing favorite item:', error);
+                    return null;
+                }
+            })
+        );
+
+        const validItems = wishlistDetails.filter(item => item !== null);
+        console.log('Processed wishlist items:', validItems);
+        setWishlistItems(validItems);
+    } catch (error) {
+        console.error('Error fetching wishlist:', error?.response?.data || error.message);
+        setWishlistItems([]);
+    }
+};
+
+  const handleRemoveFromWishlist = async (itemId) => {
+    try {
+        await axios.delete(`${API_BASE}/favourite/deleteFavourite/${itemId}`);
+        setWishlistItems(prev => prev.filter(item => item.id !== itemId));
+        Alert.alert('Success', 'Item removed from wishlist');
+    } catch (error) {
+        console.error('Error removing from wishlist:', error?.response?.data || error.message);
+        Alert.alert('Error', 'Failed to remove item from wishlist');
+    }
+};
+
+  const addToWishlist = async (itemId, itemType) => {
+    try {
+        const userId = await AsyncStorage.getItem('userUID');
+        if (!userId) {
+            Alert.alert('Error', 'Please login first');
+            return;
+        }
+
+        const response = await axios.post(`${API_BASE}/favourite/createFavourite`, {
+            userId,
+            itemId,
+            itemType
+        });
+
+        if (response.data) {
+            await fetchWishlistItems();
+            Alert.alert('Success', 'Item added to wishlist');
+        }
+    } catch (error) {
+        console.error('Error adding to wishlist:', error?.response?.data || error.message);
+        Alert.alert('Error', 'Failed to add item to wishlist');
+    }
+};
+
   const handleLogout = () => {
     Alert.alert(
       'Logout',
@@ -196,6 +289,101 @@ export default function UserProfile({ navigation }) {
       <MaterialCommunityIcons name="chevron-right" size={20} color="#ccc" />
     </TouchableOpacity>
   );
+
+  const WishlistItem = ({ item }) => {
+    // Get the correct image URL based on item type
+    const imageUrl = item.type === 'event' ? 
+        (item.image || item.images?.[0] || 'https://via.placeholder.com/100') :
+        (Array.isArray(item.image) ? item.image[0] : item.image || 'https://via.placeholder.com/100');
+
+    const getNavigationScreen = (type) => {
+        switch(type) {
+            case 'donation':
+                return 'DonationDetails';
+            case 'inNeed':
+                return 'InNeedDetails';
+            case 'event':
+                return 'EventDetails';
+            default:
+                return 'DonationDetails';
+        }
+    };
+
+    const handleNavigation = () => {
+        const screen = getNavigationScreen(item.type);
+        let navigationParams = {};
+
+        switch(item.type) {
+            case 'event':
+                navigationParams = {
+                    event: {
+                        id: item.eventId,
+                        title: item.title,
+                        description: item.description,
+                        images: item.images || [item.image],
+                        location: item.location,
+                        date: item.date,
+                        participators: item.participators,
+                        ...item // Include any other event-specific fields
+                    }
+                };
+                break;
+            case 'donation':
+                navigationParams = {
+                    item: {
+                        id: item.donationItemId,
+                        title: item.title,
+                        image: item.image,
+                        location: item.location,
+                        ...item // Include any other donation-specific fields
+                    }
+                };
+                break;
+            case 'inNeed':
+                navigationParams = {
+                    item: {
+                        id: item.inNeedId,
+                        title: item.title,
+                        images: Array.isArray(item.image) ? item.image : [item.image],
+                        location: item.location,
+                        ...item // Include any other inNeed-specific fields
+                    }
+                };
+                break;
+        }
+
+        navigation.navigate(screen, navigationParams);
+    };
+
+    return (
+        <TouchableOpacity 
+            style={styles.wishlistItem}
+            onPress={handleNavigation}
+        >
+            <Image 
+                source={{ uri: imageUrl }}
+                style={styles.wishlistImage}
+            />
+            <View style={styles.wishlistItemContent}>
+                <Text style={styles.wishlistItemTitle} numberOfLines={1}>
+                    {item.title}
+                </Text>
+                {item.location && (
+                    <Text style={styles.wishlistItemLocation} numberOfLines={1}>
+                        <Ionicons name="location-outline" size={14} color="#666" />
+                        {item.location}
+                    </Text>
+                )}
+            </View>
+            <TouchableOpacity 
+                style={styles.removeWishlistButton}
+                onPress={() => handleRemoveFromWishlist(item.favoriteId)}
+            >
+                <Ionicons name="heart" size={20} color="#FF6B6B" />
+            </TouchableOpacity>
+        </TouchableOpacity>
+    );
+};
 
   if (loading) {
     return (
@@ -304,6 +492,32 @@ export default function UserProfile({ navigation }) {
           label="In Needs" 
           value={stats.inNeeds} 
         />
+      </View>
+
+      <View style={styles.wishlistSection}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionHeaderLeft}>
+            <MaterialCommunityIcons name="heart" size={24} color="#FF6B6B" />
+            <Text style={styles.sectionTitle}>Your Wishlist</Text>
+          </View>
+        </View>
+        
+        {wishlistItems.length > 0 ? (
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.wishlistContainer}
+          >
+            {wishlistItems.map((item) => (
+              <WishlistItem key={item.id} item={item} />
+            ))}
+          </ScrollView>
+        ) : (
+          <View style={styles.emptyWishlist}>
+            <MaterialCommunityIcons name="heart-outline" size={40} color="#ddd" />
+            <Text style={styles.emptyWishlistText}>Your wishlist is empty</Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.recentActivity}>
@@ -805,5 +1019,72 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
     marginTop: 8,
-  }
+  },
+  wishlistSection: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    marginHorizontal: 16,
+    marginBottom: 20,
+    padding: 16,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  wishlistContainer: {
+    paddingVertical: 16,
+  },
+  wishlistItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginRight: 16,
+    padding: 8,
+    width: 280,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  wishlistImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  wishlistItemContent: {
+    flex: 1,
+  },
+  wishlistItemTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  wishlistItemLocation: {
+    fontSize: 14,
+    color: '#666',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  removeWishlistButton: {
+    padding: 8,
+  },
+  emptyWishlist: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    marginTop: 12,
+  },
+  emptyWishlistText: {
+    color: '#495057',
+    fontSize: 15,
+    marginTop: 8,
+  },
+  sectionHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
 });

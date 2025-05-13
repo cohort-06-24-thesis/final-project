@@ -30,9 +30,13 @@ export default function InNeedDetails({ route, navigation }) {
   const [editingComment, setEditingComment] = useState(null);
   const [editedContent, setEditedContent] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
+
+  const [isFavorited, setIsFavorited] = useState(false);
+
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [customReason, setCustomReason] = useState('');
+
 
   useEffect(() => {
     const loadUid = async () => {
@@ -46,6 +50,25 @@ export default function InNeedDetails({ route, navigation }) {
     };
     loadUid();
   }, []);
+
+ 
+  useEffect(() => {
+    const checkIfFavorited = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userUID');
+        if (!userId) return;
+
+        const response = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
+        const favorites = response.data;
+        setIsFavorited(favorites.some(fav => fav.inNeedId === item.id));
+      } catch (error) {
+        console.error('Error checking favorite status:', error);
+      }
+    };
+
+    checkIfFavorited();
+  }, [item.id]);
+
 
   useEffect(() => {
     const socketInstance = io(API_BASE.replace('/api', ''));
@@ -95,8 +118,41 @@ export default function InNeedDetails({ route, navigation }) {
     );
   }
 
-  const handleFavorite = () => {
-    console.log('Added to favorites');
+  const handleFavorite = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userUID');
+      if (!userId) {
+        Alert.alert('Error', 'Please login to manage favorites');
+        return;
+      }
+
+      if (isFavorited) {
+        // Find the favorite first before deleting
+        const favoritesResponse = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
+        const favorite = favoritesResponse.data.find(fav => fav.inNeedId === item.id);
+        
+        if (favorite) {
+          await axios.delete(`${API_BASE}/favourite/deleteFavourite/${favorite.id}`);
+          setIsFavorited(false);
+          Alert.alert('Success', 'Item removed from wishlist');
+        }
+      } else {
+        // Add to favorites with proper structure
+        const response = await axios.post(`${API_BASE}/favourite/createFavourite`, {
+          userId,
+          inNeedId: item.id, // Use inNeedId instead of itemId
+          type: 'inNeed'
+        });
+
+        if (response.data) {
+          setIsFavorited(true);
+          Alert.alert('Success', 'Item added to wishlist');
+        }
+      }
+    } catch (error) {
+      console.error('Error managing favorites:', error?.response?.data || error.message);
+      Alert.alert('Error', 'Failed to update wishlist');
+    }
   };
 
   const handleReport = () => {
@@ -266,8 +322,17 @@ export default function InNeedDetails({ route, navigation }) {
 
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.actionButton} onPress={handleFavorite}>
-              <Ionicons name="heart-outline" size={24} color="#666" />
-              <Text style={styles.actionButtonText}>Favorite</Text>
+              <Ionicons 
+                name={isFavorited ? "heart" : "heart-outline"} 
+                size={24} 
+                color={isFavorited ? "#FF6B6B" : "#666"} 
+              />
+              <Text style={[
+                styles.actionButtonText,
+                isFavorited && { color: "#FF6B6B" }
+              ]}>
+                Favorite
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionButton} onPress={handleReport}>

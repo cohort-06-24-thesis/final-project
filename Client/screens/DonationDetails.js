@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import axios from 'axios';
-import { API_BASE } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE } from '../config';
 
 export default function DonationDetails({ route, navigation }) {
   const { item: initialItem } = route.params;
   const [item, setItem] = useState(initialItem);
   const [loading, setLoading] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState(null);
-  const [reportModalVisible, setReportModalVisible] = useState(false);
-  const [reportReason, setReportReason] = useState('');
-  const [customReason, setCustomReason] = useState('');
+  const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
     const fetchItemDetails = async () => {
@@ -32,51 +29,65 @@ export default function DonationDetails({ route, navigation }) {
   }, [initialItem.id]);
 
   useEffect(() => {
-    const loadUserId = async () => {
-      const storedUid = await AsyncStorage.getItem('userUID');
-      setCurrentUserId(storedUid);
-    };
-    loadUserId();
-  }, []);
+    const checkIfFavorited = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userUID');
+        if (!userId) return;
 
-  const handleFavorite = () => {
-    console.log('Added to favorites');
+        const response = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
+        console.log('Favorites response:', response.data); // Debug log
+        
+        const favorites = response.data;
+        const isFav = favorites.some(fav => 
+          fav.itemId === item.id || fav.donationItemId === item.id
+        );
+        setIsFavorited(isFav);
+      } catch (error) {
+        console.error('Error checking favorite status:', error?.response?.data || error.message);
+      }
+    };
+
+    if (item.id) {
+      checkIfFavorited();
+    }
+  }, [item.id]);
+
+  const handleFavorite = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userUID');
+      if (!userId) {
+        Alert.alert('Error', 'Please login to manage favorites');
+        return;
+      }
+
+      if (isFavorited) {
+        const favoritesResponse = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
+        const favorite = favoritesResponse.data.find(fav => fav.donationItemId === item.id);
+        
+        if (favorite) {
+          await axios.delete(`${API_BASE}/favourite/deleteFavourite/${favorite.id}`);
+          setIsFavorited(false);
+          Alert.alert('Success', 'Item removed from wishlist');
+        }
+      } else {
+        const response = await axios.post(`${API_BASE}/favourite/createFavourite`, {
+          userId,
+          donationItemId: item.id
+        });
+
+        if (response.data) {
+          setIsFavorited(true);
+          Alert.alert('Success', 'Item added to wishlist');
+        }
+      }
+    } catch (error) {
+      console.error('Error managing favorites:', error?.response?.data || error.message);
+      Alert.alert('Error', 'Failed to update wishlist. Please try again later.');
+    }
   };
 
   const handleReport = () => {
-    setReportModalVisible(true);
-  };
-
-  const submitReport = async () => {
-    try {
-      const finalReason = reportReason === 'other' ? customReason : reportReason;
-      
-      if (!finalReason) {
-        Alert.alert('Error', 'Please select or enter a reason for reporting');
-        return;
-      }
-      
-      if (!currentUserId) {
-        Alert.alert('Error', 'You must be logged in to report an item');
-        return;
-      }
-
-      // Send report to backend with proper data structure
-      await axios.post(`${API_BASE}/report/createReport`, {
-        reason: finalReason,
-        userId: currentUserId,  // Send as is since the model expects STRING
-        itemId: item.id,        // Send as is since it will be coerced to INTEGER
-        itemType: 'donation'
-      });
-      
-      Alert.alert('Success', 'Thank you for your report. We will review it shortly.');
-      setReportModalVisible(false);
-      setReportReason('');
-      setCustomReason('');
-    } catch (error) {
-      console.error('Error submitting report:', error.response?.data || error.message);
-      Alert.alert('Error', 'Failed to submit report. Please try again.');
-    }
+    console.log('Report item');
   };
 
   const handleContact = () => {
@@ -92,105 +103,8 @@ export default function DonationDetails({ route, navigation }) {
     }
   };
 
-  const handleClaim = async () => {
-    try {
-      await axios.put(`${API_BASE}/donationItems/claim/${item.id}`);
-      // Refresh the item details to get the updated status
-      const response = await axios.get(`${API_BASE}/donationItems/${item.id}`);
-      setItem(response.data);
-      // Add some feedback for the user
-      Alert.alert('Success', 'Item has been marked as claimed');
-    } catch (error) {
-      console.error('Error claiming item:', error);
-      Alert.alert('Error', 'Failed to claim item');
-    }
-  };
-
   return (
     <View style={styles.container}>
-      {/* Report Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={reportModalVisible}
-        onRequestClose={() => setReportModalVisible(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.centeredView}
-          keyboardVerticalOffset={80}
-        >
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.modalView}>
-              <Text style={styles.modalTitle}>Report Item</Text>
-              <Text style={styles.modalSubtitle}>Why are you reporting this item?</Text>
-              
-              <TouchableOpacity 
-                style={[styles.reasonButton, reportReason === 'inappropriate' && styles.selectedReason]}
-                onPress={() => setReportReason('inappropriate')}
-              >
-                <Text style={styles.reasonText}>Inappropriate content</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.reasonButton, reportReason === 'spam' && styles.selectedReason]}
-                onPress={() => setReportReason('spam')}
-              >
-                <Text style={styles.reasonText}>Spam or misleading</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.reasonButton, reportReason === 'duplicate' && styles.selectedReason]}
-                onPress={() => setReportReason('duplicate')}
-              >
-                <Text style={styles.reasonText}>Duplicate listing</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.reasonButton, reportReason === 'other' && styles.selectedReason]}
-                onPress={() => setReportReason('other')}
-              >
-                <Text style={styles.reasonText}>Other reason</Text>
-              </TouchableOpacity>
-              
-              {reportReason === 'other' && (
-                <TextInput
-                  style={styles.customReasonInput}
-                  placeholder="Please specify your reason"
-                  value={customReason}
-                  onChangeText={setCustomReason}
-                  multiline
-                  numberOfLines={3}
-                />
-              )}
-              
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.cancelButton]}
-                  onPress={() => {
-                    setReportModalVisible(false);
-                    setReportReason('');
-                    setCustomReason('');
-                  }}
-                >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.submitButton]}
-                  onPress={submitReport}
-                >
-                  <Text style={styles.submitButtonText}>Submit Report</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </Modal>
-      
       <ScrollView style={styles.scrollContainer}>
         {/* Image Carousel */}
         <View style={styles.imageContainer}>
@@ -199,35 +113,52 @@ export default function DonationDetails({ route, navigation }) {
             style={styles.image}
           />
         </View>
+
+        {/* Content */}
         <View style={styles.content}>
           <Text style={styles.title}>{item.title}</Text>
-          {/* Add this status badge */}
-          <View style={styles.statusBadgeContainer}>
-            <Text 
-              style={[
+
+          {/* Status Badge */}
+          {item.status && (
+            <View style={styles.statusBadgeContainer}>
+              <Text style={[
                 styles.statusBadge,
-                { backgroundColor: item.status === 'claimed' ? '#666' : '#4CAF50' }
-              ]}
-            >
-              {item.status === 'claimed' ? 'Claimed' : 'Available'}
-            </Text>
-          </View>
+                { backgroundColor: item.status === 'available' ? '#4CAF50' : item.status === 'reserved' ? '#FFC107' : '#FF5722' }
+              ]}>
+                {item.status?.toUpperCase()}
+              </Text>
+            </View>
+          )}
+
           <View style={styles.infoRow}>
             <Ionicons name="location-outline" size={20} color="#666" />
             <Text style={styles.infoText}>{item.location}</Text>
           </View>
+
           <Text style={styles.sectionTitle}>Description</Text>
           <Text style={styles.description}>{item.description}</Text>
+
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.actionButton} onPress={handleFavorite}>
-              <Ionicons name="heart-outline" size={24} color="#666" />
-              <Text style={styles.actionButtonText}>Favorite</Text>
+              <Ionicons 
+                name={isFavorited ? "heart" : "heart-outline"} 
+                size={24} 
+                color={isFavorited ? "#FF6B6B" : "#666"} 
+              />
+              <Text style={[
+                styles.actionButtonText,
+                isFavorited && { color: "#FF6B6B" }
+              ]}>
+                Favorite
+              </Text>
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.actionButton} onPress={handleReport}>
               <Ionicons name="flag-outline" size={24} color="#666" />
               <Text style={styles.actionButtonText}>Report</Text>
             </TouchableOpacity>
           </View>
+
           {/* Map Section */}
           <Text style={styles.sectionTitle}>Location</Text>
           <TouchableOpacity
@@ -260,6 +191,7 @@ export default function DonationDetails({ route, navigation }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
       {/* Fixed User Details Section */}
       <View style={styles.userContainer}>
         <Image 
@@ -317,93 +249,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalView: {
-    width: '90%',
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  modalSubtitle: {
-    fontSize: 16,
-    marginBottom: 15,
-    color: '#666',
-    textAlign: 'center',
-  },
-  reasonButton: {
-    width: '100%',
-    padding: 15,
-    borderRadius: 10,
-    marginVertical: 5,
-    backgroundColor: '#f0f0f0',
-  },
-  selectedReason: {
-    backgroundColor: '#e6f7ff',
-    borderColor: '#1890ff',
-    borderWidth: 1,
-  },
-  reasonText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  customReasonInput: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    padding: 10,
-    marginTop: 10,
-    marginBottom: 15,
-    textAlignVertical: 'top',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 10,
-  },
-  modalButton: {
-    padding: 12,
-    borderRadius: 10,
-    minWidth: '45%',
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#f5f5f5',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  submitButton: {
-    backgroundColor: '#EFD13D',
-  },
-  cancelButtonText: {
-    color: '#666',
-    fontWeight: '600',
-  },
-  submitButtonText: {
-    color: '#fff',
-    fontWeight: '600',
   },
   scrollContainer: {
     flex: 1,
@@ -477,17 +322,12 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     height: 200,
-    borderRadius: 12,
+    borderRadius: 8,
     overflow: 'hidden',
     marginTop: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
   },
-  map: { 
-    flex: 1 
+  map: {
+    flex: 1,
   },
   userContainer: {
     position: 'absolute',
@@ -522,17 +362,15 @@ const styles = StyleSheet.create({
     marginTop: 2, // Add some space between name and rating
   },
   contactButton: {
-    flexDirection: 'row', // Add this to align text and icon
-    alignItems: 'center', // Add this to center vertically
     backgroundColor: '#EFD13D',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 24,
+    paddingVertical: 20,
+    paddingHorizontal: 38,
+    right: 8,
+    borderRadius: 12,
   },
   contactButtonText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
-    marginRight: 6, // Add this to create space between text and icon
   },
 });
