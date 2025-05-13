@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { FaEdit, FaTrash, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import axios from 'axios';
+import { useNavigate } from "react-router-dom";
+
 
 const Page = () => {
+      const navigate = useNavigate();
+
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -68,7 +72,7 @@ const Page = () => {
   };
 
   const confirmUpdate = () => {
-    // Switch to update confirmation mode
+   
     setModalMode('update-confirm');
   };
 
@@ -124,25 +128,8 @@ const Page = () => {
               ))}
             </select>
 
-            <select
-              value={approvedFilter}
-              onChange={(e) => setApprovedFilter(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-400 shadow-sm"
-            >
-              <option value="">All Approval</option>
-              <option value="true">Approved</option>
-              <option value="false">Not Approved</option>
-            </select>
+         
 
-            <select
-              value={fulfilledFilter}
-              onChange={(e) => setFulfilledFilter(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-400 shadow-sm"
-            >
-              <option value="">All Fulfillment</option>
-              <option value="true">Fulfilled</option>
-              <option value="false">Not Fulfilled</option>
-            </select>
 
             {/* Reset Filters Button */}
             <button
@@ -167,8 +154,7 @@ const Page = () => {
                 <th className="px-6 py-4 text-left font-semibold">Title</th>
                 <th className="px-6 py-4 text-left font-semibold">Description</th>
                 <th className="px-6 py-4 text-left font-semibold">Location</th>
-                <th className="px-6 py-4 text-left font-semibold">Approved</th>
-                <th className="px-6 py-4 text-left font-semibold">Fulfilled</th>
+           
                 <th className="px-6 py-4 text-left font-semibold">Actions</th>
               </tr>
             </thead>
@@ -177,27 +163,23 @@ const Page = () => {
                 currentItems.map((item) => (
                   <tr key={item.id} className="hover:bg-green-50 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={item.images[0]}
-                          alt={item.title}
-                          className="w-10 h-10 object-cover rounded-md border border-gray-300"
-                        />
-                        <span className="text-gray-800">{item.title}</span>
-                      </div>
+                     <div
+  onClick={() => navigate(`/manage-inneed/${item.id}`)}
+  className="flex items-center gap-3 cursor-pointer hover:underline"
+>
+  <img
+    src={item.images[0]}
+    alt={item.title}
+    className="w-10 h-10 object-cover rounded-md border border-gray-300"
+  />
+  <span className="text-gray-800">{item.title}</span>
+</div>
+
                     </td>
                     <td className="px-6 py-4 text-gray-700">{item.description}</td>
                     <td className="px-6 py-4 text-gray-700">{item.location}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${item.isApproved ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                        {item.isApproved ? 'Yes' : 'No'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${item.isDone ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                        {item.isDone ? 'Yes' : 'No'}
-                      </span>
-                    </td>
+                  {/*  */}
+                  
                     <td className="px-6 py-4 flex gap-3 items-center">
                       <button
                         onClick={() => handleEdit(item)}
@@ -290,27 +272,7 @@ const Page = () => {
                     className="w-full p-2 border rounded mb-4"
                   />
                   
-                  <div className="flex items-center mb-4">
-                    <input
-                      type="checkbox"
-                      id="isApproved"
-                      checked={selectedItem.isApproved}
-                      onChange={() => setSelectedItem({ ...selectedItem, isApproved: !selectedItem.isApproved })}
-                      className="mr-2"
-                    />
-                    <label htmlFor="isApproved" className="text-gray-700">Approved</label>
-                  </div>
-                  
-                  <div className="flex items-center mb-4">
-                    <input
-                      type="checkbox"
-                      id="isDone"
-                      checked={selectedItem.isDone}
-                      onChange={() => setSelectedItem({ ...selectedItem, isDone: !selectedItem.isDone })}
-                      className="mr-2"
-                    />
-                    <label htmlFor="isDone" className="text-gray-700">Fulfilled</label>
-                  </div>
+            
                   
                   <div className="flex justify-end gap-4">
                     <button
@@ -339,7 +301,7 @@ const Page = () => {
                   </p>
                   <div className="flex justify-end gap-4">
                     <button
-                      onClick={() => setModalMode('edit')} // Go back to edit mode
+                      onClick={() => setModalMode('edit')} 
                       className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition"
                     >
                       Back
