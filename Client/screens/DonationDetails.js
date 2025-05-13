@@ -11,6 +11,7 @@ export default function DonationDetails({ route, navigation }) {
   const [item, setItem] = useState(initialItem);
   const [loading, setLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
     const fetchItemDetails = async () => {
@@ -100,6 +101,21 @@ export default function DonationDetails({ route, navigation }) {
       });
     } else {
       console.log('User information not available');
+    }
+  };
+
+  const handleClaim = async () => {
+    try {
+      const response = await axios.put(`${API_BASE}/donationItems/updateStatus/${item.id}`, {
+        status: 'claimed'
+      });
+      if (response.data) {
+        setItem(prev => ({ ...prev, status: 'claimed' }));
+        Alert.alert('Success', 'Item marked as claimed');
+      }
+    } catch (error) {
+      console.error('Error claiming item:', error);
+      Alert.alert('Error', 'Failed to claim item');
     }
   };
 
@@ -198,13 +214,48 @@ export default function DonationDetails({ route, navigation }) {
           source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
           style={styles.userImage}
         />
-        <View style={styles.userInfo}>
+        <TouchableOpacity 
+          style={styles.userInfo}
+          onPress={() => navigation.navigate('OtherUser', { userId: item?.User?.id })}
+        >
           <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
-          <Text style={styles.userRating}>тнР {item?.User?.rating || '0.0'}</Text>
-        </View>
-        <TouchableOpacity style={styles.contactButton} onPress={handleContact}>
-          <Text style={styles.contactButtonText}>Contact</Text>
+          <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
         </TouchableOpacity>
+        {String(item?.User?.id) === String(currentUserId) ? (
+          <TouchableOpacity 
+            style={[
+              styles.contactButton, 
+              { backgroundColor: item.status === 'claimed' ? '#666' : '#4CAF50' }
+            ]}
+            onPress={handleClaim}
+            disabled={item.status === 'claimed'}
+          >
+            <Text style={styles.contactButtonText}>
+              {item.status === 'claimed' ? 'Claimed' : 'Mark as Claimed'}
+            </Text>
+            <Ionicons 
+              name={item.status === 'claimed' ? "checkmark-circle" : "checkmark-circle-outline"} 
+              size={18} 
+              color="#fff" 
+            />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity 
+            style={[
+              styles.contactButton,
+              { backgroundColor: item.status === 'claimed' ? '#666' : '#EFD13D' }
+            ]} 
+            onPress={handleContact}
+            disabled={item.status === 'claimed'}
+          >
+            <Text style={styles.contactButtonText}>
+              {item.status === 'claimed' ? 'Item Claimed' : 'Contact'}
+            </Text>
+            {item.status === 'claimed' && (
+              <Ionicons name="checkmark-circle" size={18} color="#fff" />
+            )}
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -314,14 +365,17 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
+    paddingVertical: 8, // Add padding for better touch area
   },
   userName: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#333', // Darker color for better contrast
   },
   userRating: {
     fontSize: 14,
     color: '#666',
+    marginTop: 2, // Add some space between name and rating
   },
   contactButton: {
     backgroundColor: '#EFD13D',

@@ -48,6 +48,23 @@ DonationItem.belongsTo(Category, { foreignKey: 'categoryId' });
 User.hasMany(report, { foreignKey: 'userId' });
 report.belongsTo(User, { foreignKey: 'userId' });
 
+User.hasMany(report, { 
+    foreignKey: 'userId',
+    as: 'reportsMade'
+});
+User.hasMany(report, { 
+    foreignKey: 'reportedUserId',
+    as: 'reportsReceived'
+});
+report.belongsTo(User, { 
+    foreignKey: 'userId',
+    as: 'reporter'
+});
+report.belongsTo(User, { 
+    foreignKey: 'reportedUserId',
+    as: 'reportedUser'
+});
+
 DonationItem.hasMany(report, { foreignKey: 'itemId' });
 report.belongsTo(DonationItem, { foreignKey: 'itemId' });
 
@@ -141,7 +158,7 @@ Comment.belongsTo(inNeed, {
 
 // const connection = async () => {
 //     try {
-//         await sequelize.sync({ alter: true });
+//         await sequelize.sync({ force: true });
 //         console.log('Database synced successfully');
 //     } catch (error) {
 //         console.error('Error syncing database:', error);
@@ -164,13 +181,9 @@ module.exports={
     Event,
     Message,
     Conversation,
-    EventParticipant
+    EventParticipant,
 };
 
-
-
-
-module.exports={User, Payment,report,DonationItem,Category,favourite,Notification,Comment,inNeed,CampaignDonations,Event,Message,Conversation};
 
 
 

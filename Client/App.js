@@ -35,6 +35,7 @@ import UserProfile from "./screens/UserProfile";
 import EditProfile from './screens/EditProfile';
 import Settings from './screens/Settings';
 import Conversation from "./screens/Conversation";
+import OtherUser from "./screens/OtherUser";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -65,17 +66,17 @@ function TabNavigator() {
         headerShown: true,
       })}
     >
-      <Tab.Screen name="HomeTab" component={Home} options={{ title: "" }} />
-      <Tab.Screen name="Donations" component={DonationItems} options={{ title: "" }}/>
+      <Tab.Screen name="HomeTab" component={Home} options={{ title: "Home" }} />
+      <Tab.Screen name="Donations" component={DonationItems} options={{ title: "Donations" }}/>
       <Tab.Screen
         name="InNeed"
         component={InNeed}
-        options={{ title: "" }}
+        options={{ title: "In Need" }}
           
 
       />
-      <Tab.Screen name="Campaign" component={Campaign} options={{ title: "" }}/>
-      <Tab.Screen name="Events" component={Events} options={{ title: "" }} />
+      <Tab.Screen name="Campaign" component={Campaign} options={{ title: "Campaign" }}/>
+      <Tab.Screen name="Events" component={Events} options={{ title: "Events" }} />
     </Tab.Navigator>
   );
 }
@@ -232,6 +233,14 @@ export default function App() {
               headerTitleStyle: { fontWeight: "bold" },
             }}
           />
+          <Stack.Screen 
+            name="OtherUser" 
+            component={OtherUser}
+            options={{ 
+            headerTitle: "Profile",
+            headerBackTitle: "Back"
+  }} 
+/>
         </Stack.Navigator>
       </NavigationContainer>
       <StatusBar style="auto" />

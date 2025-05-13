@@ -13,6 +13,10 @@ import {
   Image,
   StatusBar,
   Platform,
+  Modal,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Alert,
 } from "react-native";
 import { MaterialIcons, Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import axios from "axios";
@@ -20,6 +24,7 @@ import { API_BASE } from '../config';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import LottieView from 'lottie-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 const HEADER_MAX_HEIGHT = 220;
@@ -35,6 +40,11 @@ export default function Home({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const scrollY = new Animated.Value(0);
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
+  const [userProfilePic, setUserProfilePic] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -59,9 +69,22 @@ export default function Home({ navigation }) {
       setLoading(false);
     }
   };
+  const fetchUserProfile = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userUID');
+      if (userId) {
+        // Change from /user/ to /user/getById/
+        const response = await axios.get(`${API_BASE}/user/getById/${userId}`);
+        setUserProfilePic(response.data.profilePic || null);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  }
 
   useEffect(() => {
     fetchData();
+    fetchUserProfile();
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
@@ -300,13 +323,138 @@ export default function Home({ navigation }) {
             <Ionicons name="chatbubble-outline" size={30} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity 
-            style={styles.headerButton}
-            onPress={() => navigation.navigate('UserProfile')}
+            style={[styles.headerButton, styles.profileButton]}
+            onPress={() => setProfileMenuVisible(true)}
           >
-            <Ionicons name="person-circle-outline" size={30} color="#fff" />
+            {userProfilePic ? (
+              <Image
+                source={{ uri: userProfilePic }}
+                style={styles.profilePic}
+              />
+            ) : (
+              <Ionicons name="person-circle-outline" size={30} color="#fff" />
+            )}
           </TouchableOpacity>
         </View>
       </Animated.View>
+
+      {/* Profile Dropdown Modal */}
+      <Modal
+        visible={profileMenuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setProfileMenuVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setProfileMenuVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.dropdownMenu}>
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setProfileMenuVisible(false);
+                  navigation.navigate('UserProfile');
+                }}
+              >
+                <Ionicons name="person-outline" size={22} color="#333" style={{ marginRight: 10 }} />
+                <Text style={styles.dropdownText}>View Profile</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setProfileMenuVisible(false);
+                  setReportModalVisible(true);
+                }}
+              >
+                <Ionicons name="alert-circle-outline" size={22} color="#FF6B6B" style={{ marginRight: 10 }} />
+                <Text style={styles.dropdownText}>Report</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setProfileMenuVisible(false);
+                  navigation.replace('Login');
+                }}
+              >
+                <Ionicons name="log-out-outline" size={22} color="#FF6B6B" style={{ marginRight: 10 }} />
+                <Text style={styles.dropdownText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Report Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={reportModalVisible}
+        onRequestClose={() => setReportModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setReportModalVisible(false)}>
+          <View style={styles.modalOverlayContainer}>
+            <TouchableWithoutFeedback>
+              <View style={styles.reportModalContainer}>
+                <Text style={styles.modalTitle}>Report a Problem</Text>
+                <TextInput
+                  style={[styles.customReasonInput, { minHeight: 100 }]}
+                  placeholder="Describe the problem..."
+                  value={customReason}
+                  onChangeText={setCustomReason}
+                  multiline
+                  textAlignVertical="top"
+                  placeholderTextColor="#999"
+                />
+                <View style={styles.modalButtonsContainer}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => {
+                      setReportModalVisible(false);
+                      setCustomReason('');
+                    }}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.submitButton]}
+                    onPress={async () => {
+                      if (!customReason.trim()) {
+                        Alert.alert('Error', 'Please describe your problem.');
+                        return;
+                      }
+                  
+                      try {
+                        // Get the user ID from AsyncStorage
+                        const userId = await AsyncStorage.getItem('userUID');
+                        
+                        if (!userId) {
+                          Alert.alert('Error', 'Please login to submit a report');
+                          return;
+                        }
+                  
+                        await axios.post(`${API_BASE}/report/createReport`, {
+                          reason: customReason.trim(),
+                          userId: userId,           // Use actual user ID instead of "anonymous"
+                          itemType: "general",     // This is optional now
+                          itemId: null            // This is optional now
+                        });
+                  
+                        Alert.alert('Thank you', 'Your report has been submitted.');
+                        setReportModalVisible(false);
+                        setCustomReason('');
+                      } catch (err) {
+                        console.error('Error submitting report:', err);
+                        Alert.alert('Error', 'Failed to submit report. Please try again.');
+                      }
+                    }}
+                  >
+                    <Text style={styles.submitButtonText}>Submit</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
       {/* Search Bar (visible only at top) */}
       <Animated.View
@@ -959,5 +1107,115 @@ const styles = StyleSheet.create({
   headerButton: {
     padding: 8,
     borderRadius: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+  },
+  dropdownMenu: {
+    marginTop: Platform.OS === 'ios' ? 80 : 60,
+    marginRight: 20,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 8,
+    width: 180,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+  },
+  dropdownText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  modalButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  customReasonInput: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 12,
+    fontSize: 16,
+    backgroundColor: '#FAFAFA',
+  },
+  reportModalContainer: {
+    backgroundColor: '#fff',
+    width: '85%',
+    maxWidth: 400,
+    borderRadius: 20,
+    padding: 24,
+    elevation: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 12,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 16.0,
+  },
+  modalOverlayContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Darker overlay
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 20,
+    gap: 12,
+  },
+  cancelButton: {
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  submitButton: {
+    backgroundColor: '#4CAF50',
+  },
+  profileButton: {
+    padding: 0,
+    height: 35,
+    width: 35,
+    borderRadius: 17.5,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  profilePic: {
+    height: '100%',
+    width: '100%',
+    borderRadius: 17.5,
   },
 });
