@@ -200,7 +200,7 @@ export default function DonationDetails({ route, navigation }) {
         />
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
-          <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
+          <Text style={styles.userRating}>тнР {item?.User?.rating || '0.0'}</Text>
         </View>
         <TouchableOpacity style={styles.contactButton} onPress={handleContact}>
           <Text style={styles.contactButtonText}>Contact</Text>

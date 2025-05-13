@@ -33,6 +33,11 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.FLOAT,
             defaultValue: 0.0
         },
+        status: {
+            type: DataTypes.ENUM('active', 'banned'),
+            allowNull: false,
+            defaultValue: 'active'
+        },
        
     });
     return User;

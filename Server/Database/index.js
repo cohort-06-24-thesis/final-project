@@ -48,6 +48,9 @@ DonationItem.belongsTo(Category, { foreignKey: 'categoryId' });
 User.hasMany(report, { foreignKey: 'userId' });
 report.belongsTo(User, { foreignKey: 'userId' });
 
+DonationItem.hasMany(report, { foreignKey: 'itemId' });
+report.belongsTo(DonationItem, { foreignKey: 'itemId' });
+
 
 User.hasMany(Notification, { foreignKey: 'userId' });
 Notification.belongsTo(User, { foreignKey: 'userId' });
@@ -135,6 +138,7 @@ Comment.belongsTo(inNeed, {
     console.error('Unable to connect to the database:', error);
   }
   
+
 // const connection = async () => {
 //     try {
 //         await sequelize.sync({ alter: true });
@@ -162,5 +166,11 @@ module.exports={
     Conversation,
     EventParticipant
 };
+
+
+
+
+module.exports={User, Payment,report,DonationItem,Category,favourite,Notification,Comment,inNeed,CampaignDonations,Event,Message,Conversation};
+
 
 

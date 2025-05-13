@@ -8,6 +8,9 @@ import {
   TouchableOpacity,
   Alert,
   TextInput,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
@@ -27,7 +30,13 @@ export default function InNeedDetails({ route, navigation }) {
   const [editingComment, setEditingComment] = useState(null);
   const [editedContent, setEditedContent] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
+
   const [isFavorited, setIsFavorited] = useState(false);
+
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
+
 
   useEffect(() => {
     const loadUid = async () => {
@@ -41,6 +50,7 @@ export default function InNeedDetails({ route, navigation }) {
     };
     loadUid();
   }, []);
+
  
   useEffect(() => {
     const checkIfFavorited = async () => {
@@ -58,6 +68,7 @@ export default function InNeedDetails({ route, navigation }) {
 
     checkIfFavorited();
   }, [item.id]);
+
 
   useEffect(() => {
     const socketInstance = io(API_BASE.replace('/api', ''));
@@ -145,7 +156,7 @@ export default function InNeedDetails({ route, navigation }) {
   };
 
   const handleReport = () => {
-    console.log('Report item');
+    setReportModalVisible(true);
   };
 
   const handleContact = () => {
@@ -170,22 +181,17 @@ export default function InNeedDetails({ route, navigation }) {
         {
           text: 'Yes',
           onPress: () => {
-              ;
             setModalVisible(false);
-  
-            // Make the PUT request to update the item
             axios
               .put(`${API_BASE}/inNeed/${item.id}`, {
                 isDone: true,
-                doneReason: fulfilledMessage, // Include fulfilled message here
+                doneReason: fulfilledMessage,
               })
               .then((response) => {
                 console.log('Item updated:', response.data);
-                // Handle success (e.g., update UI)
               })
               .catch((error) => {
                 console.error('Error updating item:', error);
-                // Handle error (e.g., show error message)
               });
           },
         },
@@ -203,7 +209,6 @@ export default function InNeedDetails({ route, navigation }) {
             return;
         }
 
-        // Simplify the comment data structure
         const commentData = {
             content: newComment,
             userId: userId,
@@ -211,14 +216,9 @@ export default function InNeedDetails({ route, navigation }) {
         };
 
         const response = await axios.post(`${API_BASE}/comment/createComment`, commentData);
-
-        // Update local state with the new comment
         setComments(prev => [response.data, ...prev]);
         setNewComment('');
-
-        // Emit through socket
         socket.emit('post_comment', response.data);
-
     } catch (error) {
         console.error('Error posting comment:', error);
         Alert.alert('Error', 'Failed to post comment');
@@ -230,10 +230,7 @@ export default function InNeedDetails({ route, navigation }) {
         const response = await axios.delete(`${API_BASE}/comment/delete/${commentId}`);
         
         if (response.data.success) {
-            // Update local state to remove the comment
             setComments(prev => prev.filter(comment => comment.id !== commentId));
-            
-            // Emit delete event through socket
             socket.emit('delete_comment', { 
                 commentId, 
                 inNeedId: item.id 
@@ -253,12 +250,10 @@ export default function InNeedDetails({ route, navigation }) {
         content: editedContent
       });
 
-      // Update local state
       setComments(prev => prev.map(comment => 
         comment.id === commentId ? {...comment, content: editedContent} : comment
       ));
 
-      // Emit edit event through socket
       socket.emit('edit_comment', {
         commentId,
         inNeedId: item.id,
@@ -270,6 +265,37 @@ export default function InNeedDetails({ route, navigation }) {
     } catch (error) {
       console.error('Error updating comment:', error);
       Alert.alert('Error', 'Failed to update comment');
+    }
+  };
+
+  const submitReport = async () => {
+    try {
+      const finalReason = reportReason === 'other' ? customReason : reportReason;
+
+      if (!finalReason) {
+        Alert.alert('Error', 'Please select or enter a reason for reporting');
+        return;
+      }
+
+      if (!Uid) {
+        Alert.alert('Error', 'You must be logged in to report an item');
+        return;
+      }
+
+      await axios.post(`${API_BASE}/report/createReport`, {
+        reason: finalReason,
+        userId: Uid,
+        itemId: item.id,
+        itemType: 'inNeed'
+      });
+
+      Alert.alert('Success', 'Thank you for your report. We will review it shortly.');
+      setReportModalVisible(false);
+      setReportReason('');
+      setCustomReason('');
+    } catch (error) {
+      console.error('Error submitting report:', error.response?.data || error.message);
+      Alert.alert('Error', 'Failed to submit report. Please try again.');
     }
   };
   
@@ -346,7 +372,6 @@ export default function InNeedDetails({ route, navigation }) {
               />
             </MapView>
           </TouchableOpacity>
-          
         </View>
 
         <View style={styles.commentsSection}>
@@ -463,7 +488,6 @@ export default function InNeedDetails({ route, navigation }) {
         </View>
       </ScrollView>
 
-     
       <View style={styles.userContainer}>
         <Image
           source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
@@ -474,7 +498,6 @@ export default function InNeedDetails({ route, navigation }) {
           <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
         </View>
 
-        {/* Owner vs Non-owner button */}
         {String(item?.User?.id) !== String(Uid) ? (
           <TouchableOpacity style={styles.contactButton} onPress={handleContact}>
             <Text style={styles.contactButtonText}>Contact</Text>
@@ -490,7 +513,6 @@ export default function InNeedDetails({ route, navigation }) {
         )}
       </View>
 
-      {/* Fulfilled Modal */}
       {isModalVisible && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
@@ -509,46 +531,193 @@ export default function InNeedDetails({ route, navigation }) {
               <Text style={styles.modalSubmitButtonText}>Submit</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 12 }}>
-              <Text style={{ color: 'red', textAlign: 'center' }}>Cancel</Text>
+              <Text style={{ color: '#dc3545', textAlign: 'center' }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
+
+      {/* Report Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={reportModalVisible}
+        onRequestClose={() => setReportModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalTitle}>Report Item</Text>
+              <Text style={styles.modalSubtitle}>Why are you reporting this item?</Text>
+
+              <TouchableOpacity
+                style={[styles.reasonButton, reportReason === 'inappropriate' && styles.selectedReason]}
+                onPress={() => setReportReason('inappropriate')}
+              >
+                <Text style={styles.reasonText}>Inappropriate content</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.reasonButton, reportReason === 'spam' && styles.selectedReason]}
+                onPress={() => setReportReason('spam')}
+              >
+                <Text style={styles.reasonText}>Spam or misleading</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.reasonButton, reportReason === 'duplicate' && styles.selectedReason]}
+                onPress={() => setReportReason('duplicate')}
+              >
+                <Text style={styles.reasonText}>Duplicate listing</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.reasonButton, reportReason === 'other' && styles.selectedReason]}
+                onPress={() => setReportReason('other')}
+              >
+                <Text style={styles.reasonText}>Other reason</Text>
+              </TouchableOpacity>
+
+              {reportReason === 'other' && (
+                <TextInput
+                  style={styles.customReasonInput}
+                  placeholder="Please specify your reason"
+                  value={customReason}
+                  onChangeText={setCustomReason}
+                  multiline
+                  numberOfLines={3}
+                />
+              )}
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => {
+                    setReportModalVisible(false);
+                    setReportReason('');
+                    setCustomReason('');
+                  }}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.submitButton]}
+                  onPress={submitReport}
+                >
+                  <Text style={styles.submitButtonText}>Submit Report</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  scrollContent: { paddingBottom: 120 },
-  imageContainer: { width: '100%', height: 300 },
-  image: { width: '100%', height: '100%', resizeMode: 'cover', borderRadius: 12 },
-  content: { padding: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 8 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  infoText: { marginLeft: 8, fontSize: 16, color: '#666' },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 8, color: '#333' },
-  description: { fontSize: 16, color: '#666', lineHeight: 24, marginBottom: 24 },
+  container: {
+    flex: 1,
+    backgroundColor: '#f7f7f7',
+  },
+  scrollContent: {
+    paddingBottom: 140,
+  },
+  imageContainer: {
+    width: '100%',
+    height: 320,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  content: {
+    padding: 20,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 12,
+    letterSpacing: 0.2,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  infoText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#555',
+    fontWeight: '500',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#1a1a1a',
+  },
+  description: {
+    fontSize: 16,
+    color: '#555',
+    lineHeight: 26,
+    marginBottom: 24,
+  },
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 16,
-    marginBottom: 16,
-  },
-  actionButton: { alignItems: 'center', justifyContent: 'center' },
-  actionButtonText: { color: '#666', fontSize: 12, marginTop: 4 },
-  mapContainer: {
-    height: 200,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginTop: 16,
-    elevation: 3,
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowRadius: 6,
   },
-  map: { flex: 1 },
+  actionButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 12,
+    transform: [{ scale: 1 }],
+  },
+  actionButtonText: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '500',
+    marginTop: 6,
+  },
+  mapContainer: {
+    height: 220,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginTop: 12,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  map: {
+    flex: 1,
+  },
   userContainer: {
     position: 'absolute',
     bottom: 0,
@@ -556,26 +725,57 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#f9f9f9',
+    padding: 20,
+    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#ddd',
+    borderTopColor: '#e0e0e0',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
-  userImage: { width: 60, height: 60, borderRadius: 30, marginRight: 16 },
-  userInfo: { flex: 1 },
-  userName: { fontSize: 18, fontWeight: 'bold', color: '#333' },
-  userRating: { fontSize: 14, color: '#666' },
+  userImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginRight: 16,
+    borderWidth: 2,
+    borderColor: '#EFD13D',
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  userRating: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 4,
+  },
   contactButton: {
     backgroundColor: '#EFD13D',
     paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 24,
+    paddingHorizontal: 28,
+    borderRadius: 50,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
   },
-  contactButtonText: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
+  contactButtonText: {
+    color: '#1a1a1a',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   errorText: {
     textAlign: 'center',
     fontSize: 18,
-    color: 'red',
+    color: '#dc3545',
     marginTop: 20,
   },
   modalOverlay: {
@@ -584,96 +784,101 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContainer: {
     backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 12,
-    width: '90%',
-    elevation: 5,
+    padding: 24,
+    borderRadius: 24,
+    width: '92%',
+    maxWidth: 400,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
-    shadowRadius: 10,
+    shadowRadius: 12,
   },
   input: {
-    borderColor: '#ccc',
+    borderColor: '#e0e0e0',
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    minHeight: 80,
+    borderRadius: 12,
+    padding: 12,
+    minHeight: 100,
     textAlignVertical: 'top',
+    fontSize: 16,
+    color: '#1a1a1a',
+    backgroundColor: '#f8f9fa',
   },
   fulfilledButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#4CAF50',
     paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 24,
+    paddingHorizontal: 28,
+    borderRadius: 50,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
   },
   fulfilledButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    marginRight: 6,
+    marginRight: 8,
   },
   modalSubmitButton: {
-    backgroundColor: '#4CAF50',  
-    paddingVertical: 14,  
-    paddingHorizontal: 40,  
-    borderRadius: 30,  
+    backgroundColor: '#4CAF50',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,  
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
+    marginTop: 20,
   },
   modalSubmitButtonText: {
-    color: '#fff',  
-    fontSize: 16,  
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   commentsSection: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: 20,
+    paddingTop: 24,
     backgroundColor: '#fff',
-    borderTopWidth: 8,
-    borderTopColor: '#f5f5f5',
+    borderTopWidth: 10,
+    borderTopColor: '#f1f3f5',
   },
   commentsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#e5e7eb',
   },
   commentsCount: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#333',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
   },
   addCommentContainer: {
     flexDirection: 'row',
     paddingVertical: 16,
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#e5e7eb',
   },
   currentUserAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     marginRight: 12,
     borderWidth: 2,
     borderColor: '#4CAF50',
@@ -681,27 +886,27 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-    borderRadius: 24,
-    minHeight: 45,
+    borderRadius: 50,
+    minHeight: 50,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   commentInput: {
-    fontSize: 15,
-    color: '#333',
-    maxHeight: 100,
-    paddingRight: 50,
+    flex: 1,
+    fontSize: 16,
+    color: '#1a1a1a',
+    maxHeight: 120,
+    paddingRight: 10,
   },
   postButton: {
-    position: 'absolute',
-    right: 8,
-    bottom: 6,
     backgroundColor: '#4CAF50',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 50,
   },
   postButtonText: {
     color: '#fff',
@@ -709,16 +914,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   commentsList: {
-    paddingTop: 16,
+    paddingTop: 20,
   },
   commentItem: {
     flexDirection: 'row',
-    marginBottom: 20,
+    marginBottom: 24,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
   commentAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     marginRight: 12,
     borderWidth: 1,
     borderColor: '#e0e0e0',
@@ -727,29 +940,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   commentBubble: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f1f3f5',
     borderRadius: 16,
     borderTopLeftRadius: 4,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#eee',
+    padding: 14,
   },
   commentUsername: {
-    fontWeight: '700',
-    fontSize: 14,
-    marginBottom: 4,
-    color: '#2b2b2b',
+    fontWeight: '600',
+    fontSize: 15,
+    marginBottom: 6,
+    color: '#1a1a1a',
   },
   commentText: {
     fontSize: 15,
-    color: '#444',
-    lineHeight: 20,
+    color: '#333',
+    lineHeight: 22,
   },
   commentActions: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 6,
+    marginTop: 8,
     paddingHorizontal: 4,
   },
   commentTime: {
@@ -763,7 +974,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 13,
-    color: '#666',
+    color: '#555',
     fontWeight: '500',
   },
   deleteText: {
@@ -774,25 +985,29 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   editContainer: {
-    marginTop: 8,
+    marginTop: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 12,
   },
   editInput: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#dee2e6',
+    borderColor: '#e0e0e0',
     borderRadius: 12,
     padding: 12,
     fontSize: 15,
-    color: '#333',
-    marginBottom: 8,
+    color: '#1a1a1a',
+    marginBottom: 12,
+    minHeight: 80,
   },
   editActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 12,
+    gap: 16,
   },
   cancelText: {
-    color: '#666',
+    color: '#555',
     fontSize: 14,
     fontWeight: '500',
     padding: 8,
@@ -800,12 +1015,96 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: '#4CAF50',
     paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 12,
+    paddingHorizontal: 20,
+    borderRadius: 50,
   },
   saveText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: '500',
-  }
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalView: {
+    width: '90%',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    marginBottom: 15,
+    color: '#666',
+    textAlign: 'center',
+  },
+  reasonButton: {
+    width: '100%',
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 5,
+    backgroundColor: '#f0f0f0',
+  },
+  selectedReason: {
+    backgroundColor: '#e6f7ff',
+    borderColor: '#1890ff',
+    borderWidth: 1,
+  },
+  reasonText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  customReasonInput: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 10,
+    marginBottom: 15,
+    textAlignVertical: 'top',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 10,
+  },
+  modalButton: {
+    padding: 12,
+    borderRadius: 10,
+    minWidth: '45%',
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  submitButton: {
+    backgroundColor: '#EFD13D',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontWeight: '600',
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
 });

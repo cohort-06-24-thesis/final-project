@@ -7,9 +7,9 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
 import axios from 'axios';
 import { API_BASE } from '../config';
 
@@ -41,12 +41,10 @@ const EventCard = ({ event, onPress }) => (
   </View>
 );
 
-
-
-const EventsScreen = ({navigation}) => {
-
+const EventsScreen = ({ navigation }) => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -55,12 +53,7 @@ const EventsScreen = ({navigation}) => {
 
   const fetchEvents = async () => {
     try {
-
       const response = await axios.get(`${API_BASE}/event/getAllEvents`);
-
-
-
-
       if (response.data.success) {
         setEvents(response.data.data);
       } else {
@@ -72,6 +65,12 @@ const EventsScreen = ({navigation}) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchEvents();
+    setRefreshing(false);
   };
 
   if (loading) {
@@ -93,18 +92,25 @@ const EventsScreen = ({navigation}) => {
     );
   }
 
+  const approvedEvents = events.filter(event => event.isApproved);
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Upcoming Events</Text>
-      <ScrollView style={styles.scrollView}>
-        {events.length === 0 ? (
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
+        {approvedEvents.length === 0 ? (
           <Text style={{ textAlign: 'center', color: '#777', marginTop: 20 }}>
-            No upcoming events
+            No approved upcoming events
           </Text>
         ) : (
-          events.map(event => (
-            <EventCard 
-              key={event.id || event.title} 
+          approvedEvents.map(event => (
+            <EventCard
+              key={event.id || event.title}
               event={event}
               onPress={() => navigation.navigate('EventDetails', { event })}
             />

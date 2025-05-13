@@ -65,6 +65,7 @@ module.exports = {
         images: Array.isArray(images) ? images : [images], // Handle single image string
         participators, // Fixed spelling here
         status: 'upcoming',
+        isApproved: false,
         UserId
       });
 

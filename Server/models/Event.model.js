@@ -33,6 +33,11 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             defaultValue: 'upcoming'
         },
+        isApproved: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
         UserId: {
             type: DataTypes.STRING,
             allowNull: false

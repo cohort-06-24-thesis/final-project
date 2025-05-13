@@ -1,14 +1,21 @@
-const {Report} = require("../Database/index.js")
+const {report} = require("../Database/index.js")
 
 
 module.exports= {
     createReport: async (req, res) => {
     try {
-        const report = await Report.create({
-            reason: req.body.reason
+        console.log('Report request body:', req.body); // Log the request body
+        
+        const createdReport = await report.create({
+            reason: req.body.reason,
+            userId: req.body.userId,
+            itemId: req.body.itemId,
+            itemType: req.body.itemType // <--- Add this
         });
-        res.status(201).json(report);
+        
+        res.status(201).json(createdReport);
     } catch (error) {
+        console.error('Error creating report:', error); // Log the detailed error
         res.status(500).json({
             message: error.message || "Some error occurred while creating the report."
         });
@@ -18,7 +25,7 @@ module.exports= {
 // Get all reports
 findAllReport: async (req, res) => {
     try {
-        const reports = await Report.findAll();
+        const reports = await report.findAll();
         res.status(200).json(reports);
     } catch (error) {
         res.status(500).json({
@@ -31,7 +38,7 @@ findAllReport: async (req, res) => {
 findOneReport: async (req, res) => {
     const id = req.params.id;
     try {
-        const report = await Report.findByPk(id);
+        const report = await report.findByPk(id);
         if (report) {
             res.status(200).json(report);
         } else {
@@ -50,7 +57,7 @@ findOneReport: async (req, res) => {
 updateReport: async (req, res) => {
     const id = req.params.id;
     try {
-        const num = await Report.update(req.body, {
+        const num = await report.update(req.body, {
             where: { id: id }
         });
         if (num[0] === 1) {
@@ -73,7 +80,7 @@ updateReport: async (req, res) => {
 deleteReport: async (req, res) => {
     const id = req.params.id;
     try {
-        const num = await Report.destroy({
+        const num = await report.destroy({
             where: { id: id }
         });
         if (num === 1) {
