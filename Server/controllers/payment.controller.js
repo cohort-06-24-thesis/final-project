@@ -1,41 +1,96 @@
-const axios = require('axios');
+require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { Payment } = require('../Database/index.js');
 
+const paymentController = {
+  createPaymentIntent: async (req, res) => {
+    try {
+      const { amount, campaignId } = req.body;
 
+      // Convert amount to cents for Stripe
+      const amountInCents = Math.round(amount * 100);
 
-module.exports = {
-  Add: async (req, res) => {
-    const url= "https://developers.flouci.com/api/generate_payment"
-    const payload= {
-      "app_token": "3072bc87-6e35-4250-b54e-0e2ebf0f3f82", 
-      "app_secret": process.env.FLOUCI_SECRET,
-      "amount":req.body.amount,
-      "accept_card": "true",
-      "session_timeout_secs": 2200,
-      "success_link": "http://localhost:3000/success",
-      "fail_link": "http://localhost:3000/fail",
-      "developer_tracking_id": "735e9bdb-8e06-4396-95f1-32dd31069e83"
-  }
-    await axios
-    .post(url, payload)
-     .then(result => {
-      res.send(result.data)
-     })
-     .catch(err => console.log(err))
-  },
- verify: async (req,res) =>{
-  const payment_id=req.params.id;
-  await axios.get(`https://developers.flouci.com/api/verify_payment/${payment_id}`,{
-    headers: {
-      'Content-Type':'application/json',
-      'apppublic':'3072bc87-6e35-4250-b54e-0e2ebf0f3f82',
-      'appsecret':process.env.FLOUCI_SECRET
+      // Create PaymentIntent with Stripe
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amountInCents,
+        currency: 'usd',
+        automatic_payment_methods: {
+          enabled: true,
+        },
+        metadata: {
+          campaignId
+        }
+      });
+
+      // Save payment information to database
+      await Payment.create({
+        amount: amount.toFixed(2),
+        currency: 'usd',
+        status: 'pending',
+        transaction_id: paymentIntent.id,
+        campaignId: campaignId
+      });
+
+      // Return client secret to frontend
+      res.json({
+        clientSecret: paymentIntent.client_secret
+      });
+
+    } catch (error) {
+      console.error('Error creating payment intent:', error);
+      res.status(500).json({
+        error: 'Failed to create payment intent',
+        message: error.message
+      });
     }
-  })
-  .then(result => {
-    res.send(result.data)
- })
- .catch(err => {
-  console.log(err.message)
- })
-}
-}  ;  
+  },
+
+  verifyPayment: async (req, res) => {
+    try {
+      const { paymentIntentId } = req.params;
+
+      // Retrieve payment intent from Stripe
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+      // Find payment in database
+      const payment = await Payment.findOne({
+        where: { transaction_id: paymentIntentId }
+      });
+
+      if (!payment) {
+        return res.status(404).json({
+          error: 'Payment not found'
+        });
+      }
+
+      // Update payment status based on Stripe status
+      let status = 'pending';
+      if (paymentIntent.status === 'succeeded') {
+        status = 'completed';
+      } else if (['canceled', 'failed'].includes(paymentIntent.status)) {
+        status = 'failed';
+      }
+
+      // Update payment status in database
+      await payment.update({
+        status: status,
+        updatedAt: new Date()
+      });
+
+      res.json({
+        status: status,
+        amount: payment.amount,
+        paymentId: payment.id
+      });
+
+    } catch (error) {
+      console.error('Payment verification error:', error);
+      res.status(500).json({
+        error: 'Failed to verify payment',
+        message: error.message
+      });
+    }
+  }
+};
+
+module.exports = paymentController;

@@ -7,7 +7,7 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-
+import { initStripe } from "@stripe/stripe-react-native";
 import Login from "./screens/Login";
 import Signup from "./screens/Signup";
 import ForgotPassword from "./screens/ForgotPassword";
@@ -27,6 +27,7 @@ import AddDonation from "./screens/AddDonation";
 import EventDetails from "./screens/EventDetails";
 
 import CampaignDetails from "./screens/CampaignDetails";
+import Payment from "./screens/Payment";
 
 import InNeedDetails from "./screens/InNeedDetails";
 import DonationDetails from "./screens/DonationDetails";
@@ -66,6 +67,7 @@ function TabNavigator() {
         headerShown: true,
       })}
     >
+
       <Tab.Screen name="HomeTab" component={Home} options={{ title: "Home" }} />
       <Tab.Screen name="Donations" component={DonationItems} options={{ title: "Donations" }}/>
       <Tab.Screen
@@ -77,6 +79,7 @@ function TabNavigator() {
       />
       <Tab.Screen name="Campaign" component={Campaign} options={{ title: "Campaign" }}/>
       <Tab.Screen name="Events" component={Events} options={{ title: "Events" }} />
+
     </Tab.Navigator>
   );
 }
@@ -146,6 +149,11 @@ export default function App() {
               headerTintColor: "#4CAF50",
               headerTitleStyle: { fontWeight: "bold" },
             }}
+          />
+          <Stack.Screen
+            name="Payment"
+            component={Payment}
+            options={{ title: "payment" }}
           />
           <Stack.Screen
             name="AddInNeed"
