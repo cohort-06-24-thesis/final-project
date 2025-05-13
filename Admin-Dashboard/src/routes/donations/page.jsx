@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { FaEdit, FaTrash, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const DonationItemsPage = () => {
+    const navigate = useNavigate();
     const [data, setData] = useState([]);
     const [categories, setCategories] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
     const [selectedItem, setSelectedItem] = useState(null);
-    const [modalMode, setModalMode] = useState(""); 
+    const [modalMode, setModalMode] = useState("");
 
     const [locationFilter, setLocationFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -24,7 +26,6 @@ const DonationItemsPage = () => {
         try {
             const res = await axios.get("http://localhost:3000/api/donationItems/getAllItems");
 
-            // Sort data by ID for consistency
             const sortedData = res.data.sort((a, b) => a.id - b.id);
 
             setData(sortedData);
@@ -182,17 +183,6 @@ const DonationItemsPage = () => {
                                 ))}
                             </select>
 
-                            {/* Approval Filter */}
-                            <select
-                                value={approvedFilter}
-                                onChange={(e) => setApprovedFilter(e.target.value)}
-                                className="min-w-0 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-                            >
-                                <option value="">Approval</option>
-                                <option value="true">Approved</option>
-                                <option value="false">Not Approved</option>
-                            </select>
-
                             {/* Reset Filters Button */}
                             <button
                                 onClick={() => {
@@ -220,7 +210,7 @@ const DonationItemsPage = () => {
                                 <th className="px-6 py-4 text-left font-semibold">Category</th>
                                 <th className="px-6 py-4 text-left font-semibold">Location</th>
                                 <th className="px-6 py-4 text-left font-semibold">Status</th>
-                                <th className="px-6 py-4 text-left font-semibold">Approved</th>
+                                
                                 <th className="px-6 py-4 text-left font-semibold">Actions</th>
                             </tr>
                         </thead>
@@ -232,13 +222,20 @@ const DonationItemsPage = () => {
                                         className="transition-colors hover:bg-green-50"
                                     >
                                         <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
+                                            <div
+                                                    onClick={() => navigate(`/manage-donation-items/${item.id}`)}
+
+                                             className="flex items-center gap-3 cursor-pointer hover:underline">
                                                 <img
                                                     src={item.image && item.image.length > 0 ? item.image[0] : "/api/placeholder/40/40"}
                                                     alt={item.title}
                                                     className="h-10 w-10 rounded-md border border-gray-300 object-cover"
                                                 />
-                                                <span className="text-gray-800">{item.title}</span>
+                                                <span
+                                                    className="text-gray-800"
+                                                >
+                                                    {item.title}
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-gray-700">{item.description}</td>
@@ -259,13 +256,7 @@ const DonationItemsPage = () => {
                                                 {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span
-                                                className={`rounded-full px-3 py-1 text-xs font-medium ${item.isApproved ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}
-                                            >
-                                                {item.isApproved ? "Yes" : "No"}
-                                            </span>
-                                        </td>
+
                                         <td className="flex items-center gap-3 px-6 py-4">
                                             <button
                                                 onClick={() => handleEdit(item)}
@@ -390,22 +381,6 @@ const DonationItemsPage = () => {
                                         ))}
                                     </select>
 
-                                    <div className="mb-4 flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            id="isApproved"
-                                            checked={selectedItem.isApproved}
-                                            onChange={() => setSelectedItem({ ...selectedItem, isApproved: !selectedItem.isApproved })}
-                                            className="mr-2"
-                                        />
-                                        <label
-                                            htmlFor="isApproved"
-                                            className="text-gray-700"
-                                        >
-                                            Approved
-                                        </label>
-                                    </div>
-
                                     <div className="flex justify-end gap-4">
                                         <button
                                             onClick={handleCancel}
@@ -415,7 +390,7 @@ const DonationItemsPage = () => {
                                         </button>
                                         <button
                                             onClick={confirmUpdate}
-                                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
+                                            className="rounded-lg bg-green-600 px-4 py-2 text-white transition hover:bg-green-700"
                                         >
                                             Save Changes
                                         </button>
@@ -440,7 +415,7 @@ const DonationItemsPage = () => {
                                         </button>
                                         <button
                                             onClick={handleUpdate}
-                                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
+                                            className="rounded-lg bg-green-600 px-4 py-2 text-white transition hover:bg-green-700"
                                         >
                                             Confirm Update
                                         </button>

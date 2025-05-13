@@ -158,7 +158,7 @@ Comment.belongsTo(inNeed, {
 
 // const connection = async () => {
 //     try {
-//         await sequelize.sync({ alter: true });
+//         await sequelize.sync({ force: true });
 //         console.log('Database synced successfully');
 //     } catch (error) {
 //         console.error('Error syncing database:', error);
@@ -181,13 +181,9 @@ module.exports={
     Event,
     Message,
     Conversation,
-    EventParticipant
+    EventParticipant,
 };
 
-
-
-
-module.exports={User, Payment,report,DonationItem,Category,favourite,Notification,Comment,inNeed,CampaignDonations,Event,Message,Conversation};
 
 
 

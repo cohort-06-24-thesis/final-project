@@ -11,6 +11,7 @@ export default function DonationDetails({ route, navigation }) {
   const [item, setItem] = useState(initialItem);
   const [loading, setLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
     const fetchItemDetails = async () => {
@@ -100,6 +101,21 @@ export default function DonationDetails({ route, navigation }) {
       });
     } else {
       console.log('User information not available');
+    }
+  };
+
+  const handleClaim = async () => {
+    try {
+      const response = await axios.put(`${API_BASE}/donationItems/updateStatus/${item.id}`, {
+        status: 'claimed'
+      });
+      if (response.data) {
+        setItem(prev => ({ ...prev, status: 'claimed' }));
+        Alert.alert('Success', 'Item marked as claimed');
+      }
+    } catch (error) {
+      console.error('Error claiming item:', error);
+      Alert.alert('Error', 'Failed to claim item');
     }
   };
 
