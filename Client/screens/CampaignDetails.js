@@ -18,15 +18,15 @@ export default function CampaignDetails({ route, navigation }) {
         <Text style={styles.title}>{campaign.title}</Text>
         
         <View style={styles.statsContainer}>
-          <Text style={styles.amount}>£{campaign.raisedAmount || 0} raised</Text>
-          <Text style={styles.goal}>of £{campaign.goal} goal</Text>
+          <Text style={styles.amount}>TND {campaign.totalRaised } raised</Text>
+          <Text style={styles.goal}>of TND {campaign.goal} goal</Text>
         </View>
 
         <View style={styles.progressBar}>
           <View style={[styles.progressFill, { width: `${campaign.progress}%` }]} />
         </View>
 
-        <Text style={styles.donorsCount}>{campaign.totalDonors} people donated</Text>
+        {/* <Text style={styles.donorsCount}>{campaign.totalDonors} people donated</Text> */}
 
         <TouchableOpacity style={styles.donateButton} onPress={handleSupport}>
           <Text style={styles.donateButtonText}>I support</Text>
