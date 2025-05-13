@@ -170,7 +170,6 @@ module.exports={
 
 
 
-module.exports={User, Payment,report,DonationItem,Category,favourite,Notification,Comment,inNeed,CampaignDonations,Event,Message,Conversation};
 
 
 
