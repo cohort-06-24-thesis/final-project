@@ -7,6 +7,7 @@ module.exports= {
         const createdReport = await report.create({
             reason: req.body.reason,
             userId: req.body.userId,
+            reportedUserId: req.body.reportedUserId, // <--- Add this
             itemId: req.body.itemId,
             itemType: req.body.itemType // <--- Add this
         });

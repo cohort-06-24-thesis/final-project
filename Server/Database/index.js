@@ -46,6 +46,23 @@ DonationItem.belongsTo(Category, { foreignKey: 'categoryId' });
 User.hasMany(report, { foreignKey: 'userId' });
 report.belongsTo(User, { foreignKey: 'userId' });
 
+User.hasMany(report, { 
+    foreignKey: 'userId',
+    as: 'reportsMade'
+});
+User.hasMany(report, { 
+    foreignKey: 'reportedUserId',
+    as: 'reportsReceived'
+});
+report.belongsTo(User, { 
+    foreignKey: 'userId',
+    as: 'reporter'
+});
+report.belongsTo(User, { 
+    foreignKey: 'reportedUserId',
+    as: 'reportedUser'
+});
+
 DonationItem.hasMany(report, { foreignKey: 'itemId' });
 report.belongsTo(DonationItem, { foreignKey: 'itemId' });
 

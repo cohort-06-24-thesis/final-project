@@ -10,6 +10,7 @@ import {
   Platform,
   Image,
   Modal,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
@@ -33,6 +34,7 @@ export default function Chat({ route, navigation }) {
   const [socket, setSocket] = useState(null);
   const flatListRef = useRef(null);
   const roomIdRef = useRef(null);
+  const[customReason, setCustomReason] = useState('');
 
   const scrollToBottom = () => {
     if (flatListRef.current) {
@@ -260,6 +262,37 @@ export default function Chat({ route, navigation }) {
     </View>
   );
 
+  const submitReport = async () => {
+    try {
+      const finalReason = reportReason === 'other' ? customReason : reportReason;
+      
+      if (!finalReason) {
+        Alert.alert('Error', 'Please select or enter a reason for reporting');
+        return;
+      }
+
+      if (!currentUserId) {
+        Alert.alert('Error', 'You must be logged in to report a user');
+        return;
+      }
+
+      await axios.post(`${API_BASE}/report/createReport`, {
+        reason: finalReason,
+        userId: currentUserId,
+        reportedUserId: recipientId,
+        itemType: 'user'
+      });
+
+      Alert.alert('Success', 'Thank you for your report. We will review it shortly.');
+      setReportModalVisible(false);
+      setReportReason('');
+      setCustomReason('');
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      Alert.alert('Error', 'Failed to submit report. Please try again.');
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -322,6 +355,80 @@ export default function Chat({ route, navigation }) {
             >
               <Ionicons name="warning-outline" size={20} color="#FF6B6B" />
               <Text style={styles.dropdownText}>Report User</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+      {/* Report Modal */}
+      <Modal
+        visible={reportModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setReportModalVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1} 
+          onPress={() => setReportModalVisible(false)}
+        >
+          <View style={styles.reportModalContent}>
+            <Text style={styles.reportModalTitle}>Report User</Text>
+            <Text style={styles.reportModalSubtitle}>Why are you reporting this user?</Text>
+
+            <TouchableOpacity 
+              style={[styles.reportOption, reportReason === 'inappropriate' && styles.reportOptionSelected]}
+              onPress={() => setReportReason('inappropriate')}
+            >
+              <Text style={styles.reportOptionText}>Inappropriate Behavior</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.reportOption, reportReason === 'spam' && styles.reportOptionSelected]}
+              onPress={() => setReportReason('spam')}
+            >
+              <Text style={styles.reportOptionText}>Spam or Scam</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.reportOption, reportReason === 'harassment' && styles.reportOptionSelected]}
+              onPress={() => setReportReason('harassment')}
+            >
+              <Text style={styles.reportOptionText}>Harassment</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.reportOption, reportReason === 'other' && styles.reportOptionSelected]}
+              onPress={() => setReportReason('other')}
+            >
+              <Text style={styles.reportOptionText}>Other</Text>
+            </TouchableOpacity>
+
+            {reportReason === 'other' && (
+              <TextInput
+                style={styles.reportCustomInput}
+                placeholder="Please specify the reason"
+                value={customReason}
+                onChangeText={setCustomReason}
+                multiline
+              />
+            )}
+
+            <TouchableOpacity 
+              style={styles.reportSubmitButton} 
+              onPress={submitReport}
+            >
+              <Text style={styles.reportSubmitButtonText}>Submit Report</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.reportCancelButton}
+              onPress={() => {
+                setReportModalVisible(false);
+                setReportReason('');
+                setCustomReason('');
+              }}
+            >
+              <Text style={styles.reportCancelButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -456,5 +563,77 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 12,
     color: '#333',
+  },
+  reportModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 20,
+    width: '90%',
+    alignSelf: 'center',
+    maxWidth: 400,
+    marginTop: 'auto',
+    marginBottom: 'auto',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  reportModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#333',
+  },
+  reportModalSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 20,
+  },
+  reportOption: {
+    padding: 15,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+    marginBottom: 10,
+  },
+  reportOptionSelected: {
+    backgroundColor: '#EFD13D20',
+    borderColor: '#EFD13D',
+    borderWidth: 1,
+  },
+  reportOptionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  reportCustomInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 10,
+    marginBottom: 20,
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  reportSubmitButton: {
+    backgroundColor: '#EFD13D',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  reportSubmitButtonText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  reportCancelButton: {
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  reportCancelButtonText: {
+    color: '#FF6B6B',
+    fontSize: 16,
   },
 });
