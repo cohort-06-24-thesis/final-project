@@ -205,20 +205,51 @@ export default function OtherUser({ route, navigation }) {
                 />
               </View>
             </LinearGradient>
+            {user?.verified && (
+              <View style={styles.verifiedBadge}>
+                <MaterialCommunityIcons name="check-decagram" size={24} color="#4CAF50" />
+              </View>
+            )}
           </View>
-          <View style={styles.infoRow}>
-            <View style={styles.infoIconContainer}>
-              <Ionicons name="people" size={18} color="#4CAF50" />
-            </View>
-            <View style={styles.infoTextContainer}>
-              <Text style={styles.infoLabel}>Impact</Text>
-              <Text style={styles.infoText}>
-                Helped <Text style={styles.infoHighlight}>{user?.totalHelped}</Text> people
-              </Text>
-            </View>
+          <Text style={styles.name}>{user?.name}</Text>
+          <Text style={styles.email}>{user?.email}</Text>
+          <View style={styles.ratingContainer}>
+            <Ionicons name="star" size={20} color="#FFD700" />
+            <Text style={styles.rating}>{user?.rating?.toFixed(1) || '0.0'}</Text>
           </View>
         </View>
       </LinearGradient>
+
+      <View style={styles.contentContainer}>
+        <View style={styles.bioSection}>
+          <View style={styles.infoHeader}>
+            <Text style={styles.infoTitle}>Profile Information</Text>
+          </View>
+          <View style={styles.infoContainer}>
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconContainer}>
+                <Ionicons name="calendar" size={18} color="#4CAF50" />
+              </View>
+              <View style={styles.infoTextContainer}>
+                <Text style={styles.infoLabel}>Member Since</Text>
+                <Text style={styles.infoText}>{user?.joinDate}</Text>
+              </View>
+            </View>
+            <View style={styles.infoDivider} />
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconContainer}>
+                <Ionicons name="people" size={18} color="#4CAF50" />
+              </View>
+              <View style={styles.infoTextContainer}>
+                <Text style={styles.infoLabel}>Impact</Text>
+                <Text style={styles.infoText}>
+                  Helped <Text style={styles.infoHighlight}>{user?.totalHelped}</Text> people
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
 
       <View style={styles.statsContainer}>
         <StatCard 
@@ -391,18 +422,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   headerGradient: {
-    paddingTop: 60,
+    paddingTop: 40,
     paddingBottom: 30,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
   header: {
     alignItems: 'center',
+    padding: 20,
   },
   profileImageContainer: {
     alignItems: 'center',
     marginBottom: 20,
-    marginTop: 10,
   },
   imageGradientBorder: {
     width: 160,
@@ -429,8 +460,8 @@ const styles = StyleSheet.create({
   },
    verifiedBadge: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    top: 5,
+    right: 5,
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 2,
@@ -445,12 +476,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 5,
+    textAlign: 'center',
   },
   email: {
     fontSize: 16,
     color: '#fff',
     opacity: 0.9,
     marginBottom: 10,
+    textAlign: 'center',
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -459,6 +492,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 15,
+    marginBottom: 10,
   },
   rating: {
     marginLeft: 5,
@@ -473,7 +507,6 @@ const styles = StyleSheet.create({
   bioSection: {
     backgroundColor: '#fff',
     borderRadius: 20,
-    marginHorizontal: 16,
     marginBottom: 20,
     overflow: 'hidden',
     elevation: 3,
@@ -755,11 +788,6 @@ const styles = StyleSheet.create({
   },
   showLessButton: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
     marginTop: 8,
   },
   reportButton: {

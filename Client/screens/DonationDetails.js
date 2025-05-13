@@ -266,10 +266,13 @@ export default function DonationDetails({ route, navigation }) {
           source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
           style={styles.userImage}
         />
-        <View style={styles.userInfo}>
+        <TouchableOpacity 
+          style={styles.userInfo}
+          onPress={() => navigation.navigate('OtherUser', { userId: item?.User?.id })}
+        >
           <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
           <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
-        </View>
+        </TouchableOpacity>
         {String(item?.User?.id) === String(currentUserId) ? (
           <TouchableOpacity 
             style={[
@@ -506,14 +509,17 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
+    paddingVertical: 8, // Add padding for better touch area
   },
   userName: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#333', // Darker color for better contrast
   },
   userRating: {
     fontSize: 14,
     color: '#666',
+    marginTop: 2, // Add some space between name and rating
   },
   contactButton: {
     flexDirection: 'row', // Add this to align text and icon
