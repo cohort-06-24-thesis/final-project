@@ -1,8 +1,12 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 
-export default function CampaignDetails({ route }) {
+export default function CampaignDetails({ route, navigation }) {
   const { campaign } = route.params;
+
+  const handleSupport = () => {
+    navigation.navigate('Payment', { campaign });
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -24,7 +28,7 @@ export default function CampaignDetails({ route }) {
 
         <Text style={styles.donorsCount}>{campaign.totalDonors} people donated</Text>
 
-        <TouchableOpacity style={styles.donateButton}>
+        <TouchableOpacity style={styles.donateButton} onPress={handleSupport}>
           <Text style={styles.donateButtonText}>I support</Text>
         </TouchableOpacity>
 
