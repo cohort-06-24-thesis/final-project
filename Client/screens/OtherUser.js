@@ -8,26 +8,21 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Dimensions
+  Dimensions,
+  Modal,
+  TextInput
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { API_BASE } from '../config';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
-export default function UserProfile({ navigation }) {
+export default function OtherUser({ route, navigation }) {
+  const { userId } = route.params; // Get the userId from navigation params
   const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState({
-    name: '',
-    email: '',
-    profilePic: '',
-    joinDate: '',
-    totalHelped: 0,
-    recentActivity: []
-  });
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     donations: 0,
@@ -39,25 +34,19 @@ export default function UserProfile({ navigation }) {
   const [showingAllActivities, setShowingAllActivities] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 3;
-  const [wishlistItems, setWishlistItems] = useState([]);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
 
   useEffect(() => {
     fetchUserData();
-    fetchWishlistItems();
-  }, []);
+  }, [userId]);
 
   const fetchUserData = async () => {
     try {
       setLoading(true);
-      const userId = await AsyncStorage.getItem('userUID');
-      
-      if (!userId) {
-        Alert.alert('Error', 'User not logged in');
-        navigation.replace('Login');
-        return;
-      }
 
-      // First get basic user data
+      // Get user data
       const userResponse = await axios.get(`${API_BASE}/user/getById/${userId}`);
       
       if (userResponse.data) {
@@ -76,13 +65,12 @@ export default function UserProfile({ navigation }) {
           axios.get(`${API_BASE}/inNeed/all`).catch(() => ({ data: [] }))
         ]);
 
-        // Calculate activity counts
+        // Calculate activity counts for this user
         const userDonations = donations.data?.filter(item => item.UserId === userId) || [];
         const userEvents = events.data?.data?.filter(event => event.UserId === userId) || [];
         const userCampaigns = campaigns.data?.filter(campaign => campaign.UserId === userId) || [];
         const userInNeeds = inNeeds.data?.filter(need => need.UserId === userId) || [];
 
-        // Set stats
         setStats({
           donations: userDonations.length,
           events: userEvents.length,
@@ -90,7 +78,7 @@ export default function UserProfile({ navigation }) {
           inNeeds: userInNeeds.length
         });
 
-        // Create recent activity from existing data
+        // Create recent activity
         const recentActivity = [
           ...userDonations.map(d => ({
             type: 'donation',
@@ -103,9 +91,8 @@ export default function UserProfile({ navigation }) {
             date: e.createdAt
           }))
         ]
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        // Update user with calculated data
         setUser(prev => ({
           ...prev,
           totalHelped: userDonations.length + userEvents.length + userCampaigns.length,
@@ -114,136 +101,46 @@ export default function UserProfile({ navigation }) {
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
-      Alert.alert(
-        'Error',
-        'Could not load some profile data. Please try again later.',
-        [{ text: 'OK' }]
-      );
+      Alert.alert('Error', 'Could not load user profile data');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchWishlistItems = async () => {
+  const submitReport = async () => {
     try {
-        const userId = await AsyncStorage.getItem('userUID');
-        if (!userId) return;
+      const finalReason = reportReason === 'other' ? customReason : reportReason;
+      
+      if (!finalReason) {
+        Alert.alert('Error', 'Please select or enter a reason for reporting');
+        return;
+      }
 
-        const favoritesResponse = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
-        console.log('Raw favorites:', favoritesResponse.data);
+      const currentUserId = await AsyncStorage.getItem('userUID');
+      if (!currentUserId) {
+        Alert.alert('Error', 'You must be logged in to report a user');
+        return;
+      }
 
-        const wishlistDetails = await Promise.all(
-            favoritesResponse.data.map(async (favorite) => {
-                try {
-                    // Use the nested data from the favorite response
-                    if (favorite.donationItemId && favorite.DonationItem) {
-                        return {
-                            ...favorite.DonationItem,
-                            id: favorite.id,
-                            favoriteId: favorite.id,
-                            donationItemId: favorite.donationItemId,
-                            type: 'donation'
-                        };
-                    } 
-                    else if (favorite.eventId && favorite.Event) {
-                        return {
-                            ...favorite.Event,
-                            id: favorite.id,
-                            favoriteId: favorite.id,
-                            eventId: favorite.eventId,
-                            type: 'event'
-                        };
-                    }
-                    else if (favorite.inNeedId && favorite.InNeed) {
-                        return {
-                            ...favorite.InNeed,
-                            id: favorite.id,
-                            favoriteId: favorite.id,
-                            inNeedId: favorite.inNeedId,
-                            type: 'inNeed'
-                        };
-                    }
-                    return null;
-                } catch (error) {
-                    console.error('Error processing favorite item:', error);
-                    return null;
-                }
-            })
-        );
+      await axios.post(`${API_BASE}/report/createReport`, {
+        reason: finalReason,
+        userId: currentUserId,
+        reportedUserId: userId,
+        itemType: 'user'
+      });
 
-        const validItems = wishlistDetails.filter(item => item !== null);
-        console.log('Processed wishlist items:', validItems);
-        setWishlistItems(validItems);
+      Alert.alert('Success', 'Thank you for your report. We will review it shortly.');
+      setReportModalVisible(false);
+      setReportReason('');
+      setCustomReason('');
     } catch (error) {
-        console.error('Error fetching wishlist:', error?.response?.data || error.message);
-        setWishlistItems([]);
+      console.error('Error submitting report:', error);
+      Alert.alert('Error', 'Failed to submit report. Please try again.');
     }
-};
-
-  const handleRemoveFromWishlist = async (itemId) => {
-    try {
-        await axios.delete(`${API_BASE}/favourite/deleteFavourite/${itemId}`);
-        setWishlistItems(prev => prev.filter(item => item.id !== itemId));
-        Alert.alert('Success', 'Item removed from wishlist');
-    } catch (error) {
-        console.error('Error removing from wishlist:', error?.response?.data || error.message);
-        Alert.alert('Error', 'Failed to remove item from wishlist');
-    }
-};
-
-  const addToWishlist = async (itemId, itemType) => {
-    try {
-        const userId = await AsyncStorage.getItem('userUID');
-        if (!userId) {
-            Alert.alert('Error', 'Please login first');
-            return;
-        }
-
-        const response = await axios.post(`${API_BASE}/favourite/createFavourite`, {
-            userId,
-            itemId,
-            itemType
-        });
-
-        if (response.data) {
-            await fetchWishlistItems();
-            Alert.alert('Success', 'Item added to wishlist');
-        }
-    } catch (error) {
-        console.error('Error adding to wishlist:', error?.response?.data || error.message);
-        Alert.alert('Error', 'Failed to add item to wishlist');
-    }
-};
-
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await AsyncStorage.removeItem('userUID');
-              navigation.replace('Login');
-            } catch (error) {
-              console.error('Error logging out:', error);
-              Alert.alert('Error', 'Failed to log out');
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
   };
 
   const StatCard = ({ icon, label, value }) => (
-    <TouchableOpacity style={styles.statCard}>
+    <View style={styles.statCard}>
       <LinearGradient
         colors={['rgba(76, 175, 80, 0.1)', 'rgba(76, 175, 80, 0.05)']}
         style={styles.statGradient}
@@ -256,21 +153,11 @@ export default function UserProfile({ navigation }) {
           <Text style={styles.statLabel}>{label}</Text>
         </View>
       </LinearGradient>
-    </TouchableOpacity>
-  );
-
-  const ActionButton = ({ icon, label, onPress, color = "#666" }) => (
-    <TouchableOpacity style={styles.actionButton} onPress={onPress}>
-      <View style={[styles.actionIcon, { backgroundColor: `${color}15` }]}>
-        <Ionicons name={icon} size={24} color={color} />
-      </View>
-      <Text style={[styles.actionText, { color }]}>{label}</Text>
-      <Ionicons name="chevron-forward" size={24} color={color} />
-    </TouchableOpacity>
+    </View>
   );
 
   const ActivityItem = ({ activity }) => (
-    <TouchableOpacity style={styles.activityItem}>
+    <View style={styles.activityItem}>
       <View style={styles.activityLeft}>
         <View style={styles.activityIconContainer}>
           <MaterialCommunityIcons 
@@ -286,104 +173,8 @@ export default function UserProfile({ navigation }) {
           </Text>
         </View>
       </View>
-      <MaterialCommunityIcons name="chevron-right" size={20} color="#ccc" />
-    </TouchableOpacity>
+    </View>
   );
-
-  const WishlistItem = ({ item }) => {
-    // Get the correct image URL based on item type
-    const imageUrl = item.type === 'event' ? 
-        (item.image || item.images?.[0] || 'https://via.placeholder.com/100') :
-        (Array.isArray(item.image) ? item.image[0] : item.image || 'https://via.placeholder.com/100');
-
-    const getNavigationScreen = (type) => {
-        switch(type) {
-            case 'donation':
-                return 'DonationDetails';
-            case 'inNeed':
-                return 'InNeedDetails';
-            case 'event':
-                return 'EventDetails';
-            default:
-                return 'DonationDetails';
-        }
-    };
-
-    const handleNavigation = () => {
-        const screen = getNavigationScreen(item.type);
-        let navigationParams = {};
-
-        switch(item.type) {
-            case 'event':
-                navigationParams = {
-                    event: {
-                        id: item.eventId,
-                        title: item.title,
-                        description: item.description,
-                        images: item.images || [item.image],
-                        location: item.location,
-                        date: item.date,
-                        participators: item.participators,
-                        ...item // Include any other event-specific fields
-                    }
-                };
-                break;
-            case 'donation':
-                navigationParams = {
-                    item: {
-                        id: item.donationItemId,
-                        title: item.title,
-                        image: item.image,
-                        location: item.location,
-                        ...item // Include any other donation-specific fields
-                    }
-                };
-                break;
-            case 'inNeed':
-                navigationParams = {
-                    item: {
-                        id: item.inNeedId,
-                        title: item.title,
-                        images: Array.isArray(item.image) ? item.image : [item.image],
-                        location: item.location,
-                        ...item // Include any other inNeed-specific fields
-                    }
-                };
-                break;
-        }
-
-        navigation.navigate(screen, navigationParams);
-    };
-
-    return (
-        <TouchableOpacity 
-            style={styles.wishlistItem}
-            onPress={handleNavigation}
-        >
-            <Image 
-                source={{ uri: imageUrl }}
-                style={styles.wishlistImage}
-            />
-            <View style={styles.wishlistItemContent}>
-                <Text style={styles.wishlistItemTitle} numberOfLines={1}>
-                    {item.title}
-                </Text>
-                {item.location && (
-                    <Text style={styles.wishlistItemLocation} numberOfLines={1}>
-                        <Ionicons name="location-outline" size={14} color="#666" />
-                        {item.location}
-                    </Text>
-                )}
-            </View>
-            <TouchableOpacity 
-                style={styles.removeWishlistButton}
-                onPress={() => handleRemoveFromWishlist(item.favoriteId)}
-            >
-                <Ionicons name="heart" size={20} color="#FF6B6B" />
-            </TouchableOpacity>
-        </TouchableOpacity>
-    );
-};
 
   if (loading) {
     return (
@@ -414,24 +205,13 @@ export default function UserProfile({ navigation }) {
                 />
               </View>
             </LinearGradient>
-            <TouchableOpacity 
-              style={styles.editImageButton}
-              onPress={() => navigation.navigate('EditProfile')}
-            >
-              <LinearGradient
-                colors={['#4CAF50', '#388E3C']}
-                style={styles.editButtonGradient}
-              >
-                <MaterialCommunityIcons name="pencil" size={16} color="#fff" />
-              </LinearGradient>
-            </TouchableOpacity>
             {user?.verified && (
               <View style={styles.verifiedBadge}>
                 <MaterialCommunityIcons name="check-decagram" size={24} color="#4CAF50" />
               </View>
             )}
           </View>
-          <Text style={styles.name}>{user?.name || 'Anonymous'}</Text>
+          <Text style={styles.name}>{user?.name}</Text>
           <Text style={styles.email}>{user?.email}</Text>
           <View style={styles.ratingContainer}>
             <Ionicons name="star" size={20} color="#FFD700" />
@@ -440,7 +220,7 @@ export default function UserProfile({ navigation }) {
         </View>
       </LinearGradient>
 
-      <View style={styles.content}>
+      <View style={styles.contentContainer}>
         <View style={styles.bioSection}>
           <View style={styles.infoHeader}>
             <Text style={styles.infoTitle}>Profile Information</Text>
@@ -494,37 +274,11 @@ export default function UserProfile({ navigation }) {
         />
       </View>
 
-      <View style={styles.wishlistSection}>
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionHeaderLeft}>
-            <MaterialCommunityIcons name="heart" size={24} color="#FF6B6B" />
-            <Text style={styles.sectionTitle}>Your Wishlist</Text>
-          </View>
-        </View>
-        
-        {wishlistItems.length > 0 ? (
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.wishlistContainer}
-          >
-            {wishlistItems.map((item) => (
-              <WishlistItem key={item.id} item={item} />
-            ))}
-          </ScrollView>
-        ) : (
-          <View style={styles.emptyWishlist}>
-            <MaterialCommunityIcons name="heart-outline" size={40} color="#ddd" />
-            <Text style={styles.emptyWishlistText}>Your wishlist is empty</Text>
-          </View>
-        )}
-      </View>
-
       <View style={styles.recentActivity}>
         <View style={styles.activityHeader}>
           <View style={styles.activityHeaderLeft}>
             <MaterialCommunityIcons name="history" size={24} color="#4CAF50" />
-            <Text style={styles.sectionTitle}>Your Activity</Text>
+            <Text style={styles.sectionTitle}>Recent Activity</Text>
           </View>
         </View>
         
@@ -540,108 +294,146 @@ export default function UserProfile({ navigation }) {
                   />
                 ))}
             </View>
-            {!showingAllActivities && user.recentActivity.length > visibleActivities ? (
-              <TouchableOpacity 
-                style={styles.showMoreButton}
-                onPress={() => {
-                  setShowingAllActivities(true);
-                  setCurrentPage(2); // Start with page 2 since we already show 3 items
-                }}
-              >
-                <Text style={styles.showMoreButtonText}>
-                  Show More ({user.recentActivity.length - visibleActivities} more)
-                </Text>
-                <MaterialCommunityIcons name="chevron-down" size={20} color="#4CAF50" />
-              </TouchableOpacity>
-            ) : showingAllActivities && (
-              <>
-                <View style={styles.paginationContainer}>
-                  {currentPage > 1 && (
-                    <TouchableOpacity 
-                      style={styles.paginationButton}
-                      onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    >
-                      <MaterialCommunityIcons name="chevron-left" size={20} color="#4CAF50" />
-                      <Text style={styles.paginationButtonText}>Previous</Text>
-                    </TouchableOpacity>
-                  )}
-                  
-                  {user.recentActivity.length > currentPage * ITEMS_PER_PAGE && (
-                    <TouchableOpacity 
-                      style={styles.paginationButton}
-                      onPress={() => setCurrentPage(prev => prev + 1)}
-                    >
-                      <Text style={styles.paginationButtonText}>Next</Text>
-                      <MaterialCommunityIcons name="chevron-right" size={20} color="#4CAF50" />
-                    </TouchableOpacity>
-                  )}
-                </View>
-                
-                <TouchableOpacity 
-                  style={styles.showLessButton}
-                  onPress={() => {
-                    setShowingAllActivities(false);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <Text style={styles.showMoreButtonText}>Show Less</Text>
-                  <MaterialCommunityIcons name="chevron-up" size={20} color="#4CAF50" />
-                </TouchableOpacity>
-              </>
-            )}
           </>
         ) : (
           <View style={styles.noActivityContainer}>
             <MaterialCommunityIcons name="calendar-blank" size={50} color="#ccc" />
             <Text style={styles.noActivityText}>No recent activity</Text>
-            <Text style={styles.noActivitySubtext}>Your activities will appear here</Text>
+            <Text style={styles.noActivitySubtext}>This user hasn't made any activities yet</Text>
           </View>
         )}
       </View>
 
       <View style={styles.actionsContainer}>
-        <Text style={styles.sectionTitle}>Account Settings</Text>
-        <ActionButton
-          icon="person-outline"
-          label="Edit Profile"
-          onPress={() => navigation.navigate('EditProfile')}
-          color="#4CAF50"
-        />
-        <ActionButton
-          icon="settings-outline"
-          label="Settings"
-          onPress={() => navigation.navigate('Settings')}
-          color="#5C6BC0"
-        />
-        <ActionButton
-          icon="log-out-outline"
-          label="Logout"
-          onPress={handleLogout}
-          color="#FF6B6B"
-        />
+        <TouchableOpacity 
+          style={styles.chatButton}
+          onPress={() => navigation.navigate('Chat', {
+            recipientId: userId,
+            recipientName: user?.name,
+            recipientProfilePic: user?.profilePic
+          })}
+        >
+          <MaterialCommunityIcons name="chat" size={24} color="#fff" />
+          <Text style={styles.chatButtonText}>Send Message</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.reportButton}
+          onPress={() => setReportModalVisible(true)}
+        >
+          <MaterialCommunityIcons name="alert-circle-outline" size={24} color="#FF6B6B" />
+          <Text style={styles.reportButtonText}>Report User</Text>
+        </TouchableOpacity>
       </View>
+
+      {/* Report Modal */}
+      <Modal
+        visible={reportModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setReportModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Report User</Text>
+            <Text style={styles.modalSubtitle}>Why are you reporting this user?</Text>
+
+            <TouchableOpacity 
+              style={[styles.reportOption, reportReason === 'inappropriate' && styles.reportOptionSelected]}
+              onPress={() => setReportReason('inappropriate')}
+            >
+              <Text style={styles.reportOptionText}>Inappropriate Behavior</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.reportOption, reportReason === 'spam' && styles.reportOptionSelected]}
+              onPress={() => setReportReason('spam')}
+            >
+              <Text style={styles.reportOptionText}>Spam or Scam</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.reportOption, reportReason === 'harassment' && styles.reportOptionSelected]}
+              onPress={() => setReportReason('harassment')}
+            >
+              <Text style={styles.reportOptionText}>Harassment</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.reportOption, reportReason === 'other' && styles.reportOptionSelected]}
+              onPress={() => setReportReason('other')}
+            >
+              <Text style={styles.reportOptionText}>Other</Text>
+            </TouchableOpacity>
+
+            {reportReason === 'other' && (
+              <TextInput
+                style={styles.customInput}
+                placeholder="Please specify the reason"
+                value={customReason}
+                onChangeText={setCustomReason}
+                multiline
+              />
+            )}
+
+            <TouchableOpacity 
+              style={styles.submitButton} 
+              onPress={submitReport}
+            >
+              <Text style={styles.submitButtonText}>Submit Report</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.cancelButton}
+              onPress={() => {
+                setReportModalVisible(false);
+                setReportReason('');
+                setCustomReason('');
+              }}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  // Keep all existing styles from UserProfile.js and add/modify these:
+  chatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#4CAF50',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  chatButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
   headerGradient: {
-    paddingTop: 60,
+    paddingTop: 40,
     paddingBottom: 30,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
   header: {
     alignItems: 'center',
+    padding: 20,
   },
   profileImageContainer: {
     alignItems: 'center',
     marginBottom: 20,
-    marginTop: 10,
   },
   imageGradientBorder: {
     width: 160,
@@ -666,29 +458,10 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 73,
   },
-  editImageButton: {
+   verifiedBadge: {
     position: 'absolute',
-    bottom: 5,
+    top: 5,
     right: 5,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  editButtonGradient: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
-  },
-  verifiedBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 2,
@@ -703,12 +476,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 5,
+    textAlign: 'center',
   },
   email: {
     fontSize: 16,
     color: '#fff',
     opacity: 0.9,
     marginBottom: 10,
+    textAlign: 'center',
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -717,6 +492,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 15,
+    marginBottom: 10,
   },
   rating: {
     marginLeft: 5,
@@ -731,7 +507,6 @@ const styles = StyleSheet.create({
   bioSection: {
     backgroundColor: '#fff',
     borderRadius: 20,
-    marginHorizontal: 16,
     marginBottom: 20,
     overflow: 'hidden',
     elevation: 3,
@@ -1013,78 +788,94 @@ const styles = StyleSheet.create({
   },
   showLessButton: {
     flexDirection: 'row',
+    marginTop: 8,
+  },
+  reportButton: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    marginTop: 8,
-  },
-  wishlistSection: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    marginHorizontal: 16,
-    marginBottom: 20,
+    backgroundColor: '#FFF',
     padding: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-  wishlistContainer: {
-    paddingVertical: 16,
-  },
-  wishlistItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
-    marginRight: 16,
-    padding: 8,
-    width: 280,
-    borderWidth: 1,
-    borderColor: '#eee',
-  },
-  wishlistImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-  wishlistItemContent: {
-    flex: 1,
-  },
-  wishlistItemTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  wishlistItemLocation: {
-    fontSize: 14,
-    color: '#666',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  removeWishlistButton: {
-    padding: 8,
-  },
-  emptyWishlist: {
-    alignItems: 'center',
-    paddingVertical: 32,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    marginTop: 12,
-  },
-  emptyWishlistText: {
-    color: '#495057',
-    fontSize: 15,
     marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
   },
-  sectionHeaderLeft: {
-    flexDirection: 'row',
+  reportButtonText: {
+    color: '#FF6B6B',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    padding: 20,
   },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 20,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#333',
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 20,
+  },
+  reportOption: {
+    padding: 15,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+    marginBottom: 10,
+  },
+  reportOptionSelected: {
+    backgroundColor: '#FF6B6B15',
+    borderColor: '#FF6B6B',
+    borderWidth: 1,
+  },
+  reportOptionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  customInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 10,
+    marginBottom: 20,
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  submitButton: {
+    backgroundColor: '#FF6B6B',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontSize: 16,
+  }
 });

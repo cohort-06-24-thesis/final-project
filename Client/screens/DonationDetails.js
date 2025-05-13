@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE } from '../config';
 
 export default function DonationDetails({ route, navigation }) {
   const { item: initialItem } = route.params;
   const [item, setItem] = useState(initialItem);
   const [loading, setLoading] = useState(true);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
     const fetchItemDetails = async () => {
@@ -26,8 +29,62 @@ export default function DonationDetails({ route, navigation }) {
     fetchItemDetails();
   }, [initialItem.id]);
 
-  const handleFavorite = () => {
-    console.log('Added to favorites');
+  useEffect(() => {
+    const checkIfFavorited = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userUID');
+        if (!userId) return;
+
+        const response = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
+        console.log('Favorites response:', response.data); // Debug log
+        
+        const favorites = response.data;
+        const isFav = favorites.some(fav => 
+          fav.itemId === item.id || fav.donationItemId === item.id
+        );
+        setIsFavorited(isFav);
+      } catch (error) {
+        console.error('Error checking favorite status:', error?.response?.data || error.message);
+      }
+    };
+
+    if (item.id) {
+      checkIfFavorited();
+    }
+  }, [item.id]);
+
+  const handleFavorite = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userUID');
+      if (!userId) {
+        Alert.alert('Error', 'Please login to manage favorites');
+        return;
+      }
+
+      if (isFavorited) {
+        const favoritesResponse = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
+        const favorite = favoritesResponse.data.find(fav => fav.donationItemId === item.id);
+        
+        if (favorite) {
+          await axios.delete(`${API_BASE}/favourite/deleteFavourite/${favorite.id}`);
+          setIsFavorited(false);
+          Alert.alert('Success', 'Item removed from wishlist');
+        }
+      } else {
+        const response = await axios.post(`${API_BASE}/favourite/createFavourite`, {
+          userId,
+          donationItemId: item.id
+        });
+
+        if (response.data) {
+          setIsFavorited(true);
+          Alert.alert('Success', 'Item added to wishlist');
+        }
+      }
+    } catch (error) {
+      console.error('Error managing favorites:', error?.response?.data || error.message);
+      Alert.alert('Error', 'Failed to update wishlist. Please try again later.');
+    }
   };
 
   const handleReport = () => {
@@ -47,6 +104,34 @@ export default function DonationDetails({ route, navigation }) {
     }
   };
 
+  const handleClaim = async () => {
+    try {
+      const response = await axios.put(`${API_BASE}/donationItems/updateStatus/${item.id}`, {
+        status: 'claimed'
+      });
+      if (response.data) {
+        setItem(prev => ({ ...prev, status: 'claimed' }));
+        Alert.alert('Success', 'Item marked as claimed');
+      }
+    } catch (error) {
+      console.error('Error claiming item:', error);
+      Alert.alert('Error', 'Failed to claim item');
+    }
+  };
+
+  // Add useEffect to get current user ID when component mounts
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userUID');
+        setCurrentUserId(userId);
+      } catch (error) {
+        console.error('Error getting current user:', error);
+      }
+    };
+    getCurrentUser();
+  }, []);
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
@@ -63,14 +148,16 @@ export default function DonationDetails({ route, navigation }) {
           <Text style={styles.title}>{item.title}</Text>
 
           {/* Status Badge */}
-          <View style={styles.statusBadgeContainer}>
-            <Text style={[
-              styles.statusBadge,
-              { backgroundColor: item.status === 'available' ? '#4CAF50' : item.status === 'reserved' ? '#FFC107' : '#FF5722' }
-            ]}>
-              {item.status.toUpperCase()}
-            </Text>
-          </View>
+          {item.status && (
+            <View style={styles.statusBadgeContainer}>
+              <Text style={[
+                styles.statusBadge,
+                { backgroundColor: item.status === 'available' ? '#4CAF50' : item.status === 'reserved' ? '#FFC107' : '#FF5722' }
+              ]}>
+                {item.status?.toUpperCase()}
+              </Text>
+            </View>
+          )}
 
           <View style={styles.infoRow}>
             <Ionicons name="location-outline" size={20} color="#666" />
@@ -82,8 +169,17 @@ export default function DonationDetails({ route, navigation }) {
 
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.actionButton} onPress={handleFavorite}>
-              <Ionicons name="heart-outline" size={24} color="#666" />
-              <Text style={styles.actionButtonText}>Favorite</Text>
+              <Ionicons 
+                name={isFavorited ? "heart" : "heart-outline"} 
+                size={24} 
+                color={isFavorited ? "#FF6B6B" : "#666"} 
+              />
+              <Text style={[
+                styles.actionButtonText,
+                isFavorited && { color: "#FF6B6B" }
+              ]}>
+                Favorite
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionButton} onPress={handleReport}>
@@ -131,13 +227,54 @@ export default function DonationDetails({ route, navigation }) {
           source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
           style={styles.userImage}
         />
-        <View style={styles.userInfo}>
+        <TouchableOpacity 
+          style={styles.userInfo}
+          onPress={() => {
+            if (String(item?.User?.id) === String(currentUserId)) {
+              navigation.navigate('UserProfile');
+            } else {
+              navigation.navigate('OtherUser', { userId: item?.User?.id });
+            }
+          }}
+        >
           <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
           <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
-        </View>
-        <TouchableOpacity style={styles.contactButton} onPress={handleContact}>
-          <Text style={styles.contactButtonText}>Contact</Text>
         </TouchableOpacity>
+        {String(item?.User?.id) === String(currentUserId) ? (
+          <TouchableOpacity 
+            style={[
+              styles.contactButton, 
+              { backgroundColor: item.status === 'claimed' ? '#666' : '#4CAF50' }
+            ]}
+            onPress={handleClaim}
+            disabled={item.status === 'claimed'}
+          >
+            <Text style={styles.contactButtonText}>
+              {item.status === 'claimed' ? 'Claimed' : 'Mark as Claimed'}
+            </Text>
+            <Ionicons 
+              name={item.status === 'claimed' ? "checkmark-circle" : "checkmark-circle-outline"} 
+              size={18} 
+              color="#fff" 
+            />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity 
+            style={[
+              styles.contactButton,
+              { backgroundColor: item.status === 'claimed' ? '#666' : '#EFD13D' }
+            ]} 
+            onPress={handleContact}
+            disabled={item.status === 'claimed'}
+          >
+            <Text style={styles.contactButtonText}>
+              {item.status === 'claimed' ? 'Item Claimed' : 'Contact'}
+            </Text>
+            {item.status === 'claimed' && (
+              <Ionicons name="checkmark-circle" size={18} color="#fff" />
+            )}
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -247,14 +384,17 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
+    paddingVertical: 8, // Add padding for better touch area
   },
   userName: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#333', // Darker color for better contrast
   },
   userRating: {
     fontSize: 14,
     color: '#666',
+    marginTop: 2, // Add some space between name and rating
   },
   contactButton: {
     backgroundColor: '#EFD13D',

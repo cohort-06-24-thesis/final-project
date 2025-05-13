@@ -9,6 +9,8 @@ module.exports = {
                 description,
                 image,
                 location,
+                isApproved: false, 
+                status:"available",
                 UserId
             })
             res.status(201).json(donationItem)
@@ -49,7 +51,7 @@ module.exports = {
     updateDonationItem: async (req, res) => {
         try {
             const { id } = req.params
-            const { title, description, image, location } = req.body
+            const { title, description, image, location,isApproved,status } = req.body
             const donationItem = await DonationItem.findByPk(id)
             if (!donationItem) {
                 return res.status(404).json({ message: "Donation item not found" })
@@ -58,6 +60,8 @@ module.exports = {
             donationItem.description = description
             donationItem.image = image
             donationItem.location = location
+            donationItem.isApproved=isApproved
+            donationItem.status=status
             await donationItem.save()
             res.status(200).json(donationItem)
         } catch (error) {

@@ -18,10 +18,12 @@ const sequelize = new Sequelize('donation', 'postgres', 'root', {
 
   const Payment = require('../models/payment.model')(sequelize,DataTypes);
   const report= require('../models/report.model')(sequelize,DataTypes);
-  const favourite= require('../models/favourite.model')(sequelize,DataTypes);
+  const Favourite= require('../models/favourite.model')(sequelize,DataTypes);
 const Notification= require('../models/notification.model')(sequelize,DataTypes);
 const Comment= require('../models/comment.model')(sequelize,DataTypes);
 const inNeed= require('../models/InNeed')(sequelize,DataTypes);
+const EventParticipantModel = require('../models/EventParticipant.model');
+const EventParticipant = EventParticipantModel(sequelize, DataTypes);
 
 
 const CampaignDonations = require('../models/CampaignDonations')(sequelize,DataTypes);
@@ -34,17 +36,37 @@ const Conversation = require('../models/Conversation.model')(sequelize,DataTypes
 User.hasMany(DonationItem, { foreignKey: 'UserId' });
 DonationItem.belongsTo(User, { foreignKey: 'UserId' });
 
-User.hasMany(favourite, { foreignKey: 'userId' });
-favourite.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Favourite, { foreignKey: 'userId' });
+Favourite.belongsTo(User, { foreignKey: 'userId' });
 
-DonationItem.hasMany(favourite, { foreignKey: 'donationItemId' });
-favourite.belongsTo(DonationItem, { foreignKey: 'donationItemId' });
+DonationItem.hasMany(Favourite, { foreignKey: 'donationItemId' });
+Favourite.belongsTo(DonationItem, { foreignKey: 'donationItemId', as: 'item' });
 
 Category.hasMany(DonationItem, { foreignKey: 'categoryId' });
 DonationItem.belongsTo(Category, { foreignKey: 'categoryId' });
 
 User.hasMany(report, { foreignKey: 'userId' });
 report.belongsTo(User, { foreignKey: 'userId' });
+
+User.hasMany(report, { 
+    foreignKey: 'userId',
+    as: 'reportsMade'
+});
+User.hasMany(report, { 
+    foreignKey: 'reportedUserId',
+    as: 'reportsReceived'
+});
+report.belongsTo(User, { 
+    foreignKey: 'userId',
+    as: 'reporter'
+});
+report.belongsTo(User, { 
+    foreignKey: 'reportedUserId',
+    as: 'reportedUser'
+});
+
+DonationItem.hasMany(report, { foreignKey: 'itemId' });
+report.belongsTo(DonationItem, { foreignKey: 'itemId' });
 
 
 User.hasMany(Notification, { foreignKey: 'userId' });
@@ -82,12 +104,38 @@ DonationItem.belongsTo(Event, { foreignKey: 'eventId' });
 Category.hasMany(DonationItem , { foreignKey: 'categoryId' });
 DonationItem.belongsTo(Category , { foreignKey: 'categoryId' });
 
+// Update your associations
+User.hasMany(Favourite, { foreignKey: 'userId' });
+Favourite.belongsTo(User, { foreignKey: 'userId' });
+
+DonationItem.hasMany(Favourite, { foreignKey: 'donationItemId' });
+Favourite.belongsTo(DonationItem, { foreignKey: 'donationItemId' });
+
+Event.hasMany(Favourite, { foreignKey: 'eventId' });
+Favourite.belongsTo(Event, { foreignKey: 'eventId' });
+
+inNeed.hasMany(Favourite, { foreignKey: 'inNeedId' });
+Favourite.belongsTo(inNeed, { foreignKey: 'inNeedId' });
+
 // Add these relationships
 User.hasMany(Comment, { foreignKey: 'userId' });
 Comment.belongsTo(User, { foreignKey: 'userId' });
 
 inNeed.hasMany(Comment, { foreignKey: 'inNeedId' });
 Comment.belongsTo(inNeed, { foreignKey: 'inNeedId' });
+
+// Add these associations
+Event.hasMany(EventParticipant, { 
+    foreignKey: 'eventId',
+    onDelete: 'CASCADE' 
+});
+EventParticipant.belongsTo(Event, { foreignKey: 'eventId' });
+
+User.hasMany(EventParticipant, { 
+    foreignKey: 'userId',
+    onDelete: 'CASCADE' 
+});
+EventParticipant.belongsTo(User, { foreignKey: 'userId' });
 
 // Set up associations
 Comment.belongsTo(User, {
@@ -107,14 +155,35 @@ Comment.belongsTo(inNeed, {
     console.error('Unable to connect to the database:', error);
   }
   
-// const connection=async()=>{
-//   await sequelize.sync({force: true });
-// console.log('All models were synchronized successfully.');
-// }
-// connection()
+
+// const connection = async () => {
+//     try {
+//         await sequelize.sync({ force: true });
+//         console.log('Database synced successfully');
+//     } catch (error) {
+//         console.error('Error syncing database:', error);
+//     }
+// };
+
+// connection();
+
+module.exports={
+    User, 
+    Payment,
+    report,
+    DonationItem,
+    Category,
+    Favourite,
+    Notification,
+    Comment,
+    inNeed,
+    CampaignDonations,
+    Event,
+    Message,
+    Conversation,
+    EventParticipant,
+};
 
 
-
-module.exports={User, Payment,report,DonationItem,Category,favourite,Notification,Comment,inNeed,CampaignDonations,Event,Message,Conversation};
 
 

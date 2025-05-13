@@ -10,6 +10,8 @@ const campaigns = [
     totalRaised: 4550,
     startDate: new Date('2024-03-01'),
     endDate: new Date('2024-05-01'),
+    isApproved: false, 
+    status:'active',
     UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   },
   {
@@ -21,6 +23,9 @@ const campaigns = [
     totalRaised: 37500,
     startDate: new Date('2024-03-15'),
     endDate: new Date('2024-06-15'),
+    isApproved: false, 
+    status:'active',
+
     UserId: 'uDVoIeFDpVWDWisqxM76uP5MHcs1'
   },
   {
@@ -32,6 +37,10 @@ const campaigns = [
     totalRaised: 4500,
     startDate: new Date('2024-04-01'),
     endDate: new Date('2024-07-01'),
+    isApproved: true, 
+    status:'active',
+
+
     UserId: 'uAsdlgTBGtatrpxhUAnw7Grnxj73'
   },
   {
@@ -43,6 +52,10 @@ const campaigns = [
     totalRaised: 4800,
     startDate: new Date('2024-03-10'),
     endDate: new Date('2024-04-10'),
+    isApproved: true, 
+    status:'active',
+
+
     UserId: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1'
   },
   {
@@ -54,6 +67,10 @@ const campaigns = [
     totalRaised: 5000,
     startDate: new Date('2024-05-01'),
     endDate: new Date('2024-08-01'),
+    isApproved: true, 
+    status:'active',
+
+
     UserId: 'Jks4PbEyKrX4H7QwNxIE9FDCxjz1'
   }
 ];

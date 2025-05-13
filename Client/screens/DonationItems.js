@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Image, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Image, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
-import { API_BASE } from '../config'
+import { API_BASE } from '../config';
 
-// Map category names to Ionicons icon names
 const categoryIcons = {
   Furniture: 'bed-outline',
   Home: 'home-outline',
@@ -30,6 +29,7 @@ export default function DonationItems({ navigation }) {
   const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchItems = async () => {
     try {
@@ -49,17 +49,17 @@ export default function DonationItems({ navigation }) {
     }
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchItems();
+    await fetchCategories();
+    setRefreshing(false);
+  };
+
   useEffect(() => {
     fetchItems();
     fetchCategories();
   }, []);
-
-  // Log all category names for debugging
-  useEffect(() => {
-    if (categories && categories.length > 0) {
-       categories.map(c => c.name)
-    }
-  }, [categories]);
 
   const handleCategoryPress = (category) => {
     setSelectedCategory(category.name);
@@ -69,7 +69,6 @@ export default function DonationItems({ navigation }) {
     <View style={styles.container}>
       <Text style={styles.headerText}>SADAKA</Text>
 
-      {/* Search Bar */}
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={24} color="#666" />
         <TextInput
@@ -80,83 +79,94 @@ export default function DonationItems({ navigation }) {
         />
       </View>
 
-      {/* Main ScrollView for categories and items */}
       <ScrollView
         style={styles.itemsContainer}
         contentContainerStyle={{ paddingBottom: 20 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
-        {/* Categories - horizontal scroll */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoriesContainer}
           style={{ marginBottom: 10 }}
         >
-          {/* All category */}
           <TouchableOpacity
             style={[
               styles.categoryCard,
-              selectedCategory === null && styles.categoryCardSelected
+              selectedCategory === null && styles.categoryCardSelected,
             ]}
             onPress={() => setSelectedCategory(null)}
           >
-            <View style={[
-              styles.categoryIcon,
-              selectedCategory === null && styles.categoryIconSelected
-            ]}>
-              <Ionicons name="grid-outline" size={30} color={selectedCategory === null ? "#fff" : "#00C44F"} />
+            <View
+              style={[
+                styles.categoryIcon,
+                selectedCategory === null && styles.categoryIconSelected,
+              ]}
+            >
+              <Ionicons name="grid-outline" size={30} color={selectedCategory === null ? '#fff' : '#00C44F'} />
             </View>
-            <Text style={[
-              styles.categoryText,
-              selectedCategory === null && styles.categoryTextSelected
-            ]}>All</Text>
+            <Text
+              style={[
+                styles.categoryText,
+                selectedCategory === null && styles.categoryTextSelected,
+              ]}
+            >
+              All
+            </Text>
           </TouchableOpacity>
           {categories.map((item) => (
             <TouchableOpacity
               key={item.id}
               style={[
                 styles.categoryCard,
-                selectedCategory === item.name && styles.categoryCardSelected
+                selectedCategory === item.name && styles.categoryCardSelected,
               ]}
               onPress={() => handleCategoryPress(item)}
             >
-              <View style={[
-                styles.categoryIcon,
-                selectedCategory === item.name && styles.categoryIconSelected
-              ]}>
+              <View
+                style={[
+                  styles.categoryIcon,
+                  selectedCategory === item.name && styles.categoryIconSelected,
+                ]}
+              >
                 <Ionicons
                   name={categoryIcons[item.name] ? categoryIcons[item.name] : 'cube-outline'}
                   size={30}
-                  color={selectedCategory === item.name ? "#fff" : "#00C44F"}
+                  color={selectedCategory === item.name ? '#fff' : '#00C44F'}
                 />
               </View>
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === item.name && styles.categoryTextSelected
-              ]}>{item.name}</Text>
+              <Text
+                style={[
+                  styles.categoryText,
+                  selectedCategory === item.name && styles.categoryTextSelected,
+                ]}
+              >
+                {item.name}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
-        {/* Items Grid */}
         <View style={styles.itemsGrid}>
           {items
             .filter((item) => {
               const matchesSearch =
                 item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                item.location?.toLowerCase().includes(searchQuery.toLowerCase())
+                item.location?.toLowerCase().includes(searchQuery.toLowerCase());
+              const matchesCategory = !selectedCategory || item.Category?.name === selectedCategory;
+              const isApproved = item.isApproved === true; // Filter by isApproved field
 
-                
-                const matchesCategory = !selectedCategory || (item.Category?.name === selectedCategory);
-              return matchesSearch && matchesCategory;
+              return matchesSearch && matchesCategory && isApproved; // Only show approved items
             })
             .map((item, index) => (
-              <TouchableOpacity 
-                key={index} 
+              <TouchableOpacity
+                key={index}
                 style={styles.itemCard}
                 onPress={() => navigation.navigate('DonationDetails', { item })}
               >
-                <Image 
+                <Image
                   source={{ uri: item.image?.[0] || 'https://via.placeholder.com/150' }}
                   style={styles.itemImage}
                 />
@@ -169,11 +179,7 @@ export default function DonationItems({ navigation }) {
                         styles.itemStatusBadge,
                         {
                           backgroundColor:
-                            item.status === 'available'
-                              ? '#E6F4EA'
-                              : item.status === 'reserved'
-                              ? '#F3DE78'
-                              : '#eee',
+                            item.status === 'available' ? '#E6F4EA' : item.status === 'reserved' ? '#F3DE78' : '#eee',
                           color: item.status === 'available' ? '#2E7D32' : '#666',
                         },
                       ]}
@@ -181,7 +187,6 @@ export default function DonationItems({ navigation }) {
                       {item.status}
                     </Text>
                   </View>
-                  {/* Spacer to push the button to the bottom */}
                   <View style={{ flex: 1 }} />
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
                     <Ionicons name="time-outline" size={16} color="#999" style={{ marginRight: 5 }} />
@@ -195,7 +200,6 @@ export default function DonationItems({ navigation }) {
         </View>
       </ScrollView>
 
-      {/* Add Button */}
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.navigate('AddDonation')}
@@ -205,6 +209,12 @@ export default function DonationItems({ navigation }) {
     </View>
   );
 }
+
+
+
+
+
+
 
 const styles = {
   container: {
