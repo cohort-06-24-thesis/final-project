@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
@@ -21,6 +22,10 @@ const SOCKET_BASE = API_BASE.replace('/api', '');
 
 export default function Chat({ route, navigation }) {
   const { recipientId, recipientName, recipientProfilePic, itemTitle } = route.params;
+  // Add these new state variables
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportReason, setReportReason] = useState('');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +56,15 @@ export default function Chat({ route, navigation }) {
           />
           <Text style={styles.headerName}>{recipientName}</Text>
         </View>
+      ),
+      // Add this headerRight configuration
+      headerRight: () => (
+        <TouchableOpacity 
+          style={styles.headerButton}
+          onPress={() => setIsDropdownVisible(true)}
+        >
+          <Ionicons name="information-circle" size={28} color="#EFD13D" />
+        </TouchableOpacity>
       ),
     });
 
@@ -276,6 +290,42 @@ export default function Chat({ route, navigation }) {
           <Ionicons name="send" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
+      <Modal
+        visible={isDropdownVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsDropdownVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1} 
+          onPress={() => setIsDropdownVisible(false)}
+        >
+          <View style={styles.dropdownMenu}>
+            <TouchableOpacity
+              style={styles.dropdownItem}
+              onPress={() => {
+                setIsDropdownVisible(false);
+                navigation.navigate('OtherUser', { userId: recipientId });  // Changed from 'UserProfile' to 'OtherUser'
+              }}
+            >
+              <Ionicons name="person-outline" size={20} color="#333" />
+              <Text style={styles.dropdownText}>View Profile</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.dropdownItem}
+              onPress={() => {
+                setIsDropdownVisible(false);
+                setReportModalVisible(true);
+              }}
+            >
+              <Ionicons name="warning-outline" size={20} color="#FF6B6B" />
+              <Text style={styles.dropdownText}>Report User</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -373,5 +423,38 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111',
     textAlign: 'center',
+  },
+  headerButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 8,
+    minWidth: 180,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 8,
+  },
+  dropdownText: {
+    fontSize: 16,
+    marginLeft: 12,
+    color: '#333',
   },
 });

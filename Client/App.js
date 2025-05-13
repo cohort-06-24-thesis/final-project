@@ -35,6 +35,7 @@ import UserProfile from "./screens/UserProfile";
 import EditProfile from './screens/EditProfile';
 import Settings from './screens/Settings';
 import Conversation from "./screens/Conversation";
+import OtherUser from "./screens/OtherUser";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -232,6 +233,14 @@ export default function App() {
               headerTitleStyle: { fontWeight: "bold" },
             }}
           />
+          <Stack.Screen 
+            name="OtherUser" 
+            component={OtherUser}
+            options={{ 
+            headerTitle: "Profile",
+            headerBackTitle: "Back"
+  }} 
+/>
         </Stack.Navigator>
       </NavigationContainer>
       <StatusBar style="auto" />
