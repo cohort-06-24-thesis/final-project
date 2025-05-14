@@ -18,7 +18,7 @@ export default function CampaignDetails({ route, navigation }) {
         <Text style={styles.title}>{campaign.title}</Text>
         
         <View style={styles.statsContainer}>
-          <Text style={styles.amount}>TND {campaign.totalRaised } raised</Text>
+          <Text style={styles.amount}>TND {campaign.totalRaised }  raised</Text>
           <Text style={styles.goal}>of TND {campaign.goal} goal</Text>
         </View>
 

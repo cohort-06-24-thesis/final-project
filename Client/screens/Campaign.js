@@ -1,34 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { API_BASE } from '../config'
-
+import { API_BASE } from '../config';
 
 export default function Campaign() {
   const [campaigns, setCampaigns] = useState([]);
+  const [refreshing, setRefreshing] = useState(false); 
   const navigation = useNavigation();
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      fetchCampaigns(); // fetch every time screen is focused
+      fetchCampaigns();
     });
 
-    return unsubscribe; // cleanup
+    return unsubscribe;
   }, [navigation]);
 
   const fetchCampaigns = async () => {
     try {
-
-   
-
       const response = await axios.get(`${API_BASE}/campaignDonation`);
-
       setCampaigns(response.data);
     } catch (error) {
       console.error('Error fetching campaigns:', error);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchCampaigns();
+    setRefreshing(false);
   };
 
   const handleViewDetails = (campaign) => {
@@ -38,37 +40,45 @@ export default function Campaign() {
   return (
     <View style={{ flex: 1 }}>
       <Text style={styles.header}>Feature Campaign</Text>
-      <ScrollView style={styles.scrollView}>
-        {campaigns.map((campaign, index) => (
-          <View key={index} style={styles.card}>
-            <View style={styles.imageContainer}>
-              {campaign.images && campaign.images.length > 0 && (
-                <Image
-                  source={{ uri: campaign.images[0] }}
-                  style={styles.eventImage}
-                />
-              )}
-            </View>
-            <View style={styles.contentContainer}>
-              <Text style={styles.title}>{campaign.title}</Text>
-              <View style={styles.progressBar}>
-                <View
-                  style={[styles.progressFill, { width: `${campaign.progress}%` }]}
-                />
+
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {campaigns
+          .filter(campaign => campaign.isApproved === true)
+          .map((campaign, index) => (
+            <View key={index} style={styles.card}>
+              <View style={styles.imageContainer}>
+                {campaign.images && campaign.images.length > 0 && (
+                  <Image
+                    source={{ uri: campaign.images[0] }}
+                    style={styles.eventImage}
+                  />
+                )}
               </View>
-              <Text style={styles.description}>Raised {campaign.progress}%</Text>
-              <Text style={styles.participators}>
-                {campaign.totalDonors} people donated
-              </Text>
-              <TouchableOpacity
-                style={styles.viewDetailsButton}
-                onPress={() => handleViewDetails(campaign)}
-              >
-                <Text style={styles.viewDetailsText}>View Details</Text>
-              </TouchableOpacity>
+              <View style={styles.contentContainer}>
+                <Text style={styles.title}>{campaign.title}</Text>
+                <View style={styles.progressBar}>
+                  <View
+                    style={[styles.progressFill, { width: `${campaign.progress}%` }]}
+                  />
+                </View>
+                <Text style={styles.description}>Raised {campaign.progress}%</Text>
+                <Text style={styles.participators}>
+                  {/* {campaign.totalDonors} people donated */}
+                </Text>
+                <TouchableOpacity
+                  style={styles.viewDetailsButton}
+                  onPress={() => handleViewDetails(campaign)}
+                >
+                  <Text style={styles.viewDetailsText}>View Details</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        ))}
+          ))}
       </ScrollView>
 
       <TouchableOpacity
@@ -80,6 +90,9 @@ export default function Campaign() {
     </View>
   );
 }
+
+
+
 
 const styles = StyleSheet.create({
   container: {
