@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,49 +7,50 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-} from 'react-native';
-import { initStripe, usePaymentSheet } from '@stripe/stripe-react-native';
-import axios from 'axios';
-import { API_BASE } from '../config'
+} from "react-native";
+import { initStripe, usePaymentSheet } from "@stripe/stripe-react-native";
+import axios from "axios";
+import { API_BASE } from "../config";
 
 // Configure axios defaults
 axios.defaults.timeout = 10000;
 
 export default function Payment({ route, navigation }) {
   const { campaign } = route.params;
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const { initPaymentSheet, presentPaymentSheet } = usePaymentSheet();
-   useEffect(() => {
+  useEffect(() => {
     initStripe({
-      publishableKey: 'pk_test_51RMTosPOIMZHYlJT7cZ0Vk2xPiP0XLE7x1lRX3iN8IY3AWmLu8aNiGcLsZT0bPN9jgE6PLbO9KxCDPWmNu6tlrdD00T7wLIMpB', 
+      publishableKey:
+        "pk_test_51RMTosPOIMZHYlJT7cZ0Vk2xPiP0XLE7x1lRX3iN8IY3AWmLu8aNiGcLsZT0bPN9jgE6PLbO9KxCDPWmNu6tlrdD00T7wLIMpB",
     });
   }, []);
 
   const handlePayment = async () => {
     if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-      Alert.alert('Error', 'Please enter a valid amount');
+      Alert.alert("Error", "Please enter a valid amount");
       return;
     }
 
     setLoading(true);
     try {
-    //       // Create payment intent on backend
-    //   const response = await axios.post(`${API_URL}/stripe/create-payment-intent`, {
+      //       // Create payment intent on backend
+      //   const response = await axios.post(`${API_URL}/stripe/create-payment-intent`, {
       // Create payment intent on the server
       const response = await axios.post(`${API_BASE}/payment/create-intent`, {
         amount: parseFloat(amount),
-        campaignId: campaign.id
+        campaignId: campaign.id,
       });
 
       if (!response.data?.clientSecret) {
-        throw new Error('Failed to create payment intent');
+        throw new Error("Failed to create payment intent");
       }
 
       // Initialize the Payment Sheet
       const { error: initError } = await initPaymentSheet({
         paymentIntentClientSecret: response.data.clientSecret,
-        merchantDisplayName: 'Your App Name',
+        merchantDisplayName: "Your App Name",
       });
 
       if (initError) {
@@ -64,22 +65,22 @@ export default function Payment({ route, navigation }) {
       }
 
       // Payment successful
-      Alert.alert('Success', 'Payment completed successfully!');
+      Alert.alert("Success", "Payment completed successfully!");
       navigation.goBack();
-
     } catch (error) {
-      console.error('Payment error:', error);
-      let errorMessage = 'Failed to process payment.';
-      
+      console.error("Payment error:", error);
+      let errorMessage = "Failed to process payment.";
+
       if (!error.response) {
-        errorMessage = 'Network error. Please check your internet connection and try again.';
+        errorMessage =
+          "Network error. Please check your internet connection and try again.";
       } else if (error.response?.status === 400) {
-        errorMessage = 'Invalid payment details. Please check your input.';
+        errorMessage = "Invalid payment details. Please check your input.";
       } else if (error.response?.status === 500) {
-        errorMessage = 'Server error. Please try again later.';
+        errorMessage = "Server error. Please try again later.";
       }
-      
-      Alert.alert('Payment Error', errorMessage);
+
+      Alert.alert("Payment Error", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -88,7 +89,7 @@ export default function Payment({ route, navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Support {campaign.title}</Text>
-      
+
       <View style={styles.amountContainer}>
         <Text style={styles.label}>Enter Amount (USD)</Text>
         <TextInput
@@ -103,13 +104,12 @@ export default function Payment({ route, navigation }) {
 
       <View style={styles.infoContainer}>
         <Text style={styles.infoText}>
-          • Minimum donation amount: $1{'\n'}
-          • Secure payment powered by Stripe{'\n'}
-          • Supports all major credit cards
+          • Minimum donation amount: $1{"\n"}• Secure payment powered by Stripe
+          {"\n"}• Supports all major credit cards
         </Text>
       </View>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[styles.payButton, loading && styles.payButtonDisabled]}
         onPress={handlePayment}
         disabled={loading}
@@ -128,14 +128,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 30,
-    textAlign: 'center',
-    color: '#333',
+    textAlign: "center",
+    color: "#333",
   },
   amountContainer: {
     marginBottom: 20,
@@ -143,40 +143,40 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 8,
-    color: '#666',
+    color: "#666",
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     padding: 15,
     fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
   },
   infoContainer: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     padding: 15,
     borderRadius: 8,
     marginBottom: 20,
   },
   infoText: {
-    color: '#666',
+    color: "#666",
     fontSize: 14,
     lineHeight: 20,
   },
   payButton: {
-    backgroundColor: '#00c44f',
+    backgroundColor: "#00c44f",
     padding: 15,
     borderRadius: 25,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   payButtonDisabled: {
-    backgroundColor: '#aaa',
+    backgroundColor: "#aaa",
   },
   payButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
-  }
+    fontWeight: "bold",
+  },
 });
