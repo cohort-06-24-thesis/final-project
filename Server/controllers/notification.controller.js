@@ -5,10 +5,12 @@ module.exports = {
   createNotif: async (req, res) => {
     try {
       const notification = await Notification.create({
-        message: req.body.message,
-        isRead: false,
-        
-      });
+  message: req.body.message,
+  isRead: false,
+  UserId: req.body.UserId,  // IMPORTANT: Capital U, matches your model
+  itemId: req.body.itemId,  // optional if you want to save item info
+  itemType: req.body.itemType,  // optional
+});
       res.status(201).json(notification);
     } catch (error) {
       res.status(500).json({
@@ -85,6 +87,23 @@ module.exports = {
     } catch (error) {
       res.status(500).json({
         message: error.message || "Error updating notification",
+      });
+    }
+  },
+  getNotificationsByUserId: async (req, res) => {
+    try {
+      const { userId } = req.params;
+
+      const notifications = await Notification.findAll({
+        where: { UserId: userId }, 
+        order: [["createdAt", "DESC"]],
+      });
+
+      res.status(200).json(notifications);
+    } catch (error) {
+      res.status(500).json({
+        message:
+          error.message || `Error retrieving notifications for user ${userId}`,
       });
     }
   },

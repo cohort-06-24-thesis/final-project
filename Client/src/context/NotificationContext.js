@@ -1,92 +1,49 @@
-// import React, { createContext, useContext, useEffect, useState } from 'react';
-// import SocketService from '../../src/utils/socket'; // your socket.js
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE } from '../../config';
 
-// const NotificationContext = createContext();
-
-// export const NotificationProvider = ({ children }) => {
-//   const [notifications, setNotifications] = useState([]);
-//   const [unreadCount, setUnreadCount] = useState(0);
-
-//   useEffect(() => {
-//     const setupSocket = async () => {
-//       const uid = await AsyncStorage.getItem('Uid');
-//       if (!uid) return;
-
-//       const socket = SocketService.connect();
-
-//       socket.emit('join_user_room', uid);
-
-//       socket.on('new_inNeed_notification', (notification) => {
-//         addNotification(notification);
-//       });
-//     };
-
-//     setupSocket();
-
-//     return () => {
-//       SocketService.disconnect();
-//     };
-//   }, []);
-
-//   const addNotification = (notif) => {
-//     setNotifications((prev) => [notif, ...prev]);
-//     setUnreadCount((count) => count + 1);
-//   };
-
-//   const markAllAsRead = () => {
-//     setUnreadCount(0);
-//   };
-
-//   return (
-//     <NotificationContext.Provider
-//       value={{
-//         notifications,
-//         unreadCount,
-//         addNotification,
-//         markAllAsRead,
-//         setNotifications,
-//       }}
-//     >
-//       {children}
-//     </NotificationContext.Provider>
-//   );
-// };
-
-// export const useNotifications = () => useContext(NotificationContext);
-import React, { createContext, useState, useEffect } from 'react';
-import axios from "axios"
-
-// Create context
 export const NotificationContext = createContext();
 
-// Provider component
 export function NotificationProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
- 
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Function to fetch notifications
-  const fetchNotifications = async () => {
-   
+  const fetchNotifications = useCallback(async (uid) => {
     try {
-      const response = await axios.get('http://172.20.10.2:3000/api/notification/GetAllnotification');
-    
-      const data = response.data
+      const response = await axios.get(`${API_BASE}/notification/GetNotificationsByUser/${uid}`);
+      const data = response.data;
       setNotifications(data);
+      const unread = data.filter((n) => !n.isRead).length;
+      setUnreadCount(unread);
     } catch (err) {
       setError(err.message || 'Failed to fetch notifications');
     } finally {
       setLoading(false);
     }
-  };
-
-  // Fetch notifications once when the provider mounts
-  useEffect(() => {
-    fetchNotifications();
   }, []);
 
+  useEffect(() => {
+    AsyncStorage.getItem('userUID').then((uid) => {
+      if (uid) fetchNotifications(uid);
+      else setLoading(false);
+    });
+  }, [fetchNotifications]);
+
   return (
-    <NotificationContext.Provider value={{ notifications, fetchNotifications }}>
+    <NotificationContext.Provider
+      value={{
+        notifications,
+        setNotifications,
+        fetchNotifications,
+        unreadCount,
+        setUnreadCount,
+        loading,
+        error,
+      }}
+    >
       {children}
     </NotificationContext.Provider>
   );
