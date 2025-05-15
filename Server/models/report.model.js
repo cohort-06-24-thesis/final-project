@@ -5,11 +5,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         },
         userId: {
-            type: DataTypes.STRING,  // The user who made the report
+            type: DataTypes.STRING,  
             allowNull: false
         },
-        reportedUserId: {           // Add this new field
-            type: DataTypes.STRING,  // The user being reported
+        reportedUserId: {           
+            type: DataTypes.STRING,  
             allowNull: true
         },
         itemId: {
