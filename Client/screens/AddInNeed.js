@@ -184,7 +184,7 @@ export default function AddInNeed({ navigation }) {
         </View>
         
         <View style={styles.formCard}>
-          <Text style={styles.sectionTitle}>Basic Information</Text>
+          {/* <Text style={styles.sectionTitle}>Basic Information</Text> */}
           
           <Text style={styles.label}>Title <Text style={styles.required}>*</Text></Text>
           <TextInput 

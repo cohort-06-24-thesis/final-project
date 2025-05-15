@@ -16,6 +16,8 @@ import DonationItemDetails from "./routes/donations/[id]";
 import InNeedItemsDetails from "./routes/inNeed/[id]";
 import SocketProvider from "./SocketProvider";
 import NotificationsPage from "./routes/notifications/page";
+import CampaignDeatils from "./routes/campaigns/[id]"
+import EventDetails from "./routes/events/[id]"
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -37,7 +39,11 @@ function App() {
         { path: "manage-inneed", element: <InNeed /> },
         { path: "manage-inneed/:id", element: <InNeedItemsDetails /> },
         { path: "manage-campaigns", element: <Campaigns /> },
+        { path: "manage-campaigns/:id", element: <CampaignDeatils /> },
+
         { path: "manage-events", element: <Events /> },
+        { path: "manage-events/:id", element: <EventDetails /> },
+
         { path: "reports", element: <Reports /> },
         { path: "inventory", element: <Inventory /> },
         { path: "notifications", element: <NotificationsPage /> },
