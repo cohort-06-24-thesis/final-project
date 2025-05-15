@@ -503,12 +503,36 @@ export default function InNeedDetails({ route, navigation }) {
       </ScrollView>
 
       <View style={styles.userContainer}>
-        <Image
-          source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
-          style={styles.userImage}
-        />
+        <TouchableOpacity
+          onPress={() => {
+            if (item.User?.id && item.User.id.toString() === Uid.toString()) {
+              navigation.navigate('UserProfile');
+            } else if (item.User?.id) {
+              navigation.navigate('OtherUser', { userId: item.User.id });
+            } else {
+              Alert.alert("Error", "User ID is missing, cannot navigate to profile.");
+            }
+          }}
+        >
+          <Image
+            source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
+            style={styles.userImage}
+          />
+        </TouchableOpacity>
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
+          <TouchableOpacity
+            onPress={() => {
+              if (item.User?.id && item.User.id.toString() === Uid.toString()) {
+                navigation.navigate('UserProfile');
+              } else if (item.User?.id) {
+                navigation.navigate('OtherUser', { userId: item.User.id });
+              } else {
+                Alert.alert("Error", "User ID is missing, cannot navigate to profile.");
+              }
+            }}
+          >
+            <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
+          </TouchableOpacity>
           <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
         </View>
 
