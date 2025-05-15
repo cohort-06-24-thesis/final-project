@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import LottieView from 'lottie-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NotificationContext } from '../src/context/NotificationContext';
 
 const { width, height } = Dimensions.get('window');
 const HEADER_MAX_HEIGHT = 220;
@@ -45,6 +46,7 @@ export default function Home({ navigation }) {
   const [reportReason, setReportReason] = useState('');
   const [customReason, setCustomReason] = useState('');
   const [userProfilePic, setUserProfilePic] = useState(null);
+  const { unreadCount } = useContext(NotificationContext); // Access unreadCount
 
   const fetchData = async () => {
     try {
@@ -69,18 +71,18 @@ export default function Home({ navigation }) {
       setLoading(false);
     }
   };
+
   const fetchUserProfile = async () => {
     try {
       const userId = await AsyncStorage.getItem('userUID');
       if (userId) {
-        // Change from /user/ to /user/getById/
         const response = await axios.get(`${API_BASE}/user/getById/${userId}`);
         setUserProfilePic(response.data.profilePic || null);
       }
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
-  }
+  };
 
   useEffect(() => {
     fetchData();
@@ -152,7 +154,6 @@ export default function Home({ navigation }) {
   });
 
   const renderCampaignCard = (item, index) => {
-    // Calculate progress percentage (mock data for demonstration)
     const progress = Math.random() * 100;
     const progressWidth = `${progress}%`;
     
@@ -322,6 +323,14 @@ export default function Home({ navigation }) {
           >
             <Ionicons name="chatbubble-outline" size={30} color="#fff" />
           </TouchableOpacity>
+          {/* Notification Bell Button */}
+          <TouchableOpacity
+            style={[styles.headerButton, { marginRight: 12 }]}
+            onPress={() => navigation.navigate('Notifications')}
+          >
+            <MaterialIcons name="notifications-none" size={30} color="#fff" />
+            {unreadCount > 0 && <View style={styles.notificationDot} />}
+          </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.headerButton, styles.profileButton]}
             onPress={() => setProfileMenuVisible(true)}
@@ -423,7 +432,6 @@ export default function Home({ navigation }) {
                       }
                   
                       try {
-                        // Get the user ID from AsyncStorage
                         const userId = await AsyncStorage.getItem('userUID');
                         
                         if (!userId) {
@@ -433,9 +441,9 @@ export default function Home({ navigation }) {
                   
                         await axios.post(`${API_BASE}/report/createReport`, {
                           reason: customReason.trim(),
-                          userId: userId,           // Use actual user ID instead of "anonymous"
-                          itemType: "general",     // This is optional now
-                          itemId: null            // This is optional now
+                          userId: userId,
+                          itemType: "general",
+                          itemId: null
                         });
                   
                         Alert.alert('Thank you', 'Your report has been submitted.');
@@ -615,7 +623,7 @@ export default function Home({ navigation }) {
               )}
             </View>
 
-            {/* Events Section (like Featured Campaigns) */}
+            {/* Events Section */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionTitleContainer}>
@@ -710,6 +718,7 @@ export default function Home({ navigation }) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -722,9 +731,6 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 1000,
     overflow: 'hidden',
-  },
-  gradient: {
-    flex: 1,
   },
   headerTitleContainer: {
     position: 'absolute',
@@ -753,33 +759,6 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
     paddingTop: Platform.OS === 'ios' ? 80 : 60,
-  },
-  welcomeText: {
-    fontSize: 20,
-    color: "rgba(255,255,255,0.95)",
-    textAlign: 'center',
-    marginBottom: 4,
-    fontWeight: '500',
-    letterSpacing: 1,
-  },
-  appName: {
-    fontSize: 48,
-    fontWeight: "bold",
-    color: "#fff",
-    marginVertical: 8,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0,0,0,0.18)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
-    letterSpacing: 2,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: "rgba(255,255,255,0.92)",
-    textAlign: 'center',
-    marginBottom: 0,
-    fontWeight: '400',
-    letterSpacing: 0.5,
   },
   searchContainer: {
     position: 'absolute',
@@ -1108,6 +1087,17 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 20,
   },
+  notificationDot: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 10,
+    height: 10,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.15)',
@@ -1186,7 +1176,7 @@ const styles = StyleSheet.create({
   },
   modalOverlayContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Darker overlay
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
