@@ -1,52 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, ChevronsLeft } from "lucide-react";
 import profileImg from "@/assets/profile-image.jpg";
 import PropTypes from "prop-types";
 import { useTheme } from "@/hooks/use-theme";
-import axios from "axios";
-import io from "socket.io-client";
-
-const SOCKET_SERVER_URL = "http://localhost:3000";
-const API_UNSEEN_COUNT_URL = "http://localhost:3000/api/notification/unseenCount";
+import { useNotification } from "@/contexts/notification-context"; // Adjust path if needed
 
 export const Header = ({ collapsed, setCollapsed }) => {
   const { theme } = useTheme();
   const navigate = useNavigate();
-  const [unseenCount, setUnseenCount] = useState(0);
-
-  useEffect(() => {
-    // Fetch unseen count
-    const fetchUnseenCount = async () => {
-      try {
-        const { data } = await axios.get(API_UNSEEN_COUNT_URL);
-        setUnseenCount(data.unseenCount);
-      } catch (error) {
-        console.error("Failed to fetch unseen notifications count:", error);
-      }
-    };
-
-    fetchUnseenCount();
-
-    // Socket connection to listen for new notifications
-    const socket = io(SOCKET_SERVER_URL, { transports: ["websocket"] });
-    socket.on("connect", () => {
-      socket.emit("join_admin_dashboard");
-    });
-
-    socket.on("new_inNeed_notification", () => {
-      setUnseenCount((prev) => prev + 1);
-    });
-
-    return () => {
-      socket.off("new_inNeed_notification");
-      socket.disconnect();
-    };
-  }, []);
+  const { unseenCount } = useNotification();  // Use context
 
   const goToNotifications = () => {
     navigate("/notifications");
-  
   };
 
   return (

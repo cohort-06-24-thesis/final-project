@@ -7,6 +7,7 @@ module.exports = {
       const notification = await Notification.create({
         message: req.body.message,
         isRead: false,
+        
       });
       res.status(201).json(notification);
     } catch (error) {

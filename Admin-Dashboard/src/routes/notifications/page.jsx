@@ -59,3 +59,29 @@ const AdminNotifications = () => {
 };
 
 export default AdminNotifications;
+
+
+// import React from 'react';
+// import { useNotification } from "@/contexts/notification-context";
+
+// const AdminNotifications = () => {
+//   const { notifications } = useNotification();
+
+//   return (
+//     <div>
+//       {notifications.length === 0 ? (
+//         <p>No notifications yet.</p>
+//       ) : (
+//         <ul>
+//           {notifications.map((notif) => (
+//             <li key={notif.id}>
+//               <strong>{new Date(notif.createdAt || notif.timestamp).toLocaleString()}:</strong> {notif.message}
+//             </li>
+//           ))}
+//         </ul>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default AdminNotifications;
