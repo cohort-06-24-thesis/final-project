@@ -30,6 +30,7 @@ exports.createInNeed = async (req, res) => {
     const notification = await Notification.create({
       message: 'A new in-need request was posted.',
       isRead: false,
+    
       // optionally, you can add fields like userId, type, etc.
     });
 

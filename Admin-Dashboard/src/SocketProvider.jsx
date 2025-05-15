@@ -1,27 +1,9 @@
-import React, { useEffect } from 'react';
-import socket from './socket'; // your socket.js client
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+
+import React from 'react';
 
 function SocketProvider({ children }) {
-  useEffect(() => {
-    socket.emit('join_admin_dashboard');
-
-    socket.on('new_inNeed_notification', (data) => {
-      toast.info(data.message || 'New notification!');
-    });
-
-    return () => {
-      socket.off('new_inNeed_notification');
-    };
-  }, []);
-
-  return (
-    <>
-      {children}
-      <ToastContainer position="top-right" />
-    </>
-  );
+  // No socket event listeners or emits here 
+  return <>{children}</>;
 }
 
 export default SocketProvider;
