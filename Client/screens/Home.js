@@ -322,6 +322,16 @@ export default function Home({ navigation }) {
           >
             <Ionicons name="chatbubble-outline" size={30} color="#fff" />
           </TouchableOpacity>
+            {/* Notification Bell Button */}
+  <TouchableOpacity
+    style={[styles.headerButton, { marginRight: 12 }]}
+               onPress={() => navigation.navigate('Notifications')}
+
+      
+    
+  >
+    <MaterialIcons name="notifications-none" size={30} color="#fff" />
+  </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.headerButton, styles.profileButton]}
             onPress={() => setProfileMenuVisible(true)}

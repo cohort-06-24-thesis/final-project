@@ -8,6 +8,7 @@ import { StyleSheet, View } from "react-native";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { initStripe } from "@stripe/stripe-react-native";
+import { NotificationProvider } from "./src/context/NotificationContext";
 import Login from "./screens/Login";
 import Signup from "./screens/Signup";
 import ForgotPassword from "./screens/ForgotPassword";
@@ -33,10 +34,11 @@ import InNeedDetails from "./screens/InNeedDetails";
 import DonationDetails from "./screens/DonationDetails";
 import FullScreenMap from "./screens/FullScreenMap";
 import UserProfile from "./screens/UserProfile";
-import EditProfile from './screens/EditProfile';
-import Settings from './screens/Settings';
+import EditProfile from "./screens/EditProfile";
+import Settings from "./screens/Settings";
 import Conversation from "./screens/Conversation";
 import OtherUser from "./screens/OtherUser";
+import NotificationScreen from "./screens/notification";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -67,19 +69,27 @@ function TabNavigator() {
         headerShown: true,
       })}
     >
-
       <Tab.Screen name="HomeTab" component={Home} options={{ title: "Home" }} />
-      <Tab.Screen name="Donations" component={DonationItems} options={{ title: "Donations" }}/>
+      <Tab.Screen
+        name="Donations"
+        component={DonationItems}
+        options={{ title: "Donations" }}
+      />
       <Tab.Screen
         name="InNeed"
         component={InNeed}
         options={{ title: "In Need" }}
-          
-
       />
-      <Tab.Screen name="Campaign" component={Campaign} options={{ title: "Campaign" }}/>
-      <Tab.Screen name="Events" component={Events} options={{ title: "Events" }} />
-
+      <Tab.Screen
+        name="Campaign"
+        component={Campaign}
+        options={{ title: "Campaign" }}
+      />
+      <Tab.Screen
+        name="Events"
+        component={Events}
+        options={{ title: "Events" }}
+      />
     </Tab.Navigator>
   );
 }
@@ -98,159 +108,175 @@ export default function App() {
 
   return (
     <View style={{ flex: 1 }}>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Login"
-          screenOptions={{
-            headerShown: false,
-            headerStyle: { backgroundColor: "#fff" },
-            headerTintColor: "#4CAF50",
-            headerBackTitle: " ",
-            headerLeftContainerStyle: { paddingLeft: 10 },
-          }}
-        >
-          <Stack.Screen
-            name="Login"
-            component={Login}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Signup"
-            component={Signup}
-            options={{ title: "Create Account" }}
-          />
-          <Stack.Screen
-            name="ForgotPassword"
-            component={ForgotPassword}
-            options={{ title: "Reset Password" }}
-          />
-          <Stack.Screen
-            name="MainApp"
-            component={TabNavigator}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="AddEvent"
-            component={AddEvent}
-            options={{ title: "Add Event" }}
-          />
-          <Stack.Screen
-            name="AddCampaign"
-            component={AddCampaign}
-            options={{ title: "Add Campaign", headerShown: true }}
-          />
-          <Stack.Screen
-            name="CampaignDetails"
-            component={CampaignDetails}
-            options={{
-              title: "Campaign Details",
-              headerShown: true,
+      <NotificationProvider>
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Login"
+            screenOptions={{
+              headerShown: false,
               headerStyle: { backgroundColor: "#fff" },
               headerTintColor: "#4CAF50",
-              headerTitleStyle: { fontWeight: "bold" },
+              headerBackTitle: " ",
+              headerLeftContainerStyle: { paddingLeft: 10 },
             }}
-          />
-          <Stack.Screen
-            name="Payment"
-            component={Payment}
-            options={{ title: "payment" }}
-          />
-          <Stack.Screen
-            name="AddInNeed"
-            component={AddInNeed}
-            options={{ title: "Add In Need", headerShown: true }}
-          />
-          <Stack.Screen
-            name="AddDonation"
-            component={AddDonation}
-            options={{ title: "Add Donation" }}
-          />
-          <Stack.Screen
-            name="EventDetails"
-            component={EventDetails}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="InNeedDetails"
-            component={InNeedDetails}
-            options={{ title: "Need Details" }}
-          />
+          >
+            <Stack.Screen
+              name="Login"
+              component={Login}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Signup"
+              component={Signup}
+              options={{ title: "Create Account" }}
+            />
+            <Stack.Screen
+              name="ForgotPassword"
+              component={ForgotPassword}
+              options={{ title: "Reset Password" }}
+            />
+            <Stack.Screen
+              name="MainApp"
+              component={TabNavigator}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="AddEvent"
+              component={AddEvent}
+              options={{ title: "Add Event" }}
+            />
+            <Stack.Screen
+              name="AddCampaign"
+              component={AddCampaign}
+              options={{ title: "Add Campaign", headerShown: true }}
+            />
+            <Stack.Screen
+              name="CampaignDetails"
+              component={CampaignDetails}
+              options={{
+                title: "Campaign Details",
+                headerShown: true,
+                headerStyle: { backgroundColor: "#fff" },
+                headerTintColor: "#4CAF50",
+                headerTitleStyle: { fontWeight: "bold" },
+              }}
+            />
+            <Stack.Screen
+              name="Payment"
+              component={Payment}
+              options={{ title: "payment" }}
+            />
+            <Stack.Screen
+              name="AddInNeed"
+              component={AddInNeed}
+              options={{ title: "Add In Need", headerShown: true }}
+            />
+            <Stack.Screen
+              name="AddDonation"
+              component={AddDonation}
+              options={{ title: "Add Donation" }}
+            />
+            <Stack.Screen
+              name="EventDetails"
+              component={EventDetails}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="InNeedDetails"
+              component={InNeedDetails}
+              options={{ title: "Need Details" }}
+            />
 
-          <Stack.Screen
-            name="DonationDetails"
-            component={DonationDetails}
-            options={{
-              title: "Donation Details",
-            }}
-          />
-          <Stack.Screen
-            name="FullScreenMap"
-            component={FullScreenMap}
-            options={{ title: "Map", headerShown: true }}
-          />
-          <Stack.Screen
-            name="Chat"
-            component={Chat}
-            options={{
-              headerShown: true,
-              headerStyle: { backgroundColor: "#fff" },
-              headerTintColor: "#4CAF50",
-              headerTitleStyle: { fontWeight: "bold" },
-            }}
-          />
-          <Stack.Screen
-            name="UserProfile"
-            component={UserProfile}
-            options={{
-              title: "Profile",
-              headerShown: true
-            }}
-          />
-          <Stack.Screen
-            name="EditProfile"
-            component={EditProfile}
-            options={{
-              title: 'Edit Profile',
-              headerShown: true,
-              headerTintColor: '#fff',
-              headerStyle: {
-                backgroundColor: '#4CAF50',
-              }
-            }}
-          />
-          <Stack.Screen
-            name="Settings"
-            component={Settings}
-            options={{
-             title: 'Edit Profile',
-              headerShown: true,
-              headerTintColor: '#fff',
-              headerStyle: {
-                backgroundColor: '#4CAF50',
-              }
-            }}
-          />
-          <Stack.Screen
-            name="Conversation"
-            component={Conversation}
-            options={{
-              title: "Chat",
-              headerShown: true,
-              headerStyle: { backgroundColor: "#fff" },
-              headerTintColor: "#4CAF50",
-              headerTitleStyle: { fontWeight: "bold" },
-            }}
-          />
-          <Stack.Screen 
-            name="OtherUser" 
-            component={OtherUser}
-            options={{ 
-            headerTitle: "Profile",
-            headerBackTitle: "Back"
-  }} 
-/>
-        </Stack.Navigator>
-      </NavigationContainer>
+            <Stack.Screen
+              name="DonationDetails"
+              component={DonationDetails}
+              options={{
+                title: "Donation Details",
+              }}
+            />
+            <Stack.Screen
+              name="FullScreenMap"
+              component={FullScreenMap}
+              options={{ title: "Map", headerShown: true }}
+            />
+            <Stack.Screen
+              name="Chat"
+              component={Chat}
+              options={{
+                headerShown: true,
+                headerStyle: { backgroundColor: "#fff" },
+                headerTintColor: "#4CAF50",
+                headerTitleStyle: { fontWeight: "bold" },
+              }}
+            />
+            <Stack.Screen
+              name="UserProfile"
+              component={UserProfile}
+              options={{
+                title: "Profile",
+                headerShown: true,
+              }}
+            />
+            <Stack.Screen
+              name="EditProfile"
+              component={EditProfile}
+              options={{
+                title: "Edit Profile",
+                headerShown: true,
+                headerTintColor: "#fff",
+                headerStyle: {
+                  backgroundColor: "#4CAF50",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Settings"
+              component={Settings}
+              options={{
+                title: "Edit Profile",
+                headerShown: true,
+                headerTintColor: "#fff",
+                headerStyle: {
+                  backgroundColor: "#4CAF50",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Conversation"
+              component={Conversation}
+              options={{
+                title: "Chat",
+                headerShown: true,
+                headerStyle: { backgroundColor: "#fff" },
+                headerTintColor: "#4CAF50",
+                headerTitleStyle: { fontWeight: "bold" },
+              }}
+            />
+            <Tab.Screen
+              name="Notifications"
+              component={NotificationScreen}
+              options={{
+                title: "Notifications",
+                tabBarIcon: ({ focused, color, size }) => (
+                  <Ionicons
+                    name={focused ? "notifications" : "notifications-outline"}
+                    size={size}
+                    color={color}
+                  />
+                ),
+              }}
+            />
+            <Stack.Screen
+              name="OtherUser"
+              component={OtherUser}
+              options={{
+                headerTitle: "Profile",
+                headerBackTitle: "Back",
+              }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </NotificationProvider>
       <StatusBar style="auto" />
     </View>
   );
