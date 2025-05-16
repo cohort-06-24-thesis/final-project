@@ -16,14 +16,33 @@ const InNeedItemDetails = () => {
         }
     }, [id]);
 
-    const toggleApproval = () => {
-        if (item) {
-            const updatedItem = { ...item, isApproved: !item.isApproved };
-            axios.put(`http://localhost:3000/api/inNeed/${id}`, updatedItem)
-                .then(res => setItem(res.data))
-                .catch(err => console.error("Error updating approval status:", err));
+const toggleApproval = () => {
+  if (item) {
+    const updatedItem = { ...item, isApproved: !item.isApproved };
+    axios.put(`http://localhost:3000/api/inNeed/${id}`, updatedItem)
+      .then(res => {
+        setItem(res.data);
+
+        // Send notification if the item is now approved
+        if (updatedItem.isApproved) {
+          axios.post('http://localhost:3000/api/notification/Addnotification', {
+            message: `Your request "${item.title}" has been approved.`,
+            UserId: item.UserId,
+            isRead: false,
+            itemId: item.id,
+            itemType: 'InNeed',
+          })
+          .then(() => {
+            console.log('Notification sent successfully');
+          })
+          .catch(err => {
+            console.error('Error sending notification:', err);
+          });
         }
-    };
+      })
+      .catch(err => console.error("Error updating approval status:", err));
+  }
+};
 
     const toggleFulfilled = () => {
         if (item) {
