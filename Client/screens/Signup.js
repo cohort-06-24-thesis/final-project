@@ -119,7 +119,7 @@ export default function EnhancedSignupScreen({ navigation }) {
   const animateHearts = () => {
     // Get the center point of the screen
     const centerX = width / 2;
-    const centerY = height / 2;
+    const centerY = height / 2 - 100; // Move center point up by 100 pixels
 
     // Animate each heart
     hearts.forEach((heart, index) => {
@@ -142,7 +142,8 @@ export default function EnhancedSignupScreen({ navigation }) {
         }
         
         // Calculate new position based on angle and radius
-        const verticalOffset = Math.sin(newAngle * Math.PI / 180) * 50;
+        // Increase vertical offset for higher movement
+        const verticalOffset = Math.sin(newAngle * Math.PI / 180) * 150; // Increased from 50 to 150
         const newX = centerX + newRadius * Math.cos(newAngle * Math.PI / 180);
         const newY = centerY + newRadius * Math.sin(newAngle * Math.PI / 180) + verticalOffset;
         
