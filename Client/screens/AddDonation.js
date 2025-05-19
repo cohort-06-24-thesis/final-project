@@ -101,7 +101,8 @@ export default function AddDonation({ navigation }) {
         image: [image],
         UserId: Uid
       });
-      Alert.alert('Success', 'Donation item added successfully!');
+      Alert.alert('Thank You!',
+        'Your request has been submitted successfully and waiting approval from SADAKA. Your kindness will make a difference!' );
       navigation.goBack();
     } catch (error) {
       console.error('Error adding donation item:', error);
