@@ -489,7 +489,8 @@ export default function Home({ navigation }) {
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
-        )}
+        )
+        }
         scrollEventThrottle={16}
         refreshControl={
           <RefreshControl 
@@ -509,11 +510,24 @@ export default function Home({ navigation }) {
         ) : (
           <>
             {/* Stats Grid */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 20, marginBottom: 20, marginTop: 10 }} contentContainerStyle={{ paddingRight: 20 }}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              style={{ 
+                paddingLeft: 20, 
+                marginBottom: 20, 
+                marginTop: 95,
+              }} 
+              contentContainerStyle={{ 
+                paddingRight: 20,
+                paddingTop: 25,
+                gap: 10,
+              }}
+            >
               {featuredItems.map((item) => (
                 <TouchableOpacity
                   key={item.id}
-                  style={styles.statCard}
+                  style={[styles.statCard, { width: 120 }]} // Reduced width from 150 to 120
                   onPress={() => navigation.navigate(item.screen)}
                 >
                   <LinearGradient
@@ -523,7 +537,7 @@ export default function Home({ navigation }) {
                     style={styles.statGradient}
                   >
                     <View style={styles.statIconContainer}>
-                      <FontAwesome5 name={item.icon} size={12} color="#fff" />
+                      <FontAwesome5 name={item.icon} size={14} color="#fff" />
                     </View>
                     <Text style={styles.statCount}>
                       {Array.isArray(item.data) ? item.data.length : 0}
@@ -762,7 +776,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     position: 'absolute',
-    top: HEADER_MAX_HEIGHT - 25,
+    top: HEADER_MAX_HEIGHT - 55, // Changed from -45 to -55 to move search bar higher
     left: 20,
     right: 20,
     zIndex: 1000,
@@ -771,13 +785,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 12,
-    elevation: 5,
+    padding: 16,
+    borderRadius: 16,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
   searchInput: {
     flex: 1,
@@ -787,7 +801,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    marginTop: HEADER_MAX_HEIGHT - 25,
+    marginTop: HEADER_MAX_HEIGHT - 55, // Update to match searchContainer
   },
   scrollContent: {
     paddingBottom: 30,
@@ -803,44 +817,42 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   statCard: {
-    width: 120,
-    height: 70,
-    marginBottom: 10,
-    borderRadius: 8,
+    height: 85, // Reduced from 100 to 85
+    borderRadius: 12, // Slightly reduced radius
     overflow: 'hidden',
     elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    marginRight: 12,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    marginRight: 10,
   },
   statGradient: {
-    padding: 10,
+    padding: 12, // Reduced padding
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
   },
   statIconContainer: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 32, // Smaller icon container
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.25)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 2,
+    marginBottom: 6,
   },
   statCount: {
-    fontSize: 16,
+    fontSize: 20, // Smaller font size
     fontWeight: 'bold',
     color: '#fff',
-    marginVertical: 1,
+    marginVertical: 2,
   },
   statTitle: {
-    fontSize: 10,
-    color: 'rgba(255,255,255,0.9)',
-    fontWeight: '500',
-    marginTop: 0,
+    fontSize: 12, // Smaller font size
+    color: 'rgba(255,255,255,0.95)',
+    fontWeight: '600',
+    textAlign: 'center',
   },
   section: {
     marginTop: 25,
