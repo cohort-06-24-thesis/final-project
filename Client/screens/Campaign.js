@@ -56,20 +56,40 @@ export default function Campaign() {
                   <Image
                     source={{ uri: campaign.images[0] }}
                     style={styles.eventImage}
+                    resizeMode="cover"
                   />
                 )}
               </View>
+
               <View style={styles.contentContainer}>
                 <Text style={styles.title}>{campaign.title}</Text>
-                <View style={styles.progressBar}>
-                  <View
-                    style={[styles.progressFill, { width: `${campaign.progress}%` }]}
-                  />
-                </View>
-                <Text style={styles.description}>Raised {campaign.progress}%</Text>
-                <Text style={styles.participators}>
-                  {/* {campaign.totalDonors} people donated */}
+                
+                <Text style={styles.description} numberOfLines={3}>
+                  {campaign.description}
                 </Text>
+
+                {campaign.location && (
+                  <View style={styles.locationContainer}>
+                    <Ionicons name="location-outline" size={16} color="#666" />
+                    <Text style={styles.locationText}>{campaign.location}</Text>
+                  </View>
+                )}
+
+                <View style={styles.progressContainer}>
+                  <View style={styles.progressBar}>
+                    <View
+                      style={[styles.progressFill, { width: `${campaign.progress}%` }]}
+                    />
+                  </View>
+                  <Text style={styles.progressText}>Raised {campaign.progress}%</Text>
+                  
+                  {campaign.totalDonors > 0 && (
+                    <Text style={styles.donorsText}>
+                      {campaign.totalDonors} {campaign.totalDonors === 1 ? 'person' : 'people'} donated
+                    </Text>
+                  )}
+                </View>
+
                 <TouchableOpacity
                   style={styles.viewDetailsButton}
                   onPress={() => handleViewDetails(campaign)}
@@ -131,36 +151,51 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
   },
+  description: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#666',
+    marginBottom: 12,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  locationText: {
+    marginLeft: 6,
+    color: '#666',
+    fontSize: 14,
+  },
+  progressContainer: {
+    marginBottom: 16,
+  },
   progressBar: {
-    height: 4,
+    height: 6,
     backgroundColor: '#e0e0e0',
-    borderRadius: 2,
+    borderRadius: 3,
     marginBottom: 8,
   },
   progressFill: {
     height: '100%',
     backgroundColor: '#4CAF50',
-    borderRadius: 2,
+    borderRadius: 3,
   },
-  description: {
-    color: '#666',
-    marginBottom: 16,
-  },
-  location: {
-    color: '#666',
+  progressText: {
     fontSize: 14,
-    marginBottom: 8,
-  },
-  participators: {
     color: '#666',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  donorsText: {
     fontSize: 14,
-    marginBottom: 16,
+    color: '#666',
   },
   viewDetailsButton: {
-    alignSelf: 'flex-end',
+   alignSelf: 'flex-end',
   },
   viewDetailsText: {
-    color: '#4CAF50',
+   color: '#4CAF50',
     fontWeight: 'bold',
   },
   addButton: {
