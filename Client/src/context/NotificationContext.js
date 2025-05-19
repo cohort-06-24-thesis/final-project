@@ -4,6 +4,7 @@ import axios from 'axios';
 import SocketService from '../utils/socket';
 import { API_BASE } from '../../config';
 import Toast from 'react-native-toast-message';
+import { Audio } from 'expo-av';
 
 export const NotificationContext = createContext();
 
@@ -36,9 +37,13 @@ export const NotificationProvider = ({ children }) => {
           processedNotifications.current.add(notification.id);
         }
       });
+      const filteredNotifications = response.data.filter(notification => notification.itemType !== 'chat');
+setNotifications(filteredNotifications);
+setUnreadCount(filteredNotifications.filter(n => !n.isRead).length);
+
       
-      setNotifications(response.data);
-      setUnreadCount(response.data.filter(n => !n.isRead).length);
+      // setNotifications(response.data);
+      // setUnreadCount(response.data.filter(n => !n.isRead).length);
     } catch (err) {
       console.error('Error fetching notifications:', err);
       setError('Failed to fetch notifications');
@@ -62,6 +67,8 @@ export const NotificationProvider = ({ children }) => {
           // Set up notification listener
           SocketService.onNewNotification((notification) => {
             console.log('New notification received in context:', notification);
+            // Play notification sound
+            playNotificationSound();
             
             // Check if we've already processed this notification
             if (notification.id && processedNotifications.current.has(notification.id)) {
@@ -112,6 +119,43 @@ export const NotificationProvider = ({ children }) => {
     };
   }, [fetchNotifications]);
 
+  // Mark chat notifications as read for a set of message IDs
+  const markChatNotificationsAsRead = async (messageIds) => {
+    try {
+      // Find all unread chat notifications for these message IDs
+      const chatNotifsToMark = notifications.filter(
+        n => n.itemType === 'chat' && !n.isRead && messageIds.includes(n.itemId)
+      );
+      for (const notif of chatNotifsToMark) {
+        await axios.put(`${API_BASE}/notification/Updatenotification/${notif.id}`, { isRead: true });
+      }
+      // Update context state
+      setNotifications(prev => prev.map(n =>
+        (n.itemType === 'chat' && messageIds.includes(n.itemId)) ? { ...n, isRead: true } : n
+      ));
+      setUnreadCount(prev => prev - chatNotifsToMark.length);
+    } catch (err) {
+      console.error('Error marking chat notifications as read:', err);
+    }
+  };
+
+  // Play notification sound using expo-av
+  async function playNotificationSound() {
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        require('../../assets/sounds/notification.mp3')
+      );
+      await sound.playAsync();
+      sound.setOnPlaybackStatusUpdate(status => {
+        if (status.didJustFinish) {
+          sound.unloadAsync();
+        }
+      });
+    } catch (e) {
+      console.log('Error playing notification sound:', e);
+    }
+  }
+
   const value = {
     notifications,
     setNotifications,
@@ -121,6 +165,7 @@ export const NotificationProvider = ({ children }) => {
     error,
     fetchNotifications,
     userId,
+    markChatNotificationsAsRead,
   };
 
   return (

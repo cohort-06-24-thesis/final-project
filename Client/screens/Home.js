@@ -46,7 +46,12 @@ export default function Home({ navigation }) {
   const [reportReason, setReportReason] = useState('');
   const [customReason, setCustomReason] = useState('');
   const [userProfilePic, setUserProfilePic] = useState(null);
-  const { unreadCount } = useContext(NotificationContext); // Access unreadCount
+  const { unreadCount, notifications } = useContext(NotificationContext); // Access unreadCount and notifications
+
+  // Compute unseen chat count
+  const unseenChatCount = notifications ? notifications.filter(n => n.itemType === 'chat' && !n.isRead).length : 0;
+  // Compute unseen non-chat notification count
+  const unseenNotifCount = notifications ? notifications.filter(n => n.itemType !== 'chat' && !n.isRead).length : 0;
 
   const fetchData = async () => {
     try {
@@ -322,6 +327,11 @@ export default function Home({ navigation }) {
             onPress={() => navigation.navigate('Conversation')}
           >
             <Ionicons name="chatbubble-outline" size={30} color="#fff" />
+            {unseenChatCount > 0 && (
+              <View style={styles.chatBadge}>
+                <Text style={styles.chatBadgeText}>{unseenChatCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
           {/* Notification Bell Button */}
           <TouchableOpacity
@@ -329,7 +339,11 @@ export default function Home({ navigation }) {
             onPress={() => navigation.navigate('Notifications')}
           >
             <MaterialIcons name="notifications-none" size={30} color="#fff" />
-            {unreadCount > 0 && <View style={styles.notificationDot} />}
+            {unseenNotifCount > 0 && (
+              <View style={styles.notifBadge}>
+                <Text style={styles.notifBadgeText}>{unseenNotifCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.headerButton, styles.profileButton]}
@@ -1207,5 +1221,41 @@ const styles = StyleSheet.create({
     height: '100%',
     width: '100%',
     borderRadius: 17.5,
+  },
+  chatBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 18,
+    height: 18,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chatBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 18,
+    height: 18,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notifBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
