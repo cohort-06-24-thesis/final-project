@@ -97,168 +97,202 @@ export default function AddCampaign() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.formContainer}>
-        <Text style={styles.label}>Campaign Title*</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.title}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, title: text }))}
-          placeholder="Enter campaign title"
-        />
-
-        <Text style={styles.label}>Description*</Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          value={formData.description}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
-          placeholder="Enter campaign description"
-          multiline
-          numberOfLines={4}
-        />
-
-        <Text style={styles.label}>Goal Amount*</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.goal}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, goal: text }))}
-          placeholder="Enter goal amount"
-          keyboardType="numeric"
-        />
-
-        <Text style={styles.label}>Campaign Images</Text>
-        <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
-          <View style={styles.imageButtonContent}>
-            <Ionicons name="image" size={24} color="white" />
-            <Text style={styles.imageButtonText}>Add Image</Text>
+    <ScrollView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            {/* Add your logo component here */}
           </View>
-        </TouchableOpacity>
-
-        <View style={styles.imagePreviewContainer}>
-          {formData.images.map((uri, index) => (
-            <Image
-              key={index}
-              source={{ uri }}
-              style={styles.imagePreview}
-            />
-          ))}
+          <Text style={styles.headerTitle}>Add Campaign</Text>
         </View>
 
-        <TouchableOpacity style={styles.imageButton} onPress={takePhoto}>
-          <View style={styles.imageButtonContent}>
-            <Ionicons name="camera" size={24} color="white" />
-            <Text style={styles.imageButtonText}>Take Photo</Text>
-          </View>
-        </TouchableOpacity>
+        <View style={styles.formCard}>
+          <Text style={styles.sectionTitle}>Campaign Title*</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.title}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, title: text }))}
+            placeholder="Enter campaign title"
+          />
 
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Create Campaign</Text>
-        </TouchableOpacity>
+          <Text style={styles.sectionTitle}>Description*</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={formData.description}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
+            placeholder="Enter campaign description"
+            multiline
+            numberOfLines={4}
+          />
+
+          <Text style={styles.sectionTitle}>Goal Amount*</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.goal}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, goal: text }))}
+            placeholder="Enter goal amount"
+            keyboardType="numeric"
+          />
+
+          <Text style={styles.sectionTitle}>Campaign Images</Text>
+          <View style={styles.imageButtonsContainer}>
+            <TouchableOpacity style={styles.iconButton} onPress={pickImage}>
+              <Ionicons name="image" size={24} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={takePhoto}>
+              <Ionicons name="camera" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.imagePreview}>
+            {formData.images.map((uri, index) => (
+              <View key={index} style={styles.imageContainer}>
+                <Image
+                  source={{ uri }}
+                  style={styles.imageThumb}
+                />
+                <TouchableOpacity style={styles.imageRemoveButton}>
+                  <Ionicons name="close" size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.submitText}>Create Campaign</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.footerText}>
+          {/* Add your footer text here */}
+        </Text>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#fff',
   },
-  header: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 30,
-    marginTop: 50,
-    color: '#333',
+  container: {
+    padding: 16,
+    paddingBottom: 32,
   },
-  formContainer: {
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
   },
-  label: {
-    fontSize: 16,
+  logoContainer: {
+    marginRight: 10,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#00C44F',
+  },
+  formCard: {
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 12,
     color: '#333',
   },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 6,
+    color: '#444',
+  },
+  required: {
+    color: 'red',
+  },
   input: {
-    borderWidth: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
     borderColor: '#ddd',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-    fontSize: 16,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 16,
+    fontSize: 14,
+    color: '#333',
   },
   textArea: {
-    height: 120,
+    height: 100,
     textAlignVertical: 'top',
   },
-  // imageButton: {
-  //   backgroundColor: '#4CAF50',
-  //   padding: 12,
-  //   borderRadius: 25,
-  //   marginBottom: 20,
-  // },
-  // imageButtonContent: {
-  //   flexDirection: 'row',
-  //   alignItems: 'center',
-  //   justifyContent: 'center',
-  //   gap: 8,
-  // },
-  // imageButtonText: {
-  //   color: 'white',
-  //   fontSize: 16,
-  //   fontWeight: 'bold',
-  // },
-  imageButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    marginBottom: 30,
-    width: '60%', 
+  imageHelper: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 8,
   },
-  imageButtonContent: {
+  imageButtonsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: 12,
+  },
+  iconButton: {
+    backgroundColor: '#00C44F',
+    borderRadius: 40,
+    width: 48,
+    height: 48,
     justifyContent: 'center',
-    gap: 8,
-  },
-  imageButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  imagePreviewContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
+    alignItems: 'center',
+    marginVertical: 10,
+    marginRight: 10,
   },
   imagePreview: {
-    width: 100,
-    height: 100,
-    margin: 4,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  imageContainer: {
+    position: 'relative',
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  imageThumb: {
+    width: 80,
+    height: 80,
     borderRadius: 10,
   },
+  imageRemoveButton: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+  },
   submitButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
+    backgroundColor: '#00C44F',
+    borderRadius: 12,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 30,
-    width: '60%', 
-  },
-  submitButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  errorText: {
-    color: 'red',
-    textAlign: 'center',
     marginTop: 10,
-    marginBottom: 10,
-  }
+  },
+  submitText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  footerText: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#666',
+    fontSize: 13,
+  },
 });
