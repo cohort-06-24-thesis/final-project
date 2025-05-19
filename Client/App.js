@@ -5,10 +5,11 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { initStripe } from "@stripe/stripe-react-native";
-import { NotificationProvider } from "./src/context/NotificationContext";
+import { NotificationProvider, NotificationContext } from "./src/context/NotificationContext";
+import Toast from 'react-native-toast-message';
+
 import Login from "./screens/Login";
 import Signup from "./screens/Signup";
 import ForgotPassword from "./screens/ForgotPassword";
@@ -21,15 +22,12 @@ import Campaign from "./screens/Campaign";
 import Events from "./screens/Events";
 import AddEvent from "./screens/AddEvent";
 import Chat from "./screens/Chat";
-
 import AddCampaign from "./screens/AddCampaign";
 import AddInNeed from "./screens/AddInNeed";
 import AddDonation from "./screens/AddDonation";
 import EventDetails from "./screens/EventDetails";
-
 import CampaignDetails from "./screens/CampaignDetails";
 import Payment from "./screens/Payment";
-
 import InNeedDetails from "./screens/InNeedDetails";
 import DonationDetails from "./screens/DonationDetails";
 import FullScreenMap from "./screens/FullScreenMap";
@@ -44,6 +42,8 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function TabNavigator() {
+  const { unreadCount } = useContext(NotificationContext);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -60,6 +60,8 @@ function TabNavigator() {
             iconName = focused ? "megaphone" : "megaphone-outline";
           } else if (route.name === "Events") {
             iconName = focused ? "calendar" : "calendar-outline";
+          } else if (route.name === "Notifications") {
+            iconName = focused ? "notifications" : "notifications-outline";
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -89,6 +91,14 @@ function TabNavigator() {
         name="Events"
         component={Events}
         options={{ title: "Events" }}
+      />
+      <Tab.Screen
+        name="Notifications"
+        component={NotificationScreen}
+        options={{
+          title: "Notifications",
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+        }}
       />
     </Tab.Navigator>
   );
@@ -252,20 +262,6 @@ export default function App() {
                 headerTitleStyle: { fontWeight: "bold" },
               }}
             />
-            <Tab.Screen
-              name="Notifications"
-              component={NotificationScreen}
-              options={{
-                title: "Notifications",
-                tabBarIcon: ({ focused, color, size }) => (
-                  <Ionicons
-                    name={focused ? "notifications" : "notifications-outline"}
-                    size={size}
-                    color={color}
-                  />
-                ),
-              }}
-            />
             <Stack.Screen
               name="OtherUser"
               component={OtherUser}
@@ -277,6 +273,7 @@ export default function App() {
           </Stack.Navigator>
         </NavigationContainer>
       </NotificationProvider>
+      <Toast />
       <StatusBar style="auto" />
     </View>
   );

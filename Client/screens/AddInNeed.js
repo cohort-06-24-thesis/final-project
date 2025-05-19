@@ -43,6 +43,7 @@ export default function AddInNeed({ navigation }) {
     };
     loadUid();
   }, []);
+  // console.log(Uid)
 
   const pickImage = async (fromCamera = false) => {
     let result;

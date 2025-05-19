@@ -15,6 +15,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { API_BASE } from '../config';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { 
+  useAnimatedStyle, 
+  withSpring,
+  useSharedValue 
+} from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
@@ -242,6 +247,14 @@ export default function UserProfile({ navigation }) {
     );
   };
 
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: withSpring(scale.value) }]
+    };
+  });
+
   const StatCard = ({ icon, label, value }) => (
     <TouchableOpacity style={styles.statCard}>
       <LinearGradient
@@ -260,7 +273,12 @@ export default function UserProfile({ navigation }) {
   );
 
   const ActionButton = ({ icon, label, onPress, color = "#666" }) => (
-    <TouchableOpacity style={styles.actionButton} onPress={onPress}>
+    <TouchableOpacity 
+      onPressIn={() => scale.value = 0.95}
+      onPressOut={() => scale.value = 1}
+      style={[styles.actionButton, animatedStyle]}
+      onPress={onPress}
+    >
       <View style={[styles.actionIcon, { backgroundColor: `${color}15` }]}>
         <Ionicons name={icon} size={24} color={color} />
       </View>
@@ -532,62 +550,49 @@ export default function UserProfile({ navigation }) {
           <>
             <View style={styles.activityList}>
               {user.recentActivity
-                .slice(0, showingAllActivities ? currentPage * ITEMS_PER_PAGE : visibleActivities)
+                .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                 .map((activity, index) => (
-                  <ActivityItem 
-                    key={index} 
-                    activity={activity}
-                  />
+                  <ActivityItem key={index} activity={activity} />
                 ))}
             </View>
-            {!showingAllActivities && user.recentActivity.length > visibleActivities ? (
-              <TouchableOpacity 
-                style={styles.showMoreButton}
-                onPress={() => {
-                  setShowingAllActivities(true);
-                  setCurrentPage(2); // Start with page 2 since we already show 3 items
-                }}
-              >
-                <Text style={styles.showMoreButtonText}>
-                  Show More ({user.recentActivity.length - visibleActivities} more)
-                </Text>
-                <MaterialCommunityIcons name="chevron-down" size={20} color="#4CAF50" />
-              </TouchableOpacity>
-            ) : showingAllActivities && (
-              <>
-                <View style={styles.paginationContainer}>
-                  {currentPage > 1 && (
-                    <TouchableOpacity 
-                      style={styles.paginationButton}
-                      onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    >
-                      <MaterialCommunityIcons name="chevron-left" size={20} color="#4CAF50" />
-                      <Text style={styles.paginationButtonText}>Previous</Text>
-                    </TouchableOpacity>
-                  )}
-                  
-                  {user.recentActivity.length > currentPage * ITEMS_PER_PAGE && (
-                    <TouchableOpacity 
-                      style={styles.paginationButton}
-                      onPress={() => setCurrentPage(prev => prev + 1)}
-                    >
-                      <Text style={styles.paginationButtonText}>Next</Text>
-                      <MaterialCommunityIcons name="chevron-right" size={20} color="#4CAF50" />
-                    </TouchableOpacity>
-                  )}
-                </View>
-                
+
+            {user.recentActivity.length > ITEMS_PER_PAGE && (
+              <View style={styles.paginationControls}>
                 <TouchableOpacity 
-                  style={styles.showLessButton}
-                  onPress={() => {
-                    setShowingAllActivities(false);
-                    setCurrentPage(1);
-                  }}
+                  style={[
+                    styles.paginationButton,
+                    currentPage === 1 && styles.paginationButtonDisabled
+                  ]}
+                  onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
                 >
-                  <Text style={styles.showMoreButtonText}>Show Less</Text>
-                  <MaterialCommunityIcons name="chevron-up" size={20} color="#4CAF50" />
+                  <Ionicons 
+                    name="chevron-back" 
+                    size={20} 
+                    color={currentPage === 1 ? '#ccc' : '#4CAF50'} 
+                  />
                 </TouchableOpacity>
-              </>
+
+                <Text style={styles.paginationText}>
+                  {currentPage} of {Math.ceil(user.recentActivity.length / ITEMS_PER_PAGE)}
+                </Text>
+
+                <TouchableOpacity 
+                  style={[
+                    styles.paginationButton,
+                    currentPage >= Math.ceil(user.recentActivity.length / ITEMS_PER_PAGE) && 
+                    styles.paginationButtonDisabled
+                  ]}
+                  onPress={() => setCurrentPage(prev => prev + 1)}
+                  disabled={currentPage >= Math.ceil(user.recentActivity.length / ITEMS_PER_PAGE)}
+                >
+                  <Ionicons 
+                    name="chevron-forward" 
+                    size={20} 
+                    color={currentPage >= Math.ceil(user.recentActivity.length / ITEMS_PER_PAGE) ? '#ccc' : '#4CAF50'} 
+                  />
+                </TouchableOpacity>
+              </View>
             )}
           </>
         ) : (
@@ -627,32 +632,37 @@ export default function UserProfile({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f9fa',
   },
   headerGradient: {
     paddingTop: 60,
-    paddingBottom: 30,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    paddingBottom: 40,
+    borderBottomLeftRadius: 35,
+    borderBottomRightRadius: 35,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
   },
   header: {
     alignItems: 'center',
   },
   profileImageContainer: {
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 10,
+    marginBottom: 24,
+    marginTop: 15,
   },
   imageGradientBorder: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    padding: 4,
-    elevation: 10,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    padding: 3,
+    elevation: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 10,
   },
   imageWrapper: {
     backgroundColor: '#fff',
@@ -795,23 +805,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    marginBottom: 20,
+    marginVertical: 24,
   },
   statCard: {
     width: (width - 64) / 4,
-    height: 90,
-    borderRadius: 15,
+    height: 100,
+    borderRadius: 20,
     overflow: 'hidden',
-    elevation: 2,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
     backgroundColor: '#fff',
   },
   statGradient: {
     flex: 1,
-    padding: 8,
+    padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -830,10 +840,10 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   statValue: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#2E7D32',
-    textAlign: 'center',
+    marginBottom: 4,
   },
   statLabel: {
     fontSize: 10,
@@ -851,31 +861,30 @@ const styles = StyleSheet.create({
   },
   actionsContainer: {
     backgroundColor: '#fff',
-    borderRadius: 15,
+    borderRadius: 24,
     marginHorizontal: 16,
-    marginBottom: 20,
-    padding: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    marginBottom: 24,
+    padding: 20,
+    elevation: 4,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#f0f0f0',
+    marginBottom: 8,
   },
   actionIcon: {
-    padding: 8,
-    borderRadius: 8,
-    marginRight: 12,
+    padding: 10,
+    borderRadius: 12,
+    marginRight: 14,
   },
   actionText: {
     flex: 1,
     fontSize: 16,
+    fontWeight: '500',
   },
   loadingContainer: {
     flex: 1,
@@ -884,14 +893,14 @@ const styles = StyleSheet.create({
   },
   recentActivity: {
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: 24,
     marginHorizontal: 16,
-    marginBottom: 20,
+    marginBottom: 24,
     padding: 20,
-    elevation: 3,
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.12,
     shadowRadius: 8,
   },
   activityHeader: {
@@ -915,12 +924,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 16,
-    paddingHorizontal: 12,
-    borderRadius: 12,
+    paddingHorizontal: 14,
+    borderRadius: 16,
     backgroundColor: '#fff',
-    marginBottom: 8,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#f0f0f0',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
   },
   activityLeft: {
     flexDirection: 'row',
@@ -928,18 +942,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   activityIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#4CAF50',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    marginRight: 14,
+    elevation: 3,
   },
   activityContent: {
     flex: 1,
@@ -997,19 +1007,35 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   paginationButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
     padding: 10,
     backgroundColor: '#f8f9fa',
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e9ecef',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
   },
-  paginationButtonText: {
-    color: '#4CAF50',
+  paginationButtonDisabled: {
+    backgroundColor: '#f5f5f5',
+    borderColor: '#eee',
+  },
+  paginationText: {
+    color: '#444',
     fontSize: 15,
     fontWeight: '600',
-    marginHorizontal: 6,
+  },
+  paginationControls: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 20,
+    gap: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    marginTop: 20,
   },
   showLessButton: {
     flexDirection: 'row',
@@ -1022,15 +1048,11 @@ const styles = StyleSheet.create({
   },
   wishlistSection: {
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: 24,
     marginHorizontal: 16,
-    marginBottom: 20,
-    padding: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    marginBottom: 24,
+    padding: 20,
+    elevation: 4,
   },
   wishlistContainer: {
     paddingVertical: 16,
@@ -1039,18 +1061,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 16,
     marginRight: 16,
-    padding: 8,
-    width: 280,
+    padding: 12,
+    width: 300,
     borderWidth: 1,
     borderColor: '#eee',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   wishlistImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 12,
+    width: 70,
+    height: 70,
+    borderRadius: 12,
+    marginRight: 14,
   },
   wishlistItemContent: {
     flex: 1,
@@ -1086,5 +1113,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  paginationSection: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  paginationInfo: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  pageNumbers: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  pageNumber: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 16,
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  activePageNumber: {
+    backgroundColor: '#4CAF50',
+    borderColor: '#4CAF50',
+  },
+  pageNumberText: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  activePageNumberText: {
+    color: '#fff',
   },
 });
