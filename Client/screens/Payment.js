@@ -35,7 +35,6 @@ export default function Payment({ route, navigation }) {
 
     setLoading(true);
     try {
-    
       const response = await axios.post(`${API_BASE}/payment/create-intent`, {
         amount: parseFloat(amount),
         campaignId: campaign.id,
