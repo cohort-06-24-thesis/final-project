@@ -7,9 +7,15 @@ module.exports = {
       cors: {
         origin: "*",
         methods: ["GET", "POST"],
+        credentials: true,
+        allowedHeaders: ["Content-Type", "Authorization"]
       },
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
       pingTimeout: 60000,
+      pingInterval: 25000,
+      upgradeTimeout: 30000,
+      allowEIO3: true,
+      path: '/socket.io'
     });
 
     io.on("connection", (socket) => {

@@ -143,23 +143,23 @@ exports.updateInNeed = async (req, res) => {
 
     // ✅ Send notification if approval status changed to true
     if (isApproved === true && wasApproved !== true) {
-      const userId = item.userId;
+      const userId = item.UserId;
 
       // Save notification in DB
-      await Notification.create({
-        userId,
-        title: 'Approval Granted',
+      const notification = await Notification.create({
+        UserId: userId,
         message: `Your request "${item.title}" has been approved.`,
-        type: 'inNeed'
+        itemId: item.id,
+        itemType: 'inNeed',
+        isRead: false
       });
 
-      // Optional: emit real-time notification if using socket.io
-      if (req.io) {
-        req.io.to(`user_${userId}`).emit('newNotification', {
-          title: 'Approval Granted',
-          message: `Your request "${item.title}" has been approved.`
-        });
-      }
+      // Emit real-time notification using getIO()
+      const io = getIO();
+      io.to(`user_${userId}`).emit('new_notification', {
+        ...notification.dataValues,
+        timestamp: new Date().toISOString()
+      });
     }
 
     res.status(200).json(item);
