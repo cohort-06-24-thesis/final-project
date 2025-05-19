@@ -255,22 +255,25 @@ export default function UserProfile({ navigation }) {
     };
   });
 
-  const StatCard = ({ icon, label, value }) => (
-    <TouchableOpacity style={styles.statCard}>
-      <LinearGradient
-        colors={['rgba(76, 175, 80, 0.1)', 'rgba(76, 175, 80, 0.05)']}
-        style={styles.statGradient}
-      >
+  // Update the StatCard component
+const StatCard = ({ icon, label, value }) => (
+  <View style={styles.statCard}>
+    <LinearGradient
+      colors={['#ffffff', '#f8f9fa']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.statGradient}
+    >
+      <View style={styles.statContent}>
         <View style={styles.statIconContainer}>
-          <MaterialCommunityIcons name={icon} size={22} color="#4CAF50" />
+          <MaterialCommunityIcons name={icon} size={20} color="#4CAF50" />
         </View>
-        <View style={styles.statTextContainer}>
-          <Text style={styles.statValue}>{value}</Text>
-          <Text style={styles.statLabel}>{label}</Text>
-        </View>
-      </LinearGradient>
-    </TouchableOpacity>
-  );
+        <Text style={styles.statValue}>{value}</Text>
+        <Text style={styles.statLabel}>{label}</Text>
+      </View>
+    </LinearGradient>
+  </View>
+);
 
   const ActionButton = ({ icon, label, onPress, color = "#666" }) => (
     <TouchableOpacity 
@@ -309,87 +312,30 @@ export default function UserProfile({ navigation }) {
   );
 
   const WishlistItem = ({ item }) => {
-    // Get the correct image URL based on item type
     const imageUrl = item.type === 'event' ? 
         (item.image || item.images?.[0] || 'https://via.placeholder.com/100') :
         (Array.isArray(item.image) ? item.image[0] : item.image || 'https://via.placeholder.com/100');
 
-    const getNavigationScreen = (type) => {
-        switch(type) {
-            case 'donation':
-                return 'DonationDetails';
-            case 'inNeed':
-                return 'InNeedDetails';
-            case 'event':
-                return 'EventDetails';
-            default:
-                return 'DonationDetails';
-        }
-    };
-
-    const handleNavigation = () => {
-        const screen = getNavigationScreen(item.type);
-        let navigationParams = {};
-
-        switch(item.type) {
-            case 'event':
-                navigationParams = {
-                    event: {
-                        id: item.eventId,
-                        title: item.title,
-                        description: item.description,
-                        images: item.images || [item.image],
-                        location: item.location,
-                        date: item.date,
-                        participators: item.participators,
-                        ...item // Include any other event-specific fields
-                    }
-                };
-                break;
-            case 'donation':
-                navigationParams = {
-                    item: {
-                        id: item.donationItemId,
-                        title: item.title,
-                        image: item.image,
-                        location: item.location,
-                        ...item // Include any other donation-specific fields
-                    }
-                };
-                break;
-            case 'inNeed':
-                navigationParams = {
-                    item: {
-                        id: item.inNeedId,
-                        title: item.title,
-                        images: Array.isArray(item.image) ? item.image : [item.image],
-                        location: item.location,
-                        ...item // Include any other inNeed-specific fields
-                    }
-                };
-                break;
-        }
-
-        navigation.navigate(screen, navigationParams);
-    };
-
     return (
-        <TouchableOpacity 
-            style={styles.wishlistItem}
-            onPress={handleNavigation}
-        >
+        <View style={styles.wishlistItem}>
             <Image 
                 source={{ uri: imageUrl }}
                 style={styles.wishlistImage}
             />
             <View style={styles.wishlistItemContent}>
-                <Text style={styles.wishlistItemTitle} numberOfLines={1}>
+                <Text style={styles.wishlistItemTitle} numberOfLines={2}>
                     {item.title}
                 </Text>
                 {item.location && (
                     <Text style={styles.wishlistItemLocation} numberOfLines={1}>
                         <Ionicons name="location-outline" size={14} color="#666" />
-                        {item.location}
+                        {" "}{item.location}
+                    </Text>
+                )}
+                {item.type === 'event' && item.date && (
+                    <Text style={styles.wishlistItemDetail}>
+                        <Ionicons name="calendar-outline" size={14} color="#666" />
+                        {" "}{new Date(item.date).toLocaleDateString()}
                     </Text>
                 )}
             </View>
@@ -399,7 +345,7 @@ export default function UserProfile({ navigation }) {
             >
                 <Ionicons name="heart" size={20} color="#FF6B6B" />
             </TouchableOpacity>
-        </TouchableOpacity>
+        </View>
     );
 };
 
@@ -804,24 +750,30 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginVertical: 24,
-  },
-  statCard: {
-    width: (width - 64) / 4,
-    height: 100,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    marginVertical: 20,
     borderRadius: 20,
-    overflow: 'hidden',
+    padding: 16,
     elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    backgroundColor: '#fff',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  statCard: {
+    flex: 1,
+    height: 90,
+    marginHorizontal: 4,
   },
   statGradient: {
     flex: 1,
-    padding: 12,
+    borderRadius: 16,
+    padding: 8,
+  },
+  statContent: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -829,24 +781,19 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    marginBottom: 8,
   },
   statValue: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#2E7D32',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#666',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -1091,6 +1038,14 @@ const styles = StyleSheet.create({
   wishlistItemLocation: {
     fontSize: 14,
     color: '#666',
+    marginTop: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  wishlistItemDetail: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 4,
     flexDirection: 'row',
     alignItems: 'center',
   },
