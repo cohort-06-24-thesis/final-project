@@ -380,10 +380,12 @@ export default function InNeedDetails({ route, navigation }) {
           </View>
 
           <View style={styles.addCommentContainer}>
-            <Image 
-              source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/40' }}
-              style={styles.currentUserAvatar}
-            />
+            <TouchableOpacity onPress={() => navigation.navigate('UserProfile')}>
+              <Image 
+                source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/40' }}
+                style={styles.currentUserAvatar}
+              />
+            </TouchableOpacity>
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.commentInput}
@@ -408,10 +410,22 @@ export default function InNeedDetails({ route, navigation }) {
           <View style={styles.commentsList}>
             {comments.map((comment, index) => (
               <View key={comment.id || index} style={styles.commentItem}>
-                <Image 
-                  source={{ uri: comment.user?.profilePic || 'https://via.placeholder.com/40' }}
-                  style={styles.commentAvatar}
-                />
+                <TouchableOpacity
+                  onPress={() => {
+                    if (comment.user?.id && comment.user.id.toString() === Uid.toString()) {
+                      navigation.navigate('UserProfile');
+                    } else if (comment.user?.id) {
+                      navigation.navigate('OtherUser', { userId: comment.user.id });
+                    } else {
+                      Alert.alert("Error", "User ID is missing, cannot navigate to profile.");
+                    }
+                  }}
+                >
+                  <Image 
+                    source={{ uri: comment.user?.profilePic || 'https://via.placeholder.com/40' }}
+                    style={styles.commentAvatar}
+                  />
+                </TouchableOpacity>
                 <View style={styles.commentContent}>
                   <View style={styles.commentBubble}>
                     <Text style={styles.commentUsername}>{comment.user?.name}</Text>
@@ -489,12 +503,36 @@ export default function InNeedDetails({ route, navigation }) {
       </ScrollView>
 
       <View style={styles.userContainer}>
-        <Image
-          source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
-          style={styles.userImage}
-        />
+        <TouchableOpacity
+          onPress={() => {
+            if (item.User?.id && item.User.id.toString() === Uid.toString()) {
+              navigation.navigate('UserProfile');
+            } else if (item.User?.id) {
+              navigation.navigate('OtherUser', { userId: item.User.id });
+            } else {
+              Alert.alert("Error", "User ID is missing, cannot navigate to profile.");
+            }
+          }}
+        >
+          <Image
+            source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
+            style={styles.userImage}
+          />
+        </TouchableOpacity>
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
+          <TouchableOpacity
+            onPress={() => {
+              if (item.User?.id && item.User.id.toString() === Uid.toString()) {
+                navigation.navigate('UserProfile');
+              } else if (item.User?.id) {
+                navigation.navigate('OtherUser', { userId: item.User.id });
+              } else {
+                Alert.alert("Error", "User ID is missing, cannot navigate to profile.");
+              }
+            }}
+          >
+            <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
+          </TouchableOpacity>
           <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
         </View>
 

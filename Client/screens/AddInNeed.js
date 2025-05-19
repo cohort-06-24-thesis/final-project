@@ -86,25 +86,64 @@ export default function AddInNeed({ navigation }) {
     }
   };
 
+  // Upload single image to Cloudinary
+  const uploadImageToCloudinary = async (uri) => {
+    const data = new FormData();
+    data.append('file', {
+      uri,
+      type: 'image/jpeg',
+      name: 'upload.jpg',
+    });
+    data.append('upload_preset', 'firsttry'); // <-- Replace here
+
+    try {
+      const res = await fetch('https://api.cloudinary.com/v1_1/dmp2fq2sb/image/upload', { // <-- Replace here
+        method: 'POST',
+        body: data,
+      });
+      const json = await res.json();
+      if (json.secure_url) {
+        return json.secure_url;
+      } else {
+        throw new Error('Cloudinary upload failed');
+      }
+    } catch (error) {
+      console.error('Cloudinary upload failed:', error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async () => {
     if (!title || !description || !locationStr) {
       return Alert.alert('Missing Information', 'Please fill all required fields.');
     }
 
-    const payload = {
-      title,
-      description,
-      location: locationStr,
-      images,
-      UserId: Uid,
-    };
-    
+    if (images.length === 0) {
+      return Alert.alert('No Images', 'Please add at least one image.');
+    }
+
     setIsLoading(true);
     try {
+      // Upload images to Cloudinary and collect URLs
+      const uploadedImageUrls = [];
+      for (const uri of images) {
+        const url = await uploadImageToCloudinary(uri);
+        uploadedImageUrls.push(url);
+      }
+
+      const payload = {
+        title,
+        description,
+        location: locationStr,
+        images: uploadedImageUrls,
+        UserId: Uid,
+      };
+
       await axios.post(`${API_BASE}/inNeed/create`, payload);
+
       Alert.alert(
-        'Thank You!', 
-        'Your request has been submitted successfully. Your kindness will make a difference!',
+        'Thank You!',
+        'Your request has been submitted successfully and waiting approval from SADAKA. Your kindness will make a difference!',
         [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
     } catch (error) {
@@ -145,7 +184,7 @@ export default function AddInNeed({ navigation }) {
         </View>
         
         <View style={styles.formCard}>
-          <Text style={styles.sectionTitle}>Basic Information</Text>
+          {/* <Text style={styles.sectionTitle}>Basic Information</Text> */}
           
           <Text style={styles.label}>Title <Text style={styles.required}>*</Text></Text>
           <TextInput 
@@ -257,173 +296,317 @@ export default function AddInNeed({ navigation }) {
   );
 }
 
+// const styles = StyleSheet.create({
+//   safeArea: {
+//     flex: 1,
+//     backgroundColor: 'white',
+//   },
+//   container: {
+//     padding: 20,
+//     backgroundColor: 'white',
+//   },
+//   header: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     marginBottom: 24,
+//     paddingVertical: 12,
+//   },
+//   logoContainer: {
+//     width: 56,
+//     height: 56,
+//     borderRadius: 28,
+//     backgroundColor: '#FFE97F',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+//   headerTitle: {
+//     fontSize: 24,
+//     fontWeight: '700',
+//     marginLeft: 12,
+//     color: '#333333',
+//   },
+//   formCard: {
+//     backgroundColor: 'white',
+//     borderRadius: 16,
+//     padding: 20,
+//     shadowColor: '#00C44F',
+//     shadowOffset: { width: 0, height: 4 },
+//     shadowOpacity: 0.1,
+//     shadowRadius: 10,
+//     elevation: 5,
+//     marginBottom: 16,
+//     borderWidth: 1,
+//     borderColor: '#F0F0F0',
+//   },
+//   sectionTitle: {
+//     fontSize: 18,
+//     fontWeight: '700',
+//     color: '#00C44F',
+//     marginBottom: 12,
+//     marginTop: 8,
+//   },
+//   label: {
+//     fontWeight: '600',
+//     marginBottom: 8,
+//     fontSize: 16,
+//     color: '#444444',
+//   },
+//   required: {
+//     color: '#f44336',
+//   },
+//   input: {
+//     borderWidth: 1,
+//     borderColor: '#eeeeee',
+//     borderRadius: 12,
+//     paddingHorizontal: 16,
+//     paddingVertical: 12,
+//     fontSize: 16,
+//     backgroundColor: '#F9F9F9',
+//     marginBottom: 16,
+//     color: '#333333',
+//   },
+//   textArea: {
+//     height: 120,
+//     textAlignVertical: 'top',
+//   },
+//   mapContainer: {
+//     borderRadius: 12,
+//     overflow: 'hidden',
+//     marginBottom: 12,
+//     borderWidth: 2,
+//     borderColor: '#80ED99',
+//   },
+//   map: {
+//     height: 200,
+//   },
+//   locationInfoContainer: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     marginBottom: 12,
+//     paddingHorizontal: 4,
+//   },
+//   locationInfo: {
+//     fontSize: 14,
+//     color: '#444444',
+//     marginLeft: 6,
+//     flex: 1,
+//   },
+//   iconButton: {
+//     width: 50,
+//     height: 50,
+//     borderRadius: 25,
+//     backgroundColor: '#00C44F',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     marginBottom: 16,
+//     shadowColor: '#000',
+//     shadowOffset: { width: 0, height: 2 },
+//     shadowOpacity: 0.2,
+//     shadowRadius: 3,
+//     elevation: 3,
+//   },
+//   imageButtonsContainer: {
+//     flexDirection: 'row',
+//     justifyContent: 'flex-start',
+//     marginBottom: 16,
+//     gap: 16,
+//   },
+//   imageHelper: {
+//     fontSize: 14,
+//     color: '#666666',
+//     marginBottom: 12,
+//   },
+//   imagePreview: {
+//     flexDirection: 'row',
+//     flexWrap: 'wrap',
+//     marginBottom: 8,
+//   },
+//   imageContainer: {
+//     position: 'relative',
+//     marginRight: 12,
+//     marginBottom: 12,
+//   },
+//   imageThumb: {
+//     width: 100,
+//     height: 100,
+//     borderRadius: 8,
+//   },
+//   imageRemoveButton: {
+//     position: 'absolute',
+//     top: -8,
+//     right: -8,
+//     backgroundColor: 'white',
+//     borderRadius: 10,
+//   },
+//   submitButton: {
+//     backgroundColor: '#00C44F',
+//     paddingVertical: 16,
+//     borderRadius: 12,
+//     alignItems: 'center',
+//     marginTop: 16,
+//     marginBottom: 16,
+//     flexDirection: 'row',
+//     justifyContent: 'center',
+//     shadowColor: '#00C44F',
+//     shadowOffset: { width: 0, height: 4 },
+//     shadowOpacity: 0.3,
+//     shadowRadius: 6,
+//     elevation: 4,
+//   },
+//   submitText: {
+//     color: 'white',
+//     fontWeight: '700',
+//     fontSize: 18,
+//     marginLeft: 8,
+//   },
+//   footerText: {
+//     textAlign: 'center',
+//     color: '#666666',
+//     fontSize: 14,
+//     marginBottom: 40,
+//   }
+// });
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
   },
   container: {
-    padding: 20,
-    backgroundColor: 'white',
+    padding: 16,
+    paddingBottom: 32,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
-    paddingVertical: 12,
+    marginBottom: 20,
   },
   logoContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#FFE97F',
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginRight: 10,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
-    marginLeft: 12,
-    color: '#333333',
+    color: '#00C44F',
   },
   formCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#00C44F',
-    shadowOffset: { width: 0, height: 4 },
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    elevation: 2, // for android shadow
+    shadowColor: '#000', // for ios shadow
     shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#00C44F',
+    fontWeight: '600',
     marginBottom: 12,
-    marginTop: 8,
+    color: '#333',
   },
   label: {
-    fontWeight: '600',
-    marginBottom: 8,
-    fontSize: 16,
-    color: '#444444',
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 6,
+    color: '#444',
   },
   required: {
-    color: '#f44336',
+    color: 'red',
   },
   input: {
+    backgroundColor: '#fff',
+    borderColor: '#ddd',
     borderWidth: 1,
-    borderColor: '#eeeeee',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: '#F9F9F9',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     marginBottom: 16,
-    color: '#333333',
+    fontSize: 14,
+    color: '#333',
   },
   textArea: {
-    height: 120,
+    height: 100,
     textAlignVertical: 'top',
   },
   mapContainer: {
+    height: 200,
     borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 12,
-    borderWidth: 2,
-    borderColor: '#80ED99',
+    marginBottom: 16,
   },
   map: {
-    height: 200,
+    flex: 1,
   },
   locationInfoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
-    paddingHorizontal: 4,
   },
   locationInfo: {
-    fontSize: 14,
-    color: '#444444',
     marginLeft: 6,
-    flex: 1,
+    fontSize: 14,
+    color: '#00C44F',
   },
   iconButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
     backgroundColor: '#00C44F',
+    borderRadius: 40,
+    width: 48,
+    height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
+    marginVertical: 10,
+    marginRight: 10,
+  },
+  imageHelper: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 8,
   },
   imageButtonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginBottom: 16,
-    gap: 16,
-  },
-  imageHelper: {
-    fontSize: 14,
-    color: '#666666',
     marginBottom: 12,
   },
   imagePreview: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 8,
   },
   imageContainer: {
     position: 'relative',
-    marginRight: 12,
-    marginBottom: 12,
+    marginRight: 10,
+    marginBottom: 10,
   },
   imageThumb: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
+    width: 80,
+    height: 80,
+    borderRadius: 10,
   },
   imageRemoveButton: {
     position: 'absolute',
-    top: -8,
-    right: -8,
-    backgroundColor: 'white',
-    borderRadius: 10,
+    top: -6,
+    right: -6,
+    backgroundColor: '#fff',
+    borderRadius: 12,
   },
   submitButton: {
     backgroundColor: '#00C44F',
-    paddingVertical: 16,
     borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 16,
+    paddingVertical: 14,
     flexDirection: 'row',
     justifyContent: 'center',
-    shadowColor: '#00C44F',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    alignItems: 'center',
+    marginTop: 10,
   },
   submitText: {
     color: 'white',
-    fontWeight: '700',
-    fontSize: 18,
+    fontWeight: '600',
+    fontSize: 16,
     marginLeft: 8,
   },
   footerText: {
     textAlign: 'center',
-    color: '#666666',
-    fontSize: 14,
-    marginBottom: 40,
-  }
+    marginTop: 20,
+    color: '#666',
+    fontSize: 13,
+  },
 });

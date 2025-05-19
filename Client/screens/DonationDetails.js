@@ -223,10 +223,22 @@ export default function DonationDetails({ route, navigation }) {
 
       {/* Fixed User Details Section */}
       <View style={styles.userContainer}>
-        <Image 
-          source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
-          style={styles.userImage}
-        />
+        <TouchableOpacity
+          onPress={() => {
+            if (item?.User?.id && item.User.id.toString() === currentUserId.toString()) {
+              navigation.navigate('UserProfile');
+            } else if (item?.User?.id) {
+              navigation.navigate('OtherUser', { userId: item.User.id });
+            } else {
+              Alert.alert("Error", "User ID is missing, cannot navigate to profile.");
+            }
+          }}
+        >
+          <Image 
+            source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
+            style={styles.userImage}
+          />
+        </TouchableOpacity>
         <TouchableOpacity 
           style={styles.userInfo}
           onPress={() => {
