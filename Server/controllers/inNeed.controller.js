@@ -1,54 +1,6 @@
 const { inNeed, User, Notification } = require('../Database/index.js');
 const { getIO } = require('../socket');
 
-// exports.createInNeed = async (req, res) => {
-//   try {
-//     const {
-//       title,
-//       description,
-//       images,
-//       location,
-//       latitude,
-//       longitude,
-//       UserId
-//     } = req.body;
-
-//     const newInNeed = await inNeed.create({
-//       title,
-//       description,
-//       images,
-//       location,
-//       latitude,
-//       longitude,
-//       UserId,
-//       isApproved: false,
-//       isDone: false,
-//       doneReason: null
-//     });
-
-//     // 1. Create and save notification in DB
-//     const notification = await Notification.create({
-//       message: 'A new in-need request was posted.',
-//       isRead: false,
-//       userId: UserId, 
-//       itemId: newInNeed.id, 
-//       itemType: 'inNeed' 
-//     });
-
-//     // 2. Emit notification to admin clients
-//     const io = getIO();
-//     io.to('admins').emit('new_inNeed_notification', {
-//       ...notification.dataValues,
-//       inNeed: newInNeed,
-//       timestamp: new Date().toISOString(),
-//     });
-
-//     res.status(201).json(newInNeed);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: 'Internal server error' });
-//   }
-// };
 exports.createInNeed = async (req, res) => {
   try {
     const {
