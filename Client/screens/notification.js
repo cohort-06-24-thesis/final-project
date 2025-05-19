@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback, useContext } from 'react';
 import {
   View,
@@ -13,12 +12,20 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/Feather';
-import { NotificationContext } from '../src/context/NotificationContext';
+import { NotificationContext } from '../src/context/NotificationContext'; // ✅ Correct relative path
 import { API_BASE } from '../config';
 
 const Notification = () => {
-  const { notifications, setNotifications, fetchNotifications, unreadCount, setUnreadCount, loading, error } =
-    useContext(NotificationContext);
+  const {
+    notifications,
+    setNotifications,
+    fetchNotifications,
+    unreadCount,
+    setUnreadCount,
+    loading,
+    error,
+  } = useContext(NotificationContext);
+
   const [refreshing, setRefreshing] = useState(false);
   const [userId, setUserId] = useState(null);
 
@@ -42,7 +49,11 @@ const Notification = () => {
       await axios.put(`${API_BASE}/notification/Updatenotification/${id}`, {
         isRead: true,
       });
-      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+      );
+
       const updatedUnread = notifications.filter((n) => n.id !== id && !n.isRead).length;
       setUnreadCount(updatedUnread);
     } catch (error) {
@@ -52,9 +63,7 @@ const Notification = () => {
   };
 
   const renderItem = ({ item }) => (
-    <View
-      style={[styles.notificationCard, !item.isRead ? styles.unreadNotification : null]}
-    >
+    <View style={[styles.notificationCard, !item.isRead && styles.unreadNotification]}>
       <View style={styles.cardHeader}>
         <Text style={styles.message}>{item.message}</Text>
         {!item.isRead && (
@@ -103,7 +112,6 @@ const Notification = () => {
   );
 };
 
-// Same styles as provided, with added error style
 const styles = StyleSheet.create({
   container: {
     flex: 1,

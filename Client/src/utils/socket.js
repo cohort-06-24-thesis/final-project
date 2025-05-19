@@ -1,143 +1,82 @@
-// import { io } from 'socket.io-client';
 
-// const SOCKET_URL = 'http://localhost:3000';
-
-// class SocketService {
-//   constructor() {
-//     this.socket = null;
-//   }
-
-//   connect() {
-//     this.socket = io(SOCKET_URL);
-    
-//     this.socket.on('connect', () => {
-//       console.log('Connected to socket server');
-//     });
-
-//     this.socket.on('disconnect', () => {
-//       console.log('Disconnected from socket server');
-//     });
-
-//     return this.socket;
-//   }
-
-//   disconnect() {
-//     if (this.socket) {
-//       this.socket.disconnect();
-//     }
-//   }
-
-//   // Join a room
-//   joinRoom(roomId) {
-//     if (this.socket) {
-//       this.socket.emit('join_room', roomId);
-//     }
-//   }
-
-//   // Leave a room
-//   leaveRoom(roomId) {
-//     if (this.socket) {
-//       this.socket.emit('leave_room', roomId);
-//     }
-//   }
-
-//   // Send a message
-//   sendMessage(roomId, message) {
-//     if (this.socket) {
-//       this.socket.emit('send_message', {
-//         roomId,
-//         message,
-//         userId: this.socket.id
-//       });
-//     }
-//   }
-
-//   // Listen for messages
-//   onReceiveMessage(callback) {
-//     if (this.socket) {
-//       this.socket.on('receive_message', callback);
-//     }
-//   }
-// }
-
-// export default new SocketService(); 
+// socketService.js
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:3000'; // Replace with IP if testing on device
+const SOCKET_URL = 'http://localhost:3000'; 
 
-class SocketService {
-  constructor() {
-    this.socket = null;
-  }
+let socket = null;
 
-  connect() {
-    this.socket = io(SOCKET_URL, {
+const connect = () => {
+  if (!socket) {
+    socket = io(SOCKET_URL, {
       transports: ['websocket'],
     });
 
-    this.socket.on('connect', () => {
+    socket.on('connect', () => {
       console.log('Connected to socket server');
     });
 
-    this.socket.on('disconnect', () => {
+    socket.on('disconnect', () => {
       console.log('Disconnected from socket server');
     });
-
-    return this.socket;
   }
+  return socket;
+};
 
-  disconnect() {
-    if (this.socket) {
-      this.socket.disconnect();
-    }
+const disconnect = () => {
+  if (socket) {
+    socket.disconnect();
+    socket = null;
   }
+};
 
-  // -------------------- Rooms and Messaging --------------------
+// -------------------- Rooms and Messaging --------------------
 
-  joinRoom(roomId) {
-    if (this.socket) {
-      this.socket.emit('join_room', roomId);
-    }
+const joinRoom = (roomId) => {
+  socket?.emit('join_room', roomId);
+};
+
+const leaveRoom = (roomId) => {
+  socket?.emit('leave_room', roomId);
+};
+
+const sendMessage = (roomId, message) => {
+  socket?.emit('send_message', {
+    roomId,
+    message,
+    userId: socket.id,
+  });
+};
+
+const onReceiveMessage = (callback) => {
+  socket?.on('receive_message', callback);
+};
+
+// -------------------- ✅ Notifications --------------------
+
+const joinUserNotificationRoom = (userId) => {
+  if (socket && userId) {
+    socket.emit('join_user_room', userId);
+    console.log(`Joined notification room: user_${userId}`);
   }
+};
 
-  leaveRoom(roomId) {
-    if (this.socket) {
-      this.socket.emit('leave_room', roomId);
-    }
-  }
+const onNewInNeedNotification = (callback) => {
+  socket?.on('new_inNeed_notification', callback);
+};
 
-  sendMessage(roomId, message) {
-    if (this.socket) {
-      this.socket.emit('send_message', {
-        roomId,
-        message,
-        userId: this.socket.id,
-      });
-    }
-  }
+// -------------------- Export Singleton API --------------------
 
-  onReceiveMessage(callback) {
-    if (this.socket) {
-      this.socket.on('receive_message', callback);
-    }
-  }
+const SocketService = {
+  connect,
+  disconnect,
+  joinRoom,
+  leaveRoom,
+  sendMessage,
+  onReceiveMessage,
+  joinUserNotificationRoom,
+  onNewInNeedNotification,
+};
 
-  // -------------------- ✅ Notifications --------------------
+export default SocketService;
 
-  joinUserNotificationRoom(userId) {
-    if (this.socket && userId) {
-      this.socket.emit('join_user_room', userId);
-      console.log(`Joined notification room: user_${userId}`);
-    }
-  }
-
-  onNewInNeedNotification(callback) {
-    if (this.socket) {
-      this.socket.on('new_inNeed_notification', callback);
-    }
-  }
-
-  // Optional: You can add other types like campaign/event notifications
-}
-
-export default new SocketService();

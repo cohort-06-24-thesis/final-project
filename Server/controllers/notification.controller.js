@@ -1,23 +1,64 @@
 const { Notification } = require("../Database/index.js");
+const socketIO = require("../socket.js");
 
 module.exports = {
   // Create new notification
   createNotif: async (req, res) => {
     try {
       const notification = await Notification.create({
-  message: req.body.message,
-  isRead: false,
-  UserId: req.body.UserId,  // IMPORTANT: Capital U, matches your model
-  itemId: req.body.itemId,  // optional if you want to save item info
-  itemType: req.body.itemType,  // optional
-});
+        message: req.body.message,
+        isRead: false,
+        UserId: req.body.UserId,
+        itemId: req.body.itemId,
+        itemType: req.body.itemType,
+      });
+
+      // Emit the notification through socket
+      const io = socketIO.getIO();
+      io.to(`user_${req.body.UserId}`).emit("new_notification", {
+        ...notification.toJSON(),
+        timestamp: new Date().toISOString(),
+      });
+
       res.status(201).json(notification);
     } catch (error) {
+      console.error("Error creating notification:", error);
       res.status(500).json({
         message: error.message || "Error creating notification",
       });
     }
   },
+
+  // Test notification endpoint
+  testNotification: async (req, res) => {
+    try {
+      const { userId, message } = req.body;
+      if (!userId || !message) {
+        return res.status(400).json({ message: "userId and message are required" });
+      }
+
+      const notification = await Notification.create({
+        message,
+        isRead: false,
+        UserId: userId,
+      });
+
+      // Emit the notification through socket
+      const io = socketIO.getIO();
+      io.to(`user_${userId}`).emit("new_notification", {
+        ...notification.toJSON(),
+        timestamp: new Date().toISOString(),
+      });
+
+      res.status(201).json({ message: "Test notification sent", notification });
+    } catch (error) {
+      console.error("Error sending test notification:", error);
+      res.status(500).json({
+        message: error.message || "Error sending test notification",
+      });
+    }
+  },
+
   getUnseenCount: async (req, res) => {
     try {
       const count = await Notification.count({

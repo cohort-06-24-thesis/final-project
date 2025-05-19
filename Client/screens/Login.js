@@ -428,10 +428,11 @@ export default function AnimatedLogin({ navigation }) {
         return
       }
 
-      // Store UID and navigate
-      if (rememberMe) {
+      // // Store UID and navigate
+      // if (rememberMe) {
+      //   await AsyncStorage.setItem("userUID", uid)
+      // }
         await AsyncStorage.setItem("userUID", uid)
-      }
 
       setError("")
       navigation.replace("MainApp")
