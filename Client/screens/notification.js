@@ -33,6 +33,7 @@ const Notification = () => {
     AsyncStorage.getItem('userUID').then((uid) => {
       if (uid) {
         setUserId(uid);
+        // Fetch in background, but don't block UI
         fetchNotifications(uid);
       }
     });
@@ -86,7 +87,7 @@ const Notification = () => {
 
   return (
     <View style={styles.container}>
-      {loading ? (
+      {notifications.length === 0 && loading ? (
         <ActivityIndicator size="large" color="#4A90E2" />
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
@@ -101,7 +102,7 @@ const Notification = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#4A90E2']}
+              colors={["#4A90E2"]}
               tintColor="#4A90E2"
             />
           }
