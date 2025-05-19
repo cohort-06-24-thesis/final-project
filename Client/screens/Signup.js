@@ -19,6 +19,7 @@ import axios from 'axios';
 import { API_BASE } from '../config.js';
 import { Svg, Path, Circle, G } from 'react-native-svg';
 import * as Animatable from 'react-native-animatable';
+import { FontAwesome } from '@expo/vector-icons';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
@@ -480,86 +481,19 @@ export default function EnhancedSignupScreen({ navigation }) {
   );
 
   const FacebookIcon = () => (
-    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <Path 
-        d="M18 2H15C13.6739 2 12.4021 2.52678 11.4645 3.46447C10.5268 4.40215 10 5.67392 10 7V10H7V14H10V22H14V14H17L18 10H14V7C14 6.73478 14.1054 6.48043 14.2929 6.29289C14.4804 6.10536 14.7348 6 15 6H18V2Z" 
-        stroke={COLORS.darkGreen} 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      />
-    </Svg>
+    <FontAwesome name="facebook" size={20} color={COLORS.darkGreen} />
   );
 
   const GoogleIcon = () => (
-    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <Path 
-        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" 
-        stroke={COLORS.darkGreen} 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      />
-      <Path 
-        d="M17.5 12H12" 
-        stroke={COLORS.darkGreen} 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      />
-      <Path 
-        d="M12 6.5V12" 
-        stroke={COLORS.darkGreen} 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      />
-      <Path 
-        d="M12 12L8.5 15.5" 
-        stroke={COLORS.darkGreen} 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      />
-    </Svg>
+    <FontAwesome name="google" size={20} color={COLORS.darkGreen} />
   );
 
   const AppleIcon = () => (
-    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <Path 
-        d="M12 18.5C11.0807 19.4193 10.0193 20.1867 8.85 20.77C8.13572 21.1294 7.34868 21.3336 6.55 21.37C5.7 21.43 4.82 21.24 4.18 20.95C3.54 20.66 3.01 20.26 2.6 19.77C1.26 17.89 1.19 14.46 2.5 12.5C3.56 10.94 5.41 10.33 7 10.71C7.74 10.87 8.46 11.15 9.12 11.58C9.5 11.83 9.92 12.08 10.38 12.08C10.76 12.08 11.13 11.86 11.47 11.67C12.97 10.83 14.77 10.88 16.37 11.57C16.7 11.73 17.08 11.92 17.35 12.19C17.62 12.46 17.75 12.81 17.75 13.17C17.75 13.37 17.7 13.57 17.62 13.76" 
-        stroke={COLORS.darkGreen} 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      />
-      <Path 
-        d="M12 18.5C11.0807 19.4193 10.0193 20.1867 8.85 20.77C8.13572 21.1294 7.34868 21.3336 6.55 21.37C5.7 21.43 4.82 21.24 4.18 20.95C3.54 20.66 3.01 20.26 2.6 19.77C1.26 17.89 1.19 14.46 2.5 12.5C3.56 10.94 5.41 10.33 7 10.71C7.74 10.87 8.46 11.15 9.12 11.58C9.5 11.83 9.92 12.08 10.38 12.08C10.76 12.08 11.13 11.86 11.47 11.67C12.97 10.83 14.77 10.88 16.37 11.57" 
-        stroke={COLORS.darkGreen} 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      />
-      <Path 
-        d="M9 6.5C9 4.84315 10.3431 3.5 12 3.5C13.6569 3.5 15 4.84315 15 6.5C15 8.15685 13.6569 9.5 12 9.5" 
-        stroke={COLORS.darkGreen} 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      />
-    </Svg>
+    <FontAwesome name="apple" size={20} color={COLORS.darkGreen} />
   );
 
   const TwitterIcon = () => (
-    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <Path 
-        d="M23 3C22.0424 3.67548 20.9821 4.19211 19.86 4.53C19.2577 3.83751 18.4573 3.34669 17.567 3.12393C16.6767 2.90116 15.7395 2.9572 14.8821 3.28445C14.0247 3.61171 13.2884 4.1944 12.773 4.95372C12.2575 5.71303 11.9877 6.61234 12 7.53V8.53C10.2426 8.57557 8.50127 8.18581 6.93101 7.39545C5.36074 6.60508 4.01032 5.43864 3 4C3 4 -1 13 8 17C5.94053 18.398 3.48716 19.0989 1 19C10 24 21 19 21 7.5C20.9991 7.22145 20.9723 6.94359 20.92 6.67C21.9406 5.66349 22.6608 4.39271 23 3Z" 
-        stroke={COLORS.darkGreen} 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      />
-    </Svg>
+    <FontAwesome name="twitter" size={20} color={COLORS.darkGreen} />
   );
 
   return (

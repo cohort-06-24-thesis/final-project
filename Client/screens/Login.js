@@ -77,7 +77,7 @@ const AnimatedBackground = () => {
   return (
     <View style={styles.backgroundContainer}>
       <LinearGradient
-        colors={['#00C44F', '#FFE97F']}
+        colors={['#FFFFFF', '#FFFFFF']}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -91,20 +91,20 @@ const AnimatedBackground = () => {
               {
                 translateY: heart1Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, -50],
+                  outputRange: [0, -height * 0.8],
                 }),
               },
               {
                 translateX: heart1Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 30],
+                  outputRange: [0, width * 0.6],
                 }),
               },
             ],
           },
         ]}
       >
-        <FontAwesome name="heart" size={60} color="rgba(255, 255, 255, 0.18)" />
+        <FontAwesome name="heart" size={60} color="rgba(0, 196, 79, 0.18)" />
       </Animated.View>
       <Animated.View
         style={[
@@ -115,20 +115,20 @@ const AnimatedBackground = () => {
               {
                 translateY: heart2Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, -70],
+                  outputRange: [0, -height * 0.7],
                 }),
               },
               {
                 translateX: heart2Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, -20],
+                  outputRange: [0, -width * 0.5],
                 }),
               },
             ],
           },
         ]}
       >
-        <FontAwesome name="heart" size={80} color="rgba(255, 255, 255, 0.13)" />
+        <FontAwesome name="heart" size={80} color="rgba(0, 196, 79, 0.13)" />
       </Animated.View>
       <Animated.View
         style={[
@@ -139,20 +139,20 @@ const AnimatedBackground = () => {
               {
                 translateY: heart3Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 60],
+                  outputRange: [0, height * 0.6],
                 }),
               },
               {
                 translateX: heart3Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 40],
+                  outputRange: [0, width * 0.4],
                 }),
               },
             ],
           },
         ]}
       >
-        <FontAwesome name="heart" size={70} color="rgba(255, 255, 255, 0.15)" />
+        <FontAwesome name="heart" size={70} color="rgba(0, 196, 79, 0.15)" />
       </Animated.View>
       <Animated.View
         style={[
@@ -163,20 +163,20 @@ const AnimatedBackground = () => {
               {
                 translateY: heart4Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, -40],
+                  outputRange: [0, -height * 0.5],
                 }),
               },
               {
                 translateX: heart4Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, -50],
+                  outputRange: [0, -width * 0.6],
                 }),
               },
             ],
           },
         ]}
       >
-        <FontAwesome name="heart" size={50} color="rgba(255, 255, 255, 0.20)" />
+        <FontAwesome name="heart" size={50} color="rgba(0, 196, 79, 0.20)" />
       </Animated.View>
       <Animated.View
         style={[
@@ -187,20 +187,20 @@ const AnimatedBackground = () => {
               {
                 translateY: heart5Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 35],
+                  outputRange: [0, height * 0.4],
                 }),
               },
               {
                 translateX: heart5Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, -25],
+                  outputRange: [0, -width * 0.3],
                 }),
               },
             ],
           },
         ]}
       >
-        <FontAwesome name="heart" size={40} color="rgba(255, 255, 255, 0.22)" />
+        <FontAwesome name="heart" size={40} color="rgba(0, 196, 79, 0.22)" />
       </Animated.View>
       <Animated.View
         style={[
@@ -211,20 +211,20 @@ const AnimatedBackground = () => {
               {
                 translateY: heart6Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, -30],
+                  outputRange: [0, -height * 0.6],
                 }),
               },
               {
                 translateX: heart6Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 20],
+                  outputRange: [0, width * 0.5],
                 }),
               },
             ],
           },
         ]}
       >
-        <FontAwesome name="heart" size={55} color="rgba(255, 255, 255, 0.16)" />
+        <FontAwesome name="heart" size={55} color="rgba(0, 196, 79, 0.16)" />
       </Animated.View>
       <Animated.View
         style={[
@@ -235,20 +235,20 @@ const AnimatedBackground = () => {
               {
                 translateY: heart7Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 45],
+                  outputRange: [0, height * 0.5],
                 }),
               },
               {
                 translateX: heart7Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, -35],
+                  outputRange: [0, -width * 0.4],
                 }),
               },
             ],
           },
         ]}
       >
-        <FontAwesome name="heart" size={65} color="rgba(255, 255, 255, 0.12)" />
+        <FontAwesome name="heart" size={65} color="rgba(0, 196, 79, 0.12)" />
       </Animated.View>
       <Animated.View
         style={[
@@ -259,20 +259,20 @@ const AnimatedBackground = () => {
               {
                 translateY: heart8Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 55],
+                  outputRange: [0, height * 0.7],
                 }),
               },
               {
                 translateX: heart8Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 25],
+                  outputRange: [0, width * 0.3],
                 }),
               },
             ],
           },
         ]}
       >
-        <FontAwesome name="heart" size={45} color="rgba(255, 255, 255, 0.19)" />
+        <FontAwesome name="heart" size={45} color="rgba(0, 196, 79, 0.19)" />
       </Animated.View>
       <Animated.View
         style={[
@@ -283,20 +283,20 @@ const AnimatedBackground = () => {
               {
                 translateY: heart9Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, -60],
+                  outputRange: [0, -height * 0.4],
                 }),
               },
               {
                 translateX: heart9Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 35],
+                  outputRange: [0, width * 0.5],
                 }),
               },
             ],
           },
         ]}
       >
-        <FontAwesome name="heart" size={35} color="rgba(255, 255, 255, 0.14)" />
+        <FontAwesome name="heart" size={35} color="rgba(0, 196, 79, 0.14)" />
       </Animated.View>
       <Animated.View
         style={[
@@ -307,20 +307,20 @@ const AnimatedBackground = () => {
               {
                 translateY: heart10Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 38],
+                  outputRange: [0, height * 0.3],
                 }),
               },
               {
                 translateX: heart10Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, -18],
+                  outputRange: [0, -width * 0.4],
                 }),
               },
             ],
           },
         ]}
       >
-        <FontAwesome name="heart" size={60} color="rgba(255, 255, 255, 0.11)" />
+        <FontAwesome name="heart" size={60} color="rgba(0, 196, 79, 0.11)" />
       </Animated.View>
       <Animated.View
         style={[
@@ -331,20 +331,20 @@ const AnimatedBackground = () => {
               {
                 translateY: heart11Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, -25],
+                  outputRange: [0, -height * 0.5],
                 }),
               },
               {
                 translateX: heart11Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 15],
+                  outputRange: [0, width * 0.3],
                 }),
               },
             ],
           },
         ]}
       >
-        <FontAwesome name="heart" size={50} color="rgba(255, 255, 255, 0.17)" />
+        <FontAwesome name="heart" size={50} color="rgba(0, 196, 79, 0.17)" />
       </Animated.View>
       <Animated.View
         style={[
@@ -355,20 +355,20 @@ const AnimatedBackground = () => {
               {
                 translateY: heart12Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 28],
+                  outputRange: [0, height * 0.4],
                 }),
               },
               {
                 translateX: heart12Position.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, -22],
+                  outputRange: [0, -width * 0.5],
                 }),
               },
             ],
           },
         ]}
       >
-        <FontAwesome name="heart" size={38} color="rgba(255, 255, 255, 0.21)" />
+        <FontAwesome name="heart" size={38} color="rgba(0, 196, 79, 0.21)" />
       </Animated.View>
     </View>
   );
@@ -612,52 +612,52 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   heart1: {
-    top: height * 0.05,
-    left: width * 0.08,
+    top: height * 0.1,
+    left: width * 0.1,
   },
   heart2: {
-    top: height * 0.10,
-    left: width * 0.35,
+    top: height * 0.2,
+    left: width * 0.3,
   },
   heart3: {
-    top: height * 0.07,
-    right: width * 0.08,
+    top: height * 0.15,
+    right: width * 0.1,
   },
   heart4: {
-    top: height * 0.18,
-    left: width * 0.18,
+    top: height * 0.3,
+    left: width * 0.2,
   },
   heart5: {
-    top: height * 0.22,
-    right: width * 0.18,
+    top: height * 0.4,
+    right: width * 0.2,
   },
   heart6: {
-    top: height * 0.13,
-    left: width * 0.60,
+    top: height * 0.5,
+    left: width * 0.4,
   },
   heart7: {
-    top: height * 0.25,
-    left: width * 0.48,
+    top: height * 0.6,
+    left: width * 0.5,
   },
   heart8: {
-    top: height * 0.30,
-    right: width * 0.30,
+    top: height * 0.7,
+    right: width * 0.3,
   },
   heart9: {
-    top: height * 0.16,
-    right: width * 0.45,
+    top: height * 0.8,
+    right: width * 0.4,
   },
   heart10: {
-    top: height * 0.33,
-    left: width * 0.25,
+    top: height * 0.9,
+    left: width * 0.3,
   },
   heart11: {
-    top: height * 0.04,
-    right: width * 0.22,
+    top: height * 0.25,
+    right: width * 0.2,
   },
   heart12: {
-    top: height * 0.20,
-    left: width * 0.70,
+    top: height * 0.35,
+    left: width * 0.7,
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -693,18 +693,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#FFFFFF",
+    color: "#000000",
     marginBottom: 8,
-    textShadowColor: "rgba(0, 0, 0, 0.2)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    textShadowColor: "rgba(0, 0, 0, 0.1)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   subtitle: {
     fontSize: 16,
-    color: "#FFFFFF",
-    textShadowColor: "rgba(0, 0, 0, 0.2)",
+    color: "#000000",
+    textShadowColor: "rgba(0, 0, 0, 0.1)",
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    textShadowRadius: 1,
   },
   card: {
     backgroundColor: "#FFFFFF",
