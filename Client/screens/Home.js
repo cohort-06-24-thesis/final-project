@@ -464,11 +464,19 @@ export default function Home({ navigation }) {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* Search Bar (visible only at top) */}
+      {/* Search Bar (always visible) */}
       <Animated.View
         style={[
           styles.searchContainer,
-          { opacity: headerContentOpacity }
+          {
+            transform: [{
+              translateY: scrollY.interpolate({
+                inputRange: [0, HEADER_SCROLL_DISTANCE],
+                outputRange: [HEADER_MAX_HEIGHT - 85, 0],
+                extrapolate: 'clamp'
+              })
+            }]
+          }
         ]}
       >
         <View style={styles.searchBar}>
@@ -516,7 +524,7 @@ export default function Home({ navigation }) {
               style={{ 
                 paddingLeft: 20, 
                 marginBottom: 20, 
-                marginTop: 95,
+                marginTop: 45, // Reduced from 65 to 45 to maintain proper spacing
               }} 
               contentContainerStyle={{ 
                 paddingRight: 20,
@@ -776,7 +784,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     position: 'absolute',
-    top: HEADER_MAX_HEIGHT - 55, // Changed from -45 to -55 to move search bar higher
+    top: HEADER_MAX_HEIGHT - 170, // Changed from -35 to -20 to move search bar lower
     left: 20,
     right: 20,
     zIndex: 1000,
@@ -785,8 +793,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 16,
+    padding: 14,
+    borderRadius: 12,
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -801,10 +809,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    marginTop: HEADER_MAX_HEIGHT - 55, // Update to match searchContainer
+    marginTop: HEADER_MAX_HEIGHT - 25, // Update to match searchContainer
   },
   scrollContent: {
-    paddingBottom: 30,
+    paddingBottom: 10,
   },
   loader: {
     marginTop: 50,
