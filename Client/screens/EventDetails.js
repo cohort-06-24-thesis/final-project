@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
@@ -20,6 +21,7 @@ const EventDetails = ({ route, navigation }) => {
   const [isFavorited, setIsFavorited] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
   const [joinedParticipants, setJoinedParticipants] = useState([]);
+  const [isJoining, setIsJoining] = useState(false);
 
   // Check if event is in favorites
   useEffect(() => {
@@ -68,6 +70,7 @@ const EventDetails = ({ route, navigation }) => {
         }
 
         if (isFavorited) {
+            // Find and remove from favorites
             const favoritesResponse = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
             const favorite = favoritesResponse.data.find(fav => fav.eventId === event.id);
             
@@ -77,13 +80,20 @@ const EventDetails = ({ route, navigation }) => {
                 Alert.alert('Success', 'Event removed from wishlist');
             }
         } else {
-            // Make sure we're sending the correct eventId
-            console.log('Creating favorite with eventId:', event.id); // Debug log
-            
+            // Add to favorites
             const response = await axios.post(`${API_BASE}/favourite/createFavourite`, {
                 userId,
-                eventId: event.id, // Make sure event.id exists and is being passed correctly
-                type: 'event'
+                eventId: event.id,
+                type: 'event',
+                Event: {
+                    id: event.id,
+                    title: event.title,
+                    description: event.description,
+                    images: event.images,
+                    location: event.location,
+                    date: event.date,
+                    participators: event.participators
+                }
             });
 
             if (response.data) {
@@ -101,80 +111,104 @@ const EventDetails = ({ route, navigation }) => {
     try {
         const userId = await AsyncStorage.getItem('userUID');
         if (!userId) {
-            Alert.alert('Error', 'Please login to join this event');
+            Alert.alert('Login Required', 'Please login to join this event', [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Login', onPress: () => navigation.navigate('Login') }
+            ]);
             return;
         }
 
-        if (hasJoined) {
-            // Leave the event
-            console.log(`Attempting to leave event ${event.id} for user ${userId}`); // Debug log
-            const leaveResponse = await axios.delete(`${API_BASE}/event/${event.id}/participants/${userId}`);
-            console.log('Leave response:', leaveResponse.data); // Debug log
+        setIsJoining(true);
 
-            setHasJoined(false);
-            setJoinedParticipants(prev => prev.filter(p => p.userId !== userId));
-            
-            // Update event participators count
-            setEvent(prev => ({
-                ...prev,
-                participators: Math.max(0, (prev.participators || 1) - 1)
-            }));
-            
-            Alert.alert('Success', 'You have left the event');
+        if (hasJoined) {
+            Alert.alert(
+                'Leave Event',
+                'Are you sure you want to leave this event?',
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Leave',
+                        style: 'destructive',
+                        onPress: async () => {
+                            try {
+                                const leaveResponse = await axios.delete(`${API_BASE}/event/${event.id}/participants/${userId}`);
+                                
+                                setHasJoined(false);
+                                setJoinedParticipants(prev => prev.filter(p => p.userId !== userId));
+                                setEvent(prev => ({
+                                    ...prev,
+                                    participators: Math.max(0, (prev.participators || 1) - 1)
+                                }));
+                                
+                                Alert.alert('Success', 'You have left the event');
+                            } catch (error) {
+                                Alert.alert('Error', 'Failed to leave the event. Please try again.');
+                            }
+                        }
+                    }
+                ]
+            );
         } else {
-            // Join the event
-            console.log(`Attempting to join event ${event.id} for user ${userId}`); // Debug log
             const joinResponse = await axios.post(`${API_BASE}/event/${event.id}/participants`, {
                 userId,
                 eventId: event.id
             });
-            console.log('Join response:', joinResponse.data); // Debug log
 
             setHasJoined(true);
             setJoinedParticipants(prev => [...prev, joinResponse.data]);
-            
-            // Update event participators count
             setEvent(prev => ({
                 ...prev,
                 participators: (prev.participators || 0) + 1
             }));
             
-            Alert.alert('Success', 'You have joined the event');
+            Alert.alert('Welcome!', 'You have successfully joined the event');
         }
     } catch (error) {
-        console.error('Error managing event participation:', error);
-        console.error('Error details:', {
-            response: error.response?.data,
-            status: error.response?.status,
-            message: error.message
-        });
-        
-        // Show more specific error message
         Alert.alert(
             'Error',
-            error.response?.data?.message || 
-            error.response?.data || 
-            'Failed to update event participation. Please try again.'
+            error.response?.data?.message || 'Failed to update event participation'
         );
+    } finally {
+        setIsJoining(false);
     }
   };
 
-  const handleReport = () => {
-    Alert.alert(
-      'Report Event',
-      'Are you sure you want to report this event?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Report',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert('Report submitted', 'Thank you for your feedback');
-          }
-        }
-      ]
-    );
-  };
+  const renderJoinButton = () => (
+    <View style={styles.joinSection}>
+        <View style={styles.participantsInfo}>
+            <Ionicons name="people" size={24} color="#666" />
+            <Text style={styles.participantsCount}>
+                {joinedParticipants.length} {joinedParticipants.length === 1 ? 'person' : 'people'} joined
+            </Text>
+        </View>
+        
+        <TouchableOpacity 
+            style={[
+                styles.joinButton, 
+                hasJoined && styles.joinedButton,
+                isJoining && styles.joiningButton
+            ]} 
+            onPress={handleJoin}
+            disabled={isJoining}
+        >
+            {isJoining ? (
+                <ActivityIndicator color="#fff" />
+            ) : (
+                <>
+                    <Ionicons 
+                        name={hasJoined ? "exit-outline" : "enter-outline"} 
+                        size={24} 
+                        color="#fff" 
+                        style={styles.joinIcon}
+                    />
+                    <Text style={styles.joinButtonText}>
+                        {hasJoined ? 'Leave Event' : 'Join Event'}
+                    </Text>
+                </>
+            )}
+        </TouchableOpacity>
+    </View>
+  );
 
   return (
     <ScrollView style={styles.container}>
@@ -199,7 +233,19 @@ const EventDetails = ({ route, navigation }) => {
       </View>
 
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>{event.title}</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>{event.title}</Text>
+          <TouchableOpacity 
+            style={styles.favoriteButton} 
+            onPress={handleFavorite}
+          >
+            <Ionicons 
+              name={isFavorited ? "heart" : "heart-outline"} 
+              size={28} 
+              color={isFavorited ? "#FF6B6B" : "#666"} 
+            />
+          </TouchableOpacity>
+        </View>
         
         <View style={styles.infoRow}>
           <Ionicons name="calendar" size={20} color="#666" />
@@ -220,24 +266,6 @@ const EventDetails = ({ route, navigation }) => {
 
         <Text style={styles.descriptionTitle}>About Event</Text>
         <Text style={styles.description}>{event.description}</Text>
-
-        <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleFavorite}>
-            <Ionicons 
-              name={isFavorited ? "heart" : "heart-outline"} 
-              size={24} 
-              color={isFavorited ? "#FF6B6B" : "#666"} 
-            />
-            <Text style={[styles.actionButtonText, isFavorited && { color: "#FF6B6B" }]}>
-              Favorite
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionButton} onPress={handleReport}>
-            <Ionicons name="flag-outline" size={24} color="#666" />
-            <Text style={styles.actionButtonText}>Report</Text>
-          </TouchableOpacity>
-        </View>
 
         <Text style={styles.sectionTitle}>Location</Text>
         <TouchableOpacity
@@ -269,20 +297,7 @@ const EventDetails = ({ route, navigation }) => {
           </MapView>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[
-            styles.joinButton, 
-            hasJoined && styles.joinedButton
-          ]} 
-          onPress={handleJoin}
-        >
-          <Text style={styles.joinButtonText}>
-            {hasJoined ? 'Leave Event' : 'Join Event'}
-          </Text>
-          <Text style={styles.participantCount}>
-            {joinedParticipants.length} joined
-          </Text>
-        </TouchableOpacity>
+        {renderJoinButton()}
       </View>
     </ScrollView>
   );
@@ -320,10 +335,20 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 20,
   },
+  titleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    flex: 1,
+    paddingRight: 10,
+  },
+  favoriteButton: {
+    padding: 8,
   },
   infoRow: {
     flexDirection: 'row',
@@ -345,21 +370,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: '#444',
   },
-  actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 16,
-    marginBottom: 16,
-  },
-  actionButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionButtonText: {
-    color: '#666',
-    fontSize: 12,
-    marginTop: 4,
-  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -376,26 +386,48 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  joinSection: {
+    marginTop: 20,
+    marginBottom: 30,
+    padding: 16,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    elevation: 2,
+  },
+  participantsInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  participantsCount: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#666',
+    fontWeight: '500',
+  },
   joinButton: {
     backgroundColor: '#4CAF50',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 30,
+    justifyContent: 'center',
+    elevation: 3,
+  },
+  joinedButton: {
+    backgroundColor: '#FF6B6B',
+  },
+  joiningButton: {
+    backgroundColor: '#999',
+  },
+  joinIcon: {
+    marginRight: 8,
   },
   joinButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  joinedButton: {
-    backgroundColor: '#FF6B6B',
-  },
-  participantCount: {
-    color: '#fff',
-    fontSize: 14,
-    marginTop: 4,
-  }
 });
 
 export default EventDetails;
