@@ -42,8 +42,7 @@ setNotifications(filteredNotifications);
 setUnreadCount(filteredNotifications.filter(n => !n.isRead).length);
 
       
-      // setNotifications(response.data);
-      // setUnreadCount(response.data.filter(n => !n.isRead).length);
+     
     } catch (err) {
       console.error('Error fetching notifications:', err);
       setError('Failed to fetch notifications');

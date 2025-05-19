@@ -65,7 +65,7 @@ export const NotificationProvider = ({ children }) => {
     socket.emit("join_admin_dashboard");
 
     socket.on("new_inNeed_notification", (data) => {
-      console.log("✅ New notification received via socket:", data);
+      console.log("✅ New inNeed notification received via socket:", data);
       socketUpdatedRef.current = true;
 
       const updatedNotifications = [data, ...notifications];
@@ -75,11 +75,26 @@ export const NotificationProvider = ({ children }) => {
       setUnseenCount(newUnseenCount);
       saveToStorage(updatedNotifications, newUnseenCount);
 
-      toast.info(data.message || "📢 New notification!");
+      toast.info(data.message || "📢 New In-Need request!");
+    });
+
+    socket.on("new_donation_notification", (data) => {
+      console.log("✅ New donation notification received via socket:", data);
+      socketUpdatedRef.current = true;
+
+      const updatedNotifications = [data, ...notifications];
+      const newUnseenCount = unseenCount + 1;
+
+      setNotifications(updatedNotifications);
+      setUnseenCount(newUnseenCount);
+      saveToStorage(updatedNotifications, newUnseenCount);
+
+      toast.info(data.message || "📢 New Donation Item!");
     });
 
     return () => {
       socket.off("new_inNeed_notification");
+      socket.off("new_donation_notification");
     };
   }, []);
 

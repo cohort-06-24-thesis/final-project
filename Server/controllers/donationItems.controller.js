@@ -1,9 +1,17 @@
-const { DonationItem, User, Category } = require("../Database/index.js")
+const { DonationItem, User, Category, Notification } = require("../Database/index.js")
+const { getIO } = require('../socket');
 
 module.exports = {
     createDonationItem: async (req, res) => {
         try {
             const { title, description, image, location, UserId } = req.body
+            
+            // Fetch the user who created the donation
+            const user = await User.findByPk(UserId);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
             const donationItem = await DonationItem.create({
                 title,
                 description,
@@ -12,7 +20,28 @@ module.exports = {
                 isApproved: false, 
                 status:"available",
                 UserId
-            })
+            });
+
+            // Construct notification message
+            const message = `New Donation Item: "${title}" by ${user.name}`;
+
+            // Create notification in DB
+            const notification = await Notification.create({
+                message,
+                isRead: false,
+                UserId,
+                itemId: donationItem.id,
+                itemType: 'donation'
+            });
+
+            // Emit notification to admin clients
+            const io = getIO();
+            io.to('admins').emit('new_donation_notification', {
+                ...notification.dataValues,
+                donation: donationItem,
+                timestamp: new Date().toISOString(),
+            });
+
             res.status(201).json(donationItem)
         } catch (error) {
             console.log(error)
