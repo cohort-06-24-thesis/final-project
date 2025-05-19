@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { FaEdit, FaTrash, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import axios from 'axios';
+import { useNavigate } from "react-router-dom";
+
 
 const EventPage = () => {
+        const navigate = useNavigate();
+  
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -176,16 +180,20 @@ const EventPage = () => {
               {currentItems.length > 0 ? (
                 currentItems.map((item) => (
                   <tr key={item.id} className="hover:bg-green-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={item.images && item.images[0] ? item.images[0] : 'https://via.placeholder.com/40'}
-                          alt={item.title}
-                          className="w-10 h-10 object-cover rounded-md border border-gray-300"
-                        />
-                        <span className="text-gray-800">{item.title}</span>
-                      </div>
-                    </td>
+                  <td className="px-6 py-4">
+  <div
+    onClick={() => navigate(`/manage-events/${item.id}`)}
+    className="flex items-center gap-3 cursor-pointer hover:underline"
+  >
+    <img
+      src={item.images && item.images[0] ? item.images[0] : 'https://via.placeholder.com/40'}
+      alt={item.title}
+      className="w-10 h-10 object-cover rounded-md border border-gray-300"
+    />
+    <span className="text-gray-800">{item.title}</span>
+  </div>
+</td>
+
                     <td className="px-6 py-4 text-gray-700">{item.description}</td>
                     <td className="px-6 py-4 text-gray-700">{new Date(item.date).toLocaleDateString()}</td>
                     <td className="px-6 py-4 text-gray-700">{item.location}</td>
@@ -319,16 +327,7 @@ const EventPage = () => {
                     onChange={(e) => setSelectedItem({ ...selectedItem, participators: e.target.value })}
                     className="w-full p-2 border rounded mb-4"
                   />
-                  <div className="flex items-center mb-4">
-                    <input
-                      type="checkbox"
-                      id="isApproved"
-                      checked={selectedItem.isApproved}
-                      onChange={() => setSelectedItem({ ...selectedItem, isApproved: !selectedItem.isApproved })}
-                      className="mr-2"
-                    />
-                    <label htmlFor="isApproved" className="text-gray-700">Approved</label>
-                  </div>
+                  
                   <div className="flex justify-end gap-4">
                     <button
                       onClick={handleCancel}

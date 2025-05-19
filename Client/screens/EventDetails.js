@@ -63,150 +63,150 @@ const EventDetails = ({ route, navigation }) => {
   // Handle favorite toggle
   const handleFavorite = async () => {
     try {
-        const userId = await AsyncStorage.getItem('userUID');
-        if (!userId) {
-            Alert.alert('Error', 'Please login to manage favorites');
-            return;
-        }
+      const userId = await AsyncStorage.getItem('userUID');
+      if (!userId) {
+        Alert.alert('Error', 'Please login to manage favorites');
+        return;
+      }
 
-        if (isFavorited) {
-            // Find and remove from favorites
-            const favoritesResponse = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
-            const favorite = favoritesResponse.data.find(fav => fav.eventId === event.id);
-            
-            if (favorite) {
-                await axios.delete(`${API_BASE}/favourite/deleteFavourite/${favorite.id}`);
-                setIsFavorited(false);
-                Alert.alert('Success', 'Event removed from wishlist');
-            }
-        } else {
-            // Add to favorites
-            const response = await axios.post(`${API_BASE}/favourite/createFavourite`, {
-                userId,
-                eventId: event.id,
-                type: 'event',
-                Event: {
-                    id: event.id,
-                    title: event.title,
-                    description: event.description,
-                    images: event.images,
-                    location: event.location,
-                    date: event.date,
-                    participators: event.participators
-                }
-            });
+      if (isFavorited) {
+        // Find and remove from favorites
+        const favoritesResponse = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
+        const favorite = favoritesResponse.data.find(fav => fav.eventId === event.id);
 
-            if (response.data) {
-                setIsFavorited(true);
-                Alert.alert('Success', 'Event added to wishlist');
-            }
+        if (favorite) {
+          await axios.delete(`${API_BASE}/favourite/deleteFavourite/${favorite.id}`);
+          setIsFavorited(false);
+          Alert.alert('Success', 'Event removed from wishlist');
         }
+      } else {
+        // Add to favorites
+        const response = await axios.post(`${API_BASE}/favourite/createFavourite`, {
+          userId,
+          eventId: event.id,
+          type: 'event',
+          Event: {
+            id: event.id,
+            title: event.title,
+            description: event.description,
+            images: event.images,
+            location: event.location,
+            date: event.date,
+            participators: event.participators
+          }
+        });
+
+        if (response.data) {
+          setIsFavorited(true);
+          Alert.alert('Success', 'Event added to wishlist');
+        }
+      }
     } catch (error) {
-        console.error('Error managing favorites:', error?.response?.data || error.message);
-        Alert.alert('Error', 'Failed to update wishlist');
+      console.error('Error managing favorites:', error?.response?.data || error.message);
+      Alert.alert('Error', 'Failed to update wishlist');
     }
   };
 
   const handleJoin = async () => {
     try {
-        const userId = await AsyncStorage.getItem('userUID');
-        if (!userId) {
-            Alert.alert('Login Required', 'Please login to join this event', [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Login', onPress: () => navigation.navigate('Login') }
-            ]);
-            return;
-        }
+      const userId = await AsyncStorage.getItem('userUID');
+      if (!userId) {
+        Alert.alert('Login Required', 'Please login to join this event', [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Login', onPress: () => navigation.navigate('Login') }
+        ]);
+        return;
+      }
 
-        setIsJoining(true);
+      setIsJoining(true);
 
-        if (hasJoined) {
-            Alert.alert(
-                'Leave Event',
-                'Are you sure you want to leave this event?',
-                [
-                    { text: 'Cancel', style: 'cancel' },
-                    {
-                        text: 'Leave',
-                        style: 'destructive',
-                        onPress: async () => {
-                            try {
-                                const leaveResponse = await axios.delete(`${API_BASE}/event/${event.id}/participants/${userId}`);
-                                
-                                setHasJoined(false);
-                                setJoinedParticipants(prev => prev.filter(p => p.userId !== userId));
-                                setEvent(prev => ({
-                                    ...prev,
-                                    participators: Math.max(0, (prev.participators || 1) - 1)
-                                }));
-                                
-                                Alert.alert('Success', 'You have left the event');
-                            } catch (error) {
-                                Alert.alert('Error', 'Failed to leave the event. Please try again.');
-                            }
-                        }
-                    }
-                ]
-            );
-        } else {
-            const joinResponse = await axios.post(`${API_BASE}/event/${event.id}/participants`, {
-                userId,
-                eventId: event.id
-            });
-
-            setHasJoined(true);
-            setJoinedParticipants(prev => [...prev, joinResponse.data]);
-            setEvent(prev => ({
-                ...prev,
-                participators: (prev.participators || 0) + 1
-            }));
-            
-            Alert.alert('Welcome!', 'You have successfully joined the event');
-        }
-    } catch (error) {
+      if (hasJoined) {
         Alert.alert(
-            'Error',
-            error.response?.data?.message || 'Failed to update event participation'
+          'Leave Event',
+          'Are you sure you want to leave this event?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Leave',
+              style: 'destructive',
+              onPress: async () => {
+                try {
+                  const leaveResponse = await axios.delete(`${API_BASE}/event/${event.id}/participants/${userId}`);
+
+                  setHasJoined(false);
+                  setJoinedParticipants(prev => prev.filter(p => p.userId !== userId));
+                  setEvent(prev => ({
+                    ...prev,
+                    participators: Math.max(0, (prev.participators || 1) - 1)
+                  }));
+
+                  Alert.alert('Success', 'You have left the event');
+                } catch (error) {
+                  Alert.alert('Error', 'Failed to leave the event. Please try again.');
+                }
+              }
+            }
+          ]
         );
+      } else {
+        const joinResponse = await axios.post(`${API_BASE}/event/${event.id}/participants`, {
+          userId,
+          eventId: event.id
+        });
+
+        setHasJoined(true);
+        setJoinedParticipants(prev => [...prev, joinResponse.data]);
+        setEvent(prev => ({
+          ...prev,
+          participators: (prev.participators || 0) + 1
+        }));
+
+        Alert.alert('Welcome!', 'You have successfully joined the event');
+      }
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        error.response?.data?.message || 'Failed to update event participation'
+      );
     } finally {
-        setIsJoining(false);
+      setIsJoining(false);
     }
   };
 
   const renderJoinButton = () => (
     <View style={styles.joinSection}>
-        <View style={styles.participantsInfo}>
-            <Ionicons name="people" size={24} color="#666" />
-            <Text style={styles.participantsCount}>
-                {joinedParticipants.length} {joinedParticipants.length === 1 ? 'person' : 'people'} joined
+      <View style={styles.participantsInfo}>
+        <Ionicons name="people" size={24} color="#666" />
+        <Text style={styles.participantsCount}>
+          {joinedParticipants.length} {joinedParticipants.length === 1 ? 'person' : 'people'} joined
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        style={[
+          styles.joinButton,
+          hasJoined && styles.joinedButton,
+          isJoining && styles.joiningButton
+        ]}
+        onPress={handleJoin}
+        disabled={isJoining}
+      >
+        {isJoining ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <>
+            <Ionicons
+              name={hasJoined ? "exit-outline" : "enter-outline"}
+              size={24}
+              color="#fff"
+              style={styles.joinIcon}
+            />
+            <Text style={styles.joinButtonText}>
+              {hasJoined ? 'Leave Event' : 'Join Event'}
             </Text>
-        </View>
-        
-        <TouchableOpacity 
-            style={[
-                styles.joinButton, 
-                hasJoined && styles.joinedButton,
-                isJoining && styles.joiningButton
-            ]} 
-            onPress={handleJoin}
-            disabled={isJoining}
-        >
-            {isJoining ? (
-                <ActivityIndicator color="#fff" />
-            ) : (
-                <>
-                    <Ionicons 
-                        name={hasJoined ? "exit-outline" : "enter-outline"} 
-                        size={24} 
-                        color="#fff" 
-                        style={styles.joinIcon}
-                    />
-                    <Text style={styles.joinButtonText}>
-                        {hasJoined ? 'Leave Event' : 'Join Event'}
-                    </Text>
-                </>
-            )}
-        </TouchableOpacity>
+          </>
+        )}
+      </TouchableOpacity>
     </View>
   );
 
@@ -224,7 +224,7 @@ const EventDetails = ({ route, navigation }) => {
             <Text style={styles.noImageText}>No Image</Text>
           </View>
         )}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
@@ -235,18 +235,18 @@ const EventDetails = ({ route, navigation }) => {
       <View style={styles.contentContainer}>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>{event.title}</Text>
-          <TouchableOpacity 
-            style={styles.favoriteButton} 
+          <TouchableOpacity
+            style={styles.favoriteButton}
             onPress={handleFavorite}
           >
-            <Ionicons 
-              name={isFavorited ? "heart" : "heart-outline"} 
-              size={28} 
-              color={isFavorited ? "#FF6B6B" : "#666"} 
+            <Ionicons
+              name={isFavorited ? "heart" : "heart-outline"}
+              size={28}
+              color={isFavorited ? "#FF6B6B" : "#666"}
             />
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.infoRow}>
           <Ionicons name="calendar" size={20} color="#666" />
           <Text style={styles.infoText}>

@@ -69,8 +69,8 @@ DonationItem.hasMany(report, { foreignKey: 'itemId' });
 report.belongsTo(DonationItem, { foreignKey: 'itemId' });
 
 
-User.hasMany(Notification, { foreignKey: 'userId' });
-Notification.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Notification, { foreignKey: 'UserId' });
+Notification.belongsTo(User, { foreignKey: 'UserId' });
 
 User.hasMany(Comment, { foreignKey: 'userId' });
 Comment.belongsTo(User, { foreignKey: 'userId' });

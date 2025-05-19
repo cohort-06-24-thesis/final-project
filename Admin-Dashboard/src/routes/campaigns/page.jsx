@@ -1,9 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { FaEdit, FaTrash, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { useNavigate } from "react-router-dom";
+
 import axios from 'axios';
 
 
 const CampaignDonationsTable = () => {
+        const navigate = useNavigate();
+  
   const [campaignsData, setCampaignsData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -202,18 +206,22 @@ const CampaignDonationsTable = () => {
               {currentCampaigns.length > 0 ? (
                 currentCampaigns.map((campaign) => (
                   <tr key={campaign.id} className="hover:bg-green-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        {campaign.images && campaign.images.length > 0 && (
-                          <img
-                            src={campaign.images[0]}
-                            alt={campaign.title}
-                            className="w-10 h-10 object-cover rounded-md border border-gray-300"
-                          />
-                        )}
-                        <span className="text-gray-800">{campaign.title}</span>
-                      </div>
-                    </td>
+<td
+  className="px-6 py-4 cursor-pointer hover:underline"
+  onClick={() => navigate(`/manage-campaigns/${campaign.id}`)}
+>
+  <div className="flex items-center gap-3">
+    {campaign.images && campaign.images.length > 0 && (
+      <img
+        src={campaign.images[0]}
+        alt={campaign.title}
+        className="w-10 h-10 object-cover rounded-md border border-gray-300"
+      />
+    )}
+    <span className="text-gray-800">{campaign.title}</span>
+  </div>
+</td>
+
                     <td className="px-6 py-4 text-gray-700">
                       {campaign.description.substring(0, 50)}...
                     </td>
@@ -385,24 +393,7 @@ const CampaignDonationsTable = () => {
                     className="w-full p-2 border rounded mb-4"
                     aria-label="Campaign end date"
                   />
-                  <div className="flex items-center mb-4">
-                    <input
-                      type="checkbox"
-                      id="isApproved"
-                      checked={selectedCampaign.isApproved || false}
-                      onChange={() =>
-                        setSelectedCampaign({
-                          ...selectedCampaign,
-                          isApproved: !selectedCampaign.isApproved,
-                        })
-                      }
-                      className="mr-2"
-                      aria-label="Approve campaign"
-                    />
-                    <label htmlFor="isApproved" className="text-gray-700">
-                      Approved
-                    </label>
-                  </div>
+               
                   <label className="block text-gray-700 mb-2">Status</label>
                   <select
                     value={selectedCampaign.status || 'active'}
