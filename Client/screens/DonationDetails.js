@@ -54,42 +54,8 @@ export default function DonationDetails({ route, navigation }) {
     }
   }, [item.id]);
 
-  const handleFavorite = async () => {
-    try {
-      const userId = await AsyncStorage.getItem('userUID');
-      if (!userId) {
-        Alert.alert('Error', 'Please login to manage favorites');
-        return;
-      }
-
-      if (isFavorited) {
-        const favoritesResponse = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
-        const favorite = favoritesResponse.data.find(fav => fav.donationItemId === item.id);
-        
-        if (favorite) {
-          await axios.delete(`${API_BASE}/favourite/deleteFavourite/${favorite.id}`);
-          setIsFavorited(false);
-          Alert.alert('Success', 'Item removed from wishlist');
-        }
-      } else {
-        const response = await axios.post(`${API_BASE}/favourite/createFavourite`, {
-          userId,
-          donationItemId: item.id
-        });
-
-        if (response.data) {
-          setIsFavorited(true);
-          Alert.alert('Success', 'Item added to wishlist');
-        }
-      }
-    } catch (error) {
-      console.error('Error managing favorites:', error?.response?.data || error.message);
-      Alert.alert('Error', 'Failed to update wishlist. Please try again later.');
-    }
-  };
-
-  const handleReport = () => {
-    console.log('Report item');
+  const handleFavorite = () => {
+    setIsFavorited(!isFavorited);
   };
 
   const handleContact = () => {
@@ -181,11 +147,6 @@ export default function DonationDetails({ route, navigation }) {
               ]}>
                 Favorite
               </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.actionButton} onPress={handleReport}>
-              <Ionicons name="flag-outline" size={24} color="#666" />
-              <Text style={styles.actionButtonText}>Report</Text>
             </TouchableOpacity>
           </View>
 

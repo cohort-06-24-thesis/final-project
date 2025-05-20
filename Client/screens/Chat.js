@@ -11,6 +11,7 @@ import {
   Image,
   Modal,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
@@ -19,9 +20,15 @@ import io from 'socket.io-client';
 import { API_BASE } from '../config';
 import { NotificationContext } from '../src/context/NotificationContext';
 import Toast from 'react-native-toast-message';
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
+import * as Location from 'expo-location';
 
 // Extract base URL without /api
 const SOCKET_BASE = API_BASE.replace('/api', '');
+
+// Helper to get the base URL without /api
+const BASE_URL = API_BASE.replace('/api', '');
 
 export default function Chat({ route, navigation }) {
   const { recipientId, recipientName, recipientProfilePic, itemTitle } = route.params;
@@ -34,10 +41,12 @@ export default function Chat({ route, navigation }) {
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [socket, setSocket] = useState(null);
+  const [attachmentModalVisible, setAttachmentModalVisible] = useState(false);
   const flatListRef = useRef(null);
   const roomIdRef = useRef(null);
   const[customReason, setCustomReason] = useState('');
   const { notifications, markChatNotificationsAsRead } = React.useContext(NotificationContext);
+  const [uploading, setUploading] = useState(false);
 
   const scrollToBottom = () => {
     if (flatListRef.current && messages.length > 0) {
@@ -225,7 +234,18 @@ export default function Chat({ route, navigation }) {
         styles.messageContainer,
         isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage
       ]}>
-        <Text style={styles.messageText}>{item.text}</Text>
+        {item.imageUrl ? (
+          <>
+            {console.log('Image URL:', `${BASE_URL}${item.imageUrl}`)}
+            <Image 
+              source={{ uri: `${BASE_URL}${item.imageUrl}` }} 
+              style={styles.messageImage}
+              resizeMode="cover"
+            />
+          </>
+        ) : (
+          <Text style={styles.messageText}>{item.text}</Text>
+        )}
         <Text style={styles.timestamp}>
           {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </Text>
@@ -312,12 +332,82 @@ export default function Chat({ route, navigation }) {
     // eslint-disable-next-line
   }, [messages, notifications]);
 
+  const handleAttachment = async () => {
+    try {
+      setUploading(true);
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Please grant permission to access your photos');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets.length > 0) {
+        const formData = new FormData();
+        result.assets.forEach((asset, index) => {
+          formData.append('images', {
+            uri: asset.uri,
+            type: 'image/jpeg',
+            name: `image-${index}.jpg`,
+          });
+        });
+        formData.append('roomId', roomIdRef.current);
+        formData.append('senderId', currentUserId);
+        formData.append('receiverId', recipientId);
+
+        console.log('Uploading images...', formData);
+        const response = await axios.post(
+          `${API_BASE}/message/upload`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+
+        console.log('Upload response:', response.data);
+        if (response.data) {
+          // Add all messages to the messages array
+          setMessages(prevMessages => [...prevMessages, ...response.data]);
+          // Emit socket event for each message
+          response.data.forEach(message => {
+            socket.emit('send_message', message, (response) => {
+              if (response && response.success) {
+                console.log('Image message sent successfully');
+              } else {
+                console.error('Failed to send image message:', response?.error || 'Unknown error');
+              }
+            });
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Error picking images:', err);
+      Alert.alert('Error', 'Failed to upload images. Please try again.');
+    } finally {
+      setUploading(false);
+      setAttachmentModalVisible(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
+      {uploading && (
+        <View style={styles.uploadingOverlay}>
+          <ActivityIndicator size="large" color="#EFD13D" />
+          <Text style={styles.uploadingText}>Uploading...</Text>
+        </View>
+      )}
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -331,6 +421,12 @@ export default function Chat({ route, navigation }) {
         showsVerticalScrollIndicator={false}
       />
       <View style={styles.inputContainer}>
+        <TouchableOpacity 
+          style={styles.attachButton}
+          onPress={() => setAttachmentModalVisible(true)}
+        >
+          <Ionicons name="add-circle" size={28} color="#EFD13D" />
+        </TouchableOpacity>
         <TextInput
           style={styles.input}
           value={message}
@@ -342,6 +438,65 @@ export default function Chat({ route, navigation }) {
           <Ionicons name="send" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
+
+      {/* Attachment Modal */}
+      <Modal
+        visible={attachmentModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setAttachmentModalVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1} 
+          onPress={() => setAttachmentModalVisible(false)}
+        >
+          <View style={styles.attachmentModalContent}>
+            <View style={styles.attachmentHeader}>
+              <Text style={styles.attachmentTitle}>Add Attachment</Text>
+              <TouchableOpacity 
+                onPress={() => setAttachmentModalVisible(false)}
+                style={styles.closeButton}
+              >
+                <Ionicons name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.attachmentOptions}>
+              <TouchableOpacity 
+                style={styles.attachmentOption}
+                onPress={() => handleAttachment()}
+              >
+                <View style={[styles.attachmentIconContainer, { backgroundColor: '#E3F2FD' }]}>
+                  <Ionicons name="image" size={28} color="#2196F3" />
+                </View>
+                <Text style={styles.attachmentOptionText}>Image</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.attachmentOption}
+                onPress={() => handleAttachment('document')}
+              >
+                <View style={[styles.attachmentIconContainer, { backgroundColor: '#E8F5E9' }]}>
+                  <Ionicons name="document" size={28} color="#4CAF50" />
+                </View>
+                <Text style={styles.attachmentOptionText}>Document</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.attachmentOption}
+                onPress={() => handleAttachment('location')}
+              >
+                <View style={[styles.attachmentIconContainer, { backgroundColor: '#FFF3E0' }]}>
+                  <Ionicons name="location" size={28} color="#FF9800" />
+                </View>
+                <Text style={styles.attachmentOptionText}>Location</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       <Modal
         visible={isDropdownVisible}
         transparent
@@ -653,6 +808,85 @@ const styles = StyleSheet.create({
   },
   reportCancelButtonText: {
     color: '#FF6B6B',
+    fontSize: 16,
+  },
+  attachButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  attachmentModalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  attachmentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  attachmentTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  closeButton: {
+    padding: 5,
+  },
+  attachmentOptions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+  },
+  attachmentOption: {
+    alignItems: 'center',
+    width: '30%',
+  },
+  attachmentIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  attachmentOptionText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+  },
+  messageImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 4,
+  },
+  uploadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  uploadingText: {
+    color: '#fff',
+    marginTop: 10,
     fontSize: 16,
   },
 });

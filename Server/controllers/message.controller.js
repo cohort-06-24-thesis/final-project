@@ -3,6 +3,7 @@
 const { Message, Conversation, User, Notification } = require('../Database/index');
 const { Op } = require('sequelize');
 const { getIO } = require('../socket');
+const path = require('path');
 
 // Create a new message
 exports.createMessage = async (req, res) => {
@@ -155,5 +156,79 @@ exports.deleteMessage = async (req, res) => {
     } catch (error) {
         console.error('Error deleting message:', error);
         res.status(500).json({ error: 'Something went wrong while deleting the message.' });
+    }
+};
+
+// Upload image message
+exports.uploadImage = async (req, res) => {
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No image files provided' });
+        }
+
+        const { roomId, senderId, receiverId } = req.body;
+        
+        // First, find or create a conversation
+        let conversation = await Conversation.findOne({
+            where: {
+                members: {
+                    [Op.contains]: [senderId, receiverId]
+                }
+            }
+        });
+
+        if (!conversation) {
+            conversation = await Conversation.create({
+                members: [senderId, receiverId],
+                lastMessage: req.files.length > 1 ? `[${req.files.length} Images]` : '[Image]',
+                lastMessageTime: new Date()
+            });
+        } else {
+            await conversation.update({
+                lastMessage: req.files.length > 1 ? `[${req.files.length} Images]` : '[Image]',
+                lastMessageTime: new Date()
+            });
+        }
+
+        // Create messages for each image
+        const messages = await Promise.all(req.files.map(async (file) => {
+            const imageUrl = `/uploads/${file.filename}`;
+            return Message.create({ 
+                text: '[Image]',
+                imageUrl,
+                isRead: false,
+                roomId,
+                senderId,
+                receiverId,
+                ConversationId: conversation.id
+            });
+        }));
+
+        // --- Notification logic ---
+        const sender = await User.findByPk(senderId);
+        const senderName = sender ? sender.name : 'Someone';
+        const notifMessage = req.files.length > 1 
+            ? `${senderName} sent ${req.files.length} images`
+            : `New image from ${senderName}`;
+
+        const notification = await Notification.create({
+            message: notifMessage,
+            isRead: false,
+            UserId: receiverId,
+            itemId: messages[0].id, // Use the first message ID for notification
+            itemType: 'chat',
+        });
+
+        const io = getIO();
+        io.to(`user_${receiverId}`).emit('new_notification', {
+            ...notification.dataValues,
+            timestamp: new Date().toISOString(),
+        });
+        // --- End notification logic ---
+
+        res.status(201).json(messages);
+    } catch (error) {
+        console.error('Error uploading images:', error);
+        res.status(500).json({ error: 'Something went wrong while uploading the images.' });
     }
 }; 
