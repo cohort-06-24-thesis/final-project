@@ -10,6 +10,9 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
+  Modal,
+  Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import MapView, { Marker } from 'react-native-maps';
@@ -30,6 +33,7 @@ export default function AddInNeed({ navigation }) {
   const [images, setImages] = useState([]);
   const [Uid, setUid] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isMapModalVisible, setIsMapModalVisible] = useState(false);
 
   useEffect(() => {
     const loadUid = async () => {
@@ -76,11 +80,17 @@ export default function AddInNeed({ navigation }) {
 
     setIsLoading(true);
     try {
-      const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+        maximumAge: 10000,
+        timeout: 5000
+      });
+      
       const { latitude, longitude } = location.coords;
       setLocationCoords({ latitude, longitude });
       setLocationStr(`${latitude}, ${longitude}`);
     } catch (error) {
+      console.error('Location error:', error);
       Alert.alert('Error', 'Failed to get your location. Please try again.');
     } finally {
       setIsLoading(false);
@@ -208,7 +218,10 @@ export default function AddInNeed({ navigation }) {
 
           <Text style={styles.sectionTitle}>Location</Text>
           <Text style={styles.label}>Pick Location <Text style={styles.required}>*</Text></Text>
-          <View style={styles.mapContainer}>
+          <TouchableOpacity 
+            style={styles.mapContainer}
+            onPress={() => setIsMapModalVisible(true)}
+          >
             <MapView
               style={styles.map}
               region={{
@@ -216,15 +229,58 @@ export default function AddInNeed({ navigation }) {
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
               }}
-              onPress={(e) => {
-                const { latitude, longitude } = e.nativeEvent.coordinate;
-                setLocationCoords({ latitude, longitude });
-                setLocationStr(`${latitude}, ${longitude}`);
-              }}
+              scrollEnabled={false}
+              zoomEnabled={false}
             >
               <Marker coordinate={locationCoords} pinColor="#00C44F" />
             </MapView>
-          </View>
+          </TouchableOpacity>
+
+          <Modal
+            visible={isMapModalVisible}
+            animationType="slide"
+            transparent={false}
+            onRequestClose={() => setIsMapModalVisible(false)}
+          >
+            <SafeAreaView style={styles.modalContainer}>
+              <View style={styles.modalHeader}>
+                <TouchableOpacity 
+                  style={styles.closeButton}
+                  onPress={() => setIsMapModalVisible(false)}
+                >
+                  <Ionicons name="close" size={24} color="#333" />
+                </TouchableOpacity>
+                <Text style={styles.modalTitle}>Select Location</Text>
+                <TouchableOpacity 
+                  style={styles.locateButton}
+                  onPress={getCurrentLocation}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color="#00C44F" />
+                  ) : (
+                    <Ionicons name="locate" size={24} color="#00C44F" />
+                  )}
+                </TouchableOpacity>
+              </View>
+              <MapView
+                style={styles.fullScreenMap}
+                region={{
+                  ...locationCoords,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+                onPress={(e) => {
+                  const { latitude, longitude } = e.nativeEvent.coordinate;
+                  setLocationCoords({ latitude, longitude });
+                  setLocationStr(`${latitude}, ${longitude}`);
+                  setIsMapModalVisible(false);
+                }}
+              >
+                <Marker coordinate={locationCoords} pinColor="#00C44F" />
+              </MapView>
+            </SafeAreaView>
+          </Modal>
 
           {locationStr ? (
             <View style={styles.locationInfoContainer}>
@@ -234,14 +290,6 @@ export default function AddInNeed({ navigation }) {
               </Text>
             </View>
           ) : null}
-
-          <TouchableOpacity 
-            style={styles.iconButton} 
-            onPress={getCurrentLocation}
-            disabled={isLoading}
-          >
-            <Ionicons name="locate" size={24} color="white" />
-          </TouchableOpacity>
 
           <Text style={styles.sectionTitle}>Images</Text>
           <Text style={styles.imageHelper}>Add photos to help people understand your needs better</Text>
@@ -297,176 +345,6 @@ export default function AddInNeed({ navigation }) {
   );
 }
 
-// const styles = StyleSheet.create({
-//   safeArea: {
-//     flex: 1,
-//     backgroundColor: 'white',
-//   },
-//   container: {
-//     padding: 20,
-//     backgroundColor: 'white',
-//   },
-//   header: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     marginBottom: 24,
-//     paddingVertical: 12,
-//   },
-//   logoContainer: {
-//     width: 56,
-//     height: 56,
-//     borderRadius: 28,
-//     backgroundColor: '#FFE97F',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   headerTitle: {
-//     fontSize: 24,
-//     fontWeight: '700',
-//     marginLeft: 12,
-//     color: '#333333',
-//   },
-//   formCard: {
-//     backgroundColor: 'white',
-//     borderRadius: 16,
-//     padding: 20,
-//     shadowColor: '#00C44F',
-//     shadowOffset: { width: 0, height: 4 },
-//     shadowOpacity: 0.1,
-//     shadowRadius: 10,
-//     elevation: 5,
-//     marginBottom: 16,
-//     borderWidth: 1,
-//     borderColor: '#F0F0F0',
-//   },
-//   sectionTitle: {
-//     fontSize: 18,
-//     fontWeight: '700',
-//     color: '#00C44F',
-//     marginBottom: 12,
-//     marginTop: 8,
-//   },
-//   label: {
-//     fontWeight: '600',
-//     marginBottom: 8,
-//     fontSize: 16,
-//     color: '#444444',
-//   },
-//   required: {
-//     color: '#f44336',
-//   },
-//   input: {
-//     borderWidth: 1,
-//     borderColor: '#eeeeee',
-//     borderRadius: 12,
-//     paddingHorizontal: 16,
-//     paddingVertical: 12,
-//     fontSize: 16,
-//     backgroundColor: '#F9F9F9',
-//     marginBottom: 16,
-//     color: '#333333',
-//   },
-//   textArea: {
-//     height: 120,
-//     textAlignVertical: 'top',
-//   },
-//   mapContainer: {
-//     borderRadius: 12,
-//     overflow: 'hidden',
-//     marginBottom: 12,
-//     borderWidth: 2,
-//     borderColor: '#80ED99',
-//   },
-//   map: {
-//     height: 200,
-//   },
-//   locationInfoContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     marginBottom: 12,
-//     paddingHorizontal: 4,
-//   },
-//   locationInfo: {
-//     fontSize: 14,
-//     color: '#444444',
-//     marginLeft: 6,
-//     flex: 1,
-//   },
-//   iconButton: {
-//     width: 50,
-//     height: 50,
-//     borderRadius: 25,
-//     backgroundColor: '#00C44F',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     marginBottom: 16,
-//     shadowColor: '#000',
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.2,
-//     shadowRadius: 3,
-//     elevation: 3,
-//   },
-//   imageButtonsContainer: {
-//     flexDirection: 'row',
-//     justifyContent: 'flex-start',
-//     marginBottom: 16,
-//     gap: 16,
-//   },
-//   imageHelper: {
-//     fontSize: 14,
-//     color: '#666666',
-//     marginBottom: 12,
-//   },
-//   imagePreview: {
-//     flexDirection: 'row',
-//     flexWrap: 'wrap',
-//     marginBottom: 8,
-//   },
-//   imageContainer: {
-//     position: 'relative',
-//     marginRight: 12,
-//     marginBottom: 12,
-//   },
-//   imageThumb: {
-//     width: 100,
-//     height: 100,
-//     borderRadius: 8,
-//   },
-//   imageRemoveButton: {
-//     position: 'absolute',
-//     top: -8,
-//     right: -8,
-//     backgroundColor: 'white',
-//     borderRadius: 10,
-//   },
-//   submitButton: {
-//     backgroundColor: '#00C44F',
-//     paddingVertical: 16,
-//     borderRadius: 12,
-//     alignItems: 'center',
-//     marginTop: 16,
-//     marginBottom: 16,
-//     flexDirection: 'row',
-//     justifyContent: 'center',
-//     shadowColor: '#00C44F',
-//     shadowOffset: { width: 0, height: 4 },
-//     shadowOpacity: 0.3,
-//     shadowRadius: 6,
-//     elevation: 4,
-//   },
-//   submitText: {
-//     color: 'white',
-//     fontWeight: '700',
-//     fontSize: 18,
-//     marginLeft: 8,
-//   },
-//   footerText: {
-//     textAlign: 'center',
-//     color: '#666666',
-//     fontSize: 14,
-//     marginBottom: 40,
-//   }
-// });
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -609,5 +487,32 @@ const styles = StyleSheet.create({
     marginTop: 20,
     color: '#666',
     fontSize: 13,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  closeButton: {
+    padding: 8,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  locateButton: {
+    padding: 8,
+  },
+  fullScreenMap: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height - 80,
   },
 });
