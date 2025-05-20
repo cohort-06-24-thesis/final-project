@@ -3,6 +3,7 @@ const cors = require('cors');
 const routers = require('./routers');
 const http = require('http');
 const socket = require('./socket'); 
+const path = require('path');
 
 const app = express();
 const PORT = 3000;
@@ -11,6 +12,8 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api', routers);
 
 // Create HTTP server

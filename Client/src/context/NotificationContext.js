@@ -42,8 +42,7 @@ setNotifications(filteredNotifications);
 setUnreadCount(filteredNotifications.filter(n => !n.isRead).length);
 
       
-      // setNotifications(response.data);
-      // setUnreadCount(response.data.filter(n => !n.isRead).length);
+     
     } catch (err) {
       console.error('Error fetching notifications:', err);
       setError('Failed to fetch notifications');
@@ -84,15 +83,20 @@ setUnreadCount(filteredNotifications.filter(n => !n.isRead).length);
             setNotifications(prev => [notification, ...prev]);
             setUnreadCount(prev => prev + 1);
             
-            // Show toast notification
+            // Show toast notification with custom styling based on notification type
             Toast.show({
-              type: 'info',
-              text1: 'New Notification',
+              type: notification.itemType === 'campaign' ? 'success' : 'info',
+              text1: notification.itemType === 'campaign' ? 'Campaign Update' : 'New Notification',
               text2: notification.message,
               position: 'top',
               visibilityTime: 4000,
               autoHide: true,
               topOffset: 50,
+              props: {
+                style: {
+                  backgroundColor: notification.itemType === 'campaign' ? '#4CAF50' : undefined,
+                }
+              }
             });
           });
           

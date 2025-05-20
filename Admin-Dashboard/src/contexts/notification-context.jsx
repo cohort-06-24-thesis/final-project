@@ -30,8 +30,9 @@ export const NotificationProvider = ({ children }) => {
   const fetchNotifications = async () => {
     try {
       const res = await axios.get("http://localhost:3000/api/notification/GetAllnotification");
-      setNotifications(res.data || []);
-      localStorage.setItem(NOTIF_KEY, JSON.stringify(res.data || []));
+      const filteredNotifications = res.data.filter(notification => notification.itemType !== 'chat');
+      setNotifications(filteredNotifications || []);
+      localStorage.setItem(NOTIF_KEY, JSON.stringify(filteredNotifications || []));
     } catch (err) {
       console.error("❌ Failed to fetch notifications:", err);
     }
@@ -65,21 +66,113 @@ export const NotificationProvider = ({ children }) => {
     socket.emit("join_admin_dashboard");
 
     socket.on("new_inNeed_notification", (data) => {
-      console.log("✅ New notification received via socket:", data);
+      console.log("✅ New inNeed notification received via socket:", data);
       socketUpdatedRef.current = true;
 
-      const updatedNotifications = [data, ...notifications];
-      const newUnseenCount = unseenCount + 1;
+      if (data.itemType !== 'chat') {
+        const updatedNotifications = [data, ...notifications];
+        const newUnseenCount = unseenCount + 1;
 
-      setNotifications(updatedNotifications);
-      setUnseenCount(newUnseenCount);
-      saveToStorage(updatedNotifications, newUnseenCount);
+        setNotifications(updatedNotifications);
+        setUnseenCount(newUnseenCount);
+        saveToStorage(updatedNotifications, newUnseenCount);
 
-      toast.info(data.message || "📢 New notification!");
+        toast.info(data.message || "📢 New In-Need request!");
+      }
+    });
+
+    socket.on("new_donation_notification", (data) => {
+      console.log("✅ New donation notification received via socket:", data);
+      socketUpdatedRef.current = true;
+
+      if (data.itemType !== 'chat') {
+        const updatedNotifications = [data, ...notifications];
+        const newUnseenCount = unseenCount + 1;
+
+        setNotifications(updatedNotifications);
+        setUnseenCount(newUnseenCount);
+        saveToStorage(updatedNotifications, newUnseenCount);
+
+        toast.info(
+          <div>
+            <p className="font-semibold">New Donation Item!</p>
+            <p>{data.message}</p>
+          </div>,
+          {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          }
+        );
+      }
+    });
+
+    socket.on("new_campaign_notification", (data) => {
+      console.log("✅ New campaign notification received via socket:", data);
+      socketUpdatedRef.current = true;
+
+      if (data.itemType !== 'chat') {
+        const updatedNotifications = [data, ...notifications];
+        const newUnseenCount = unseenCount + 1;
+
+        setNotifications(updatedNotifications);
+        setUnseenCount(newUnseenCount);
+        saveToStorage(updatedNotifications, newUnseenCount);
+
+        toast.info(
+          <div>
+            <p className="font-semibold">New Campaign!</p>
+            <p>{data.message}</p>
+          </div>,
+          {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          }
+        );
+      }
+    });
+
+    socket.on("new_event_notification", (data) => {
+      console.log("✅ New event notification received via socket:", data);
+      socketUpdatedRef.current = true;
+
+      if (data.itemType !== 'chat') {
+        const updatedNotifications = [data, ...notifications];
+        const newUnseenCount = unseenCount + 1;
+
+        setNotifications(updatedNotifications);
+        setUnseenCount(newUnseenCount);
+        saveToStorage(updatedNotifications, newUnseenCount);
+
+        toast.info(
+          <div>
+            <p className="font-semibold">New Event!</p>
+            <p>{data.message}</p>
+          </div>,
+          {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          }
+        );
+      }
     });
 
     return () => {
       socket.off("new_inNeed_notification");
+      socket.off("new_donation_notification");
+      socket.off("new_campaign_notification");
+      socket.off("new_event_notification");
     };
   }, []);
 

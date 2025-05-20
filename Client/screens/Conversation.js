@@ -106,9 +106,7 @@ export default function Conversation({ navigation }) {
           <Text style={styles.emptySubtext}>
             Start chatting with other users to see your conversations here
           </Text>
-          <TouchableOpacity style={styles.startChatButton}>
-            <Text style={styles.startChatButtonText}>Start a New Chat</Text>
-          </TouchableOpacity>
+        
         </View>
       )}
     </View>
