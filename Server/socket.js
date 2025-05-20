@@ -22,28 +22,100 @@ module.exports = {
       console.log("A user connected:", socket.id);
 
       // --- Rooms and Messaging ---
-      socket.on("join_room", (roomId) => {
-        socket.join(roomId);
-        console.log(`User ${socket.id} joined room ${roomId}`);
+      socket.on("join_room", (roomId, callback) => {
+        try {
+          console.log('Attempting to join room:', roomId);
+          
+          // Validate roomId format
+          const [userId1, userId2] = roomId.split('-').sort();
+          if (!userId1 || !userId2) {
+            console.error('Invalid roomId format:', roomId);
+            if (callback) {
+              callback({ success: false, error: 'Invalid room ID format' });
+            }
+            return;
+          }
+
+          socket.join(roomId);
+          console.log(`User ${socket.id} joined room ${roomId}`);
+          
+          if (callback) {
+            callback({ success: true });
+          }
+        } catch (error) {
+          console.error('Error joining room:', error);
+          if (callback) {
+            callback({ success: false, error: error.message });
+          }
+        }
       });
 
-      socket.on("leave_room", (roomId) => {
-        socket.leave(roomId);
-        console.log(`User ${socket.id} left room ${roomId}`);
+      socket.on("leave_room", (roomId, callback) => {
+        try {
+          socket.leave(roomId);
+          console.log(`User ${socket.id} left room ${roomId}`);
+          if (callback) {
+            callback({ success: true });
+          }
+        } catch (error) {
+          console.error('Error leaving room:', error);
+          if (callback) {
+            callback({ success: false, error: error.message });
+          }
+        }
       });
 
-      socket.on("send_message", (data) => {
-        io.in(data.roomId).emit("receive_message", {
-          ...data,
-          timestamp: new Date().toISOString(),
-        });
+      socket.on("send_message", (data, callback) => {
+        try {
+          console.log('Received message to send:', {
+            roomId: data.roomId,
+            senderId: data.senderId,
+            text: data.text
+          });
+
+          // Validate the data
+          if (!data.roomId || !data.senderId) {
+            console.error('Invalid message data:', data);
+            if (callback) {
+              callback({ success: false, error: 'Invalid message data' });
+            }
+            return;
+          }
+
+          // Emit to the room
+          io.in(data.roomId).emit("receive_message", {
+            ...data,
+            timestamp: new Date().toISOString(),
+          });
+
+          console.log('Message sent successfully to room:', data.roomId);
+          
+          if (callback) {
+            callback({ success: true });
+          }
+        } catch (error) {
+          console.error('Error sending message:', error);
+          if (callback) {
+            callback({ success: false, error: error.message });
+          }
+        }
       });
 
-      socket.on("mark_as_read", (data) => {
-        io.in(data.roomId).emit("messages_read", {
-          messageIds: data.messageIds,
-          timestamp: new Date().toISOString(),
-        });
+      socket.on("mark_as_read", (data, callback) => {
+        try {
+          io.in(data.roomId).emit("messages_read", {
+            messageIds: data.messageIds,
+            timestamp: new Date().toISOString(),
+          });
+          if (callback) {
+            callback({ success: true });
+          }
+        } catch (error) {
+          console.error('Error marking messages as read:', error);
+          if (callback) {
+            callback({ success: false, error: error.message });
+          }
+        }
       });
 
       // --- InNeed Socket Logic ---
