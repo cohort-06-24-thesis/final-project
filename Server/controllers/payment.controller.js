@@ -1,6 +1,6 @@
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { Payment } = require('../Database/index.js');
+const { Payment, CampaignDonations } = require('../Database/index.js');
 
 const paymentController = {
   createPaymentIntent: async (req, res) => {
@@ -23,17 +23,28 @@ const paymentController = {
       });
 
       // Save payment information to database
-      await Payment.create({
+      const payment = await Payment.create({
         amount: amount.toFixed(2),
-        currency: 'usd',
-        status: 'pending',
         transaction_id: paymentIntent.id,
         campaignId: campaignId
       });
 
+      // Find the campaign and update its totalRaised and progress
+      const campaign = await CampaignDonations.findByPk(campaignId);
+      if (campaign) {
+        const newTotalRaised = parseFloat(campaign.totalRaised) + parseFloat(amount);
+        const newProgress = (newTotalRaised / campaign.goal) * 100;
+        
+        await campaign.update({
+          totalRaised: newTotalRaised,
+          progress: newProgress
+        });
+      }
+
       // Return client secret to frontend
       res.json({
-        clientSecret: paymentIntent.client_secret
+        clientSecret: paymentIntent.client_secret,
+        paymentId: payment.id
       });
 
     } catch (error) {
@@ -63,22 +74,7 @@ const paymentController = {
         });
       }
 
-      // Update payment status based on Stripe status
-      let status = 'pending';
-      if (paymentIntent.status === 'succeeded') {
-        status = 'completed';
-      } else if (['canceled', 'failed'].includes(paymentIntent.status)) {
-        status = 'failed';
-      }
-
-      // Update payment status in database
-      await payment.update({
-        status: status,
-        updatedAt: new Date()
-      });
-
       res.json({
-        status: status,
         amount: payment.amount,
         paymentId: payment.id
       });
