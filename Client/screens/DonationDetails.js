@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, SafeAreaView, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import axios from 'axios';
@@ -12,6 +12,7 @@ export default function DonationDetails({ route, navigation }) {
   const [loading, setLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [isMapModalVisible, setIsMapModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchItemDetails = async () => {
@@ -193,8 +194,8 @@ export default function DonationDetails({ route, navigation }) {
           <TouchableOpacity
             style={styles.mapContainer}
             onPress={() => navigation.navigate('FullScreenMap', {
-              latitude: item.latitude,
-              longitude: item.longitude,
+              latitude: item.latitude || 48.8566,
+              longitude: item.longitude || 2.3522,
               title: item.title,
               location: item.location,
             })}
@@ -203,10 +204,12 @@ export default function DonationDetails({ route, navigation }) {
               style={styles.map}
               initialRegion={{
                 latitude: item.latitude || 48.8566,
-                longitude: item.longitude|| 2.3522,
+                longitude: item.longitude || 2.3522,
                 latitudeDelta: 0.01,
-                longitudeDelta: 0.01 ,
+                longitudeDelta: 0.01,
               }}
+              scrollEnabled={false}
+              zoomEnabled={false}
             >
               <Marker
                 coordinate={{
@@ -419,5 +422,29 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  closeButton: {
+    padding: 8,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  fullScreenMap: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height - 80,
   },
 });

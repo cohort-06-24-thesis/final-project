@@ -21,8 +21,9 @@ import * as Location from 'expo-location';
 import { API_BASE } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { useFocusEffect } from '@react-navigation/native';
 
-export default function AddDonation({ navigation }) {
+export default function AddDonation({ navigation, route }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [locationCoords, setLocationCoords] = useState({
@@ -34,6 +35,7 @@ export default function AddDonation({ navigation }) {
   const [Uid, setUid] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
+  const [pendingLocation, setPendingLocation] = useState(null);
 
   useEffect(() => {
     const loadUid = async () => {
@@ -47,6 +49,20 @@ export default function AddDonation({ navigation }) {
     };
     loadUid();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (route?.params?.pickedLatitude && route?.params?.pickedLongitude) {
+        setLocationCoords({
+          latitude: route.params.pickedLatitude,
+          longitude: route.params.pickedLongitude,
+        });
+        setLocationStr(`${route.params.pickedLatitude}, ${route.params.pickedLongitude}`);
+        // Clear the params so it doesn't trigger again
+        navigation.setParams({ pickedLatitude: undefined, pickedLongitude: undefined });
+      }
+    }, [route?.params?.pickedLatitude, route?.params?.pickedLongitude])
+  );
 
   const pickImage = async (fromCamera = false) => {
     let result;
@@ -187,6 +203,12 @@ export default function AddDonation({ navigation }) {
       <StatusBar barStyle="dark-content" backgroundColor="white" />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="chevron-back" size={28} color="#00C44F" />
+          </TouchableOpacity>
           <View style={styles.logoContainer}>
             <FontAwesome5 name="hand-holding-heart" size={32} color="#00C44F" />
           </View>
@@ -217,7 +239,11 @@ export default function AddDonation({ navigation }) {
           <Text style={styles.label}>Pick Location <Text style={styles.required}>*</Text></Text>
           <TouchableOpacity 
             style={styles.mapContainer}
-            onPress={() => setIsMapModalVisible(true)}
+            onPress={() => navigation.navigate('PickLocationScreen', {
+              initialLatitude: locationCoords.latitude,
+              initialLongitude: locationCoords.longitude,
+              returnScreen: 'AddDonation',
+            })}
           >
             <MapView
               style={styles.map}
@@ -232,52 +258,6 @@ export default function AddDonation({ navigation }) {
               <Marker coordinate={locationCoords} pinColor="#00C44F" />
             </MapView>
           </TouchableOpacity>
-
-          <Modal
-            visible={isMapModalVisible}
-            animationType="slide"
-            transparent={false}
-            onRequestClose={() => setIsMapModalVisible(false)}
-          >
-            <SafeAreaView style={styles.modalContainer}>
-              <View style={styles.modalHeader}>
-                <TouchableOpacity 
-                  style={styles.closeButton}
-                  onPress={() => setIsMapModalVisible(false)}
-                >
-                  <Ionicons name="close" size={24} color="#333" />
-                </TouchableOpacity>
-                <Text style={styles.modalTitle}>Select Location</Text>
-                <TouchableOpacity 
-                  style={styles.locateButton}
-                  onPress={getCurrentLocation}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator size="small" color="#00C44F" />
-                  ) : (
-                    <Ionicons name="locate" size={24} color="#00C44F" />
-                  )}
-                </TouchableOpacity>
-              </View>
-              <MapView
-                style={styles.fullScreenMap}
-                region={{
-                  ...locationCoords,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
-                }}
-                onPress={(e) => {
-                  const { latitude, longitude } = e.nativeEvent.coordinate;
-                  setLocationCoords({ latitude, longitude });
-                  setLocationStr(`${latitude}, ${longitude}`);
-                  setIsMapModalVisible(false);
-                }}
-              >
-                <Marker coordinate={locationCoords} pinColor="#00C44F" />
-              </MapView>
-            </SafeAreaView>
-          </Modal>
 
           {locationStr ? (
             <View style={styles.locationInfoContainer}>
@@ -355,6 +335,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   logoContainer: {
     marginRight: 10,
