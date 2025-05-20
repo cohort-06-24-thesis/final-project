@@ -103,13 +103,14 @@ export default function Chat({ route, navigation }) {
       const userId = await AsyncStorage.getItem('userUID');
       setCurrentUserId(userId);
 
-      // Initialize socket connection with correct base URL
+      // Initialize socket connection with improved configuration
       const socketInstance = io(SOCKET_BASE, {
         transports: ['websocket'],
         reconnection: true,
-        reconnectionAttempts: 5,
+        reconnectionAttempts: Infinity,
         reconnectionDelay: 1000,
-        timeout: 60000,
+        reconnectionDelayMax: 5000,
+        timeout: 20000,
         path: '/socket.io',
         forceNew: true,
         autoConnect: true
@@ -117,29 +118,31 @@ export default function Chat({ route, navigation }) {
 
       // Handle connection events
       socketInstance.on('connect', () => {
-        console.log('Socket connected successfully');
+        // Join room after successful connection
+        const roomId = [userId, recipientId].sort().join('-');
+        roomIdRef.current = roomId;
+        
+        socketInstance.emit('join_room', roomId, (response) => {
+          if (!response?.success) {
+            // Retry joining room if failed
+            setTimeout(() => {
+              socketInstance.emit('join_room', roomId);
+            }, 1000);
+          }
+        });
       });
 
-      socketInstance.on('connect_error', (error) => {
-        console.error('Socket connection error:', error.message);
+      socketInstance.on('connect_error', () => {
+        // Attempt to reconnect with exponential backoff
+        setTimeout(() => {
+          socketInstance.connect();
+        }, 2000);
       });
 
       socketInstance.on('disconnect', (reason) => {
-        console.log('Socket disconnected:', reason);
-      });
-
-      setSocket(socketInstance);
-
-      // Set up room
-      const roomId = [userId, recipientId].sort().join('-');
-      roomIdRef.current = roomId;
-      
-      // Join room with acknowledgment
-      socketInstance.emit('join_room', roomId, (response) => {
-        if (response && response.success) {
-          console.log('Successfully joined room:', roomId);
-        } else {
-          console.error('Failed to join room:', response?.error || 'Unknown error');
+        if (reason === 'transport error' || reason === 'transport close') {
+          // Attempt to reconnect immediately for transport errors
+          socketInstance.connect();
         }
       });
 
@@ -147,10 +150,8 @@ export default function Chat({ route, navigation }) {
       socketInstance.off('receive_message');
       socketInstance.off('messages_read');
 
-      // Listen for new messages with acknowledgment
+      // Listen for new messages
       socketInstance.on('receive_message', (data, callback) => {
-        console.log('Received message:', data);
-        
         setMessages(prevMessages => {
           const messageExists = prevMessages.some(msg => 
             msg.id === data.id || 
@@ -159,7 +160,6 @@ export default function Chat({ route, navigation }) {
           
           if (!messageExists) {
             const newMessages = [...prevMessages, data];
-            // Acknowledge receipt
             if (callback) callback({ success: true });
             return newMessages;
           }
@@ -169,7 +169,6 @@ export default function Chat({ route, navigation }) {
 
       // Listen for message read status
       socketInstance.on('messages_read', (data) => {
-        console.log('Messages marked as read:', data);
         setMessages(prevMessages => 
           prevMessages.map(msg => 
             data.messageIds.includes(msg.id) 
@@ -179,12 +178,13 @@ export default function Chat({ route, navigation }) {
         );
       });
 
+      setSocket(socketInstance);
+
       // Fetch initial messages
-      const response = await axios.get(`${API_BASE}/message/room/${roomId}`);
+      const response = await axios.get(`${API_BASE}/message/room/${roomIdRef.current}`);
       setMessages(response.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error initializing chat:', error);
       setLoading(false);
     }
   };
@@ -216,7 +216,6 @@ export default function Chat({ route, navigation }) {
       // Emit message with acknowledgment
       socket.emit('send_message', messageWithStatus, (response) => {
         if (response && response.success) {
-          console.log('Message sent successfully');
         } else {
           console.error('Failed to send message:', response?.error || 'Unknown error');
         }
@@ -235,14 +234,11 @@ export default function Chat({ route, navigation }) {
         isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage
       ]}>
         {item.imageUrl ? (
-          <>
-            {console.log('Image URL:', `${BASE_URL}${item.imageUrl}`)}
-            <Image 
-              source={{ uri: `${BASE_URL}${item.imageUrl}` }} 
-              style={styles.messageImage}
-              resizeMode="cover"
-            />
-          </>
+          <Image 
+            source={{ uri: item.imageUrl.startsWith('http') ? item.imageUrl : `${BASE_URL}${item.imageUrl}` }} 
+            style={styles.messageImage}
+            resizeMode="cover"
+          />
         ) : (
           <Text style={styles.messageText}>{item.text}</Text>
         )}
@@ -267,7 +263,6 @@ export default function Chat({ route, navigation }) {
       );
 
       if (unreadMessages.length > 0) {
-        console.log('Marking messages as read:', unreadMessages);
         socket.emit('mark_as_read', {
           roomId: roomIdRef.current,
           messageIds: unreadMessages.map(msg => msg.id)
@@ -344,52 +339,76 @@ export default function Chat({ route, navigation }) {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsMultipleSelection: true,
-        quality: 1,
+        quality: 0.8,
+        allowsEditing: false,
+        exif: false,
+        base64: false,
+        presentationStyle: ImagePicker.UIImagePickerPresentationStyle.FULL_SCREEN,
+        selectionLimit: 10,
       });
 
       if (!result.canceled && result.assets.length > 0) {
+        if (result.assets.length > 10) {
+          Alert.alert('Too many images', 'Please select up to 10 images at a time');
+          setUploading(false);
+          setAttachmentModalVisible(false);
+          return;
+        }
+
         const formData = new FormData();
-        result.assets.forEach((asset, index) => {
+        for (const asset of result.assets) {
+          const uriParts = asset.uri.split('.');
+          const fileExtension = uriParts[uriParts.length - 1];
+          const filename = `image-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
+          
           formData.append('images', {
             uri: asset.uri,
-            type: 'image/jpeg',
-            name: `image-${index}.jpg`,
+            type: `image/${fileExtension}`,
+            name: filename,
           });
-        });
+        }
+        
         formData.append('roomId', roomIdRef.current);
         formData.append('senderId', currentUserId);
         formData.append('receiverId', recipientId);
 
-        console.log('Uploading images...', formData);
         const response = await axios.post(
           `${API_BASE}/message/upload`,
           formData,
           {
             headers: {
               'Content-Type': 'multipart/form-data',
-            },
+            }
           }
         );
 
-        console.log('Upload response:', response.data);
-        if (response.data) {
-          // Add all messages to the messages array
+        if (response.data && Array.isArray(response.data)) {
+          // Ensure socket is connected before sending messages
+          if (!socket.connected) {
+            socket.connect();
+          }
+
+          // Add messages to state
           setMessages(prevMessages => [...prevMessages, ...response.data]);
-          // Emit socket event for each message
-          response.data.forEach(message => {
-            socket.emit('send_message', message, (response) => {
-              if (response && response.success) {
-                console.log('Image message sent successfully');
-              } else {
-                console.error('Failed to send image message:', response?.error || 'Unknown error');
-              }
-            });
-          });
+
+          // Send each message through socket with retry
+          for (const message of response.data) {
+            const sendMessageWithRetry = (retryCount = 0) => {
+              socket.emit('send_message', message, (response) => {
+                if (!response?.success && retryCount < 3) {
+                  setTimeout(() => sendMessageWithRetry(retryCount + 1), 1000);
+                }
+              });
+            };
+            sendMessageWithRetry();
+          }
         }
       }
     } catch (err) {
-      console.error('Error picking images:', err);
-      Alert.alert('Error', 'Failed to upload images. Please try again.');
+      Alert.alert(
+        'Error',
+        'Failed to upload images. Please make sure the image format is supported (JPEG, PNG) and try again.'
+      );
     } finally {
       setUploading(false);
       setAttachmentModalVisible(false);
@@ -872,6 +891,7 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 12,
     marginBottom: 4,
+    backgroundColor: '#f0f0f0',
   },
   uploadingOverlay: {
     position: 'absolute',

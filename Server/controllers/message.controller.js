@@ -162,6 +162,9 @@ exports.deleteMessage = async (req, res) => {
 // Upload image message
 exports.uploadImage = async (req, res) => {
     try {
+        console.log('Received files count:', req.files ? req.files.length : 0);
+        console.log('Request body keys:', Object.keys(req.body));
+
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ error: 'No image files provided' });
         }
@@ -192,16 +195,27 @@ exports.uploadImage = async (req, res) => {
 
         // Create messages for each image
         const messages = await Promise.all(req.files.map(async (file) => {
-            const imageUrl = `/uploads/${file.filename}`;
-            return Message.create({ 
-                text: '[Image]',
-                imageUrl,
-                isRead: false,
-                roomId,
-                senderId,
-                receiverId,
-                ConversationId: conversation.id
-            });
+            try {
+                console.log('Processing file:', file.originalname, 'Size:', file.size);
+                // Convert buffer to base64 string without logging it
+                const base64Image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+                
+                const message = await Message.create({ 
+                    text: null,
+                    imageUrl: base64Image,
+                    isRead: false,
+                    roomId,
+                    senderId,
+                    receiverId,
+                    ConversationId: conversation.id
+                });
+                
+                console.log('Message created successfully:', message.id);
+                return message;
+            } catch (error) {
+                console.error('Error creating message for file:', file.originalname, error.message);
+                throw error;
+            }
         }));
 
         // --- Notification logic ---
@@ -215,7 +229,7 @@ exports.uploadImage = async (req, res) => {
             message: notifMessage,
             isRead: false,
             UserId: receiverId,
-            itemId: messages[0].id, // Use the first message ID for notification
+            itemId: messages[0].id,
             itemType: 'chat',
         });
 
@@ -224,11 +238,11 @@ exports.uploadImage = async (req, res) => {
             ...notification.dataValues,
             timestamp: new Date().toISOString(),
         });
-        // --- End notification logic ---
 
+        console.log('Successfully processed all images');
         res.status(201).json(messages);
     } catch (error) {
-        console.error('Error uploading images:', error);
+        console.error('Error uploading images:', error.message);
         res.status(500).json({ error: 'Something went wrong while uploading the images.' });
     }
 }; 
