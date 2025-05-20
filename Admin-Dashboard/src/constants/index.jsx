@@ -16,8 +16,7 @@ export const navbarLinks = [
     links: [
       { label: "Dashboard", icon: Home, path: "/" },
       { label: "Reports", icon: NotepadText, path: "/reports" },
-      { label: "Inventory", icon: ShoppingBag, path: "/inventory" },
-      { label: "Payments", icon: CreditCard, path: "/payments" }, // 👈 New line
+      { label: "Payments", icon: CreditCard, path: "/payments" }, 
     ],
   },
   {

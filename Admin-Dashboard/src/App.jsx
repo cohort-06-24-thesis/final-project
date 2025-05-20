@@ -10,7 +10,6 @@ import InNeed from "./routes/inNeed/page";
 import Campaigns from "./routes/campaigns/page";
 import Events from "./routes/events/page";
 import Reports from "./routes/reports/page";
-import Inventory from "./routes/inventory/page";
 import Payments from "./routes/payments/page";
 import DonationItemDetails from "./routes/donations/[id]";
 import InNeedItemsDetails from "./routes/inNeed/[id]";
@@ -45,7 +44,7 @@ function App() {
         { path: "manage-events/:id", element: <EventDetails /> },
 
         { path: "reports", element: <Reports /> },
-        { path: "inventory", element: <Inventory /> },
+   
         { path: "notifications", element: <NotificationsPage /> },
       ],
     },

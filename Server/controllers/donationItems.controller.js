@@ -80,18 +80,43 @@ module.exports = {
     updateDonationItem: async (req, res) => {
         try {
             const { id } = req.params
-            const { title, description, image, location,isApproved,status } = req.body
+            const { title, description, image, location, isApproved, status } = req.body
             const donationItem = await DonationItem.findByPk(id)
             if (!donationItem) {
                 return res.status(404).json({ message: "Donation item not found" })
             }
+
+            const wasApproved = donationItem.isApproved;
+
             donationItem.title = title
             donationItem.description = description
             donationItem.image = image
             donationItem.location = location
-            donationItem.isApproved=isApproved
-            donationItem.status=status
+            donationItem.isApproved = isApproved
+            donationItem.status = status
             await donationItem.save()
+
+            // Send notification if approval status changed to true
+            if (isApproved === true && wasApproved !== true) {
+                const userId = donationItem.UserId;
+
+                // Save notification in DB
+                const notification = await Notification.create({
+                    UserId: userId,
+                    message: `Your donation item "${donationItem.title}" has been approved.`,
+                    itemId: donationItem.id,
+                    itemType: 'donation',
+                    isRead: false
+                });
+
+                // Emit real-time notification
+                const io = getIO();
+                io.to(`user_${userId}`).emit('new_notification', {
+                    ...notification.dataValues,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
             res.status(200).json(donationItem)
         } catch (error) {
             console.log(error)

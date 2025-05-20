@@ -1,6 +1,7 @@
 // controllers/eventController.js
 
-const { Event, EventParticipant, User } = require('../Database/index');
+const { Event, EventParticipant, User, Notification } = require('../Database/index');
+const { getIO } = require('../socket');
 
 module.exports = {
   getAllEvents: async (req, res) => {
@@ -57,6 +58,15 @@ module.exports = {
         });
       }
 
+      // Fetch the user who created the event
+      const user = await User.findByPk(UserId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
       const newEvent = await Event.create({
         title,
         description,
@@ -67,6 +77,26 @@ module.exports = {
         status: 'upcoming',
         isApproved: false,
         UserId
+      });
+
+      // Construct notification message
+      const message = `New Event: "${title}" by ${user.name}`;
+
+      // Create notification in DB
+      const notification = await Notification.create({
+        message,
+        isRead: false,
+        UserId,
+        itemId: newEvent.id,
+        itemType: 'event'
+      });
+
+      // Emit notification to admin clients
+      const io = getIO();
+      io.to('admins').emit('new_event_notification', {
+        ...notification.dataValues,
+        event: newEvent,
+        timestamp: new Date().toISOString(),
       });
 
       res.status(201).json({
