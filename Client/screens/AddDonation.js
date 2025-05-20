@@ -4,32 +4,44 @@ import {
   Text,
   TextInput,
   StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Image,
   Alert,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  SafeAreaView,
+  StatusBar,
+  Modal,
+  Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
-import { Camera } from 'expo-camera';
-import { API_BASE } from '../config'
+import MapView, { Marker } from 'react-native-maps';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import * as Location from 'expo-location';
+import { API_BASE } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { useFocusEffect } from '@react-navigation/native';
 
-export default function AddDonation({ navigation }) {
+export default function AddDonation({ navigation, route }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [location, setLocation] = useState('');
-  const [image, setImage] = useState(null);
+  const [locationCoords, setLocationCoords] = useState({
+    latitude: 36.8065, // Tunis default
+    longitude: 10.1815,
+  });
+  const [locationStr, setLocationStr] = useState('');
+  const [images, setImages] = useState([]);
   const [Uid, setUid] = useState('');
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMapModalVisible, setIsMapModalVisible] = useState(false);
+  const [pendingLocation, setPendingLocation] = useState(null);
 
   useEffect(() => {
     const loadUid = async () => {
       const storedUid = await AsyncStorage.getItem('userUID');
       if (storedUid) {
         setUid(storedUid);
-        
       } else {
         Alert.alert('Error', 'User ID not found. Please log in again.');
         navigation.goBack();
@@ -37,184 +49,455 @@ export default function AddDonation({ navigation }) {
     };
     loadUid();
   }, []);
-  console.log(Uid)
 
+  useFocusEffect(
+    React.useCallback(() => {
+      if (route?.params?.pickedLatitude && route?.params?.pickedLongitude) {
+        setLocationCoords({
+          latitude: route.params.pickedLatitude,
+          longitude: route.params.pickedLongitude,
+        });
+        setLocationStr(`${route.params.pickedLatitude}, ${route.params.pickedLongitude}`);
+        // Clear the params so it doesn't trigger again
+        navigation.setParams({ pickedLatitude: undefined, pickedLongitude: undefined });
+      }
+    }, [route?.params?.pickedLatitude, route?.params?.pickedLongitude])
+  );
 
-  const handleImagePick = async () => {
-    const options = [
-      { text: 'Open Camera', onPress: openCamera },
-      { text: 'Open Photos', onPress: openGallery },
-      { text: 'Cancel', style: 'cancel' },
-    ];
+  const pickImage = async (fromCamera = false) => {
+    let result;
 
-    Alert.alert('Upload Image', 'Choose an option:', options);
-  };
-
-  const openCamera = async () => {
-    const { status } = await Camera.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'Camera access is required to take a photo.');
-      return;
+    if (fromCamera) {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        return Alert.alert('Permission denied', 'Camera access is needed.');
+      }
+      result = await ImagePicker.launchCameraAsync({ quality: 0.5 });
+    } else {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        return Alert.alert('Permission denied', 'Media access is needed.');
+      }
+      result = await ImagePicker.launchImageLibraryAsync({ quality: 0.5 });
     }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      setImages(prev => [...prev, uri]);
     }
   };
 
-  const openGallery = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  const getCurrentLocation = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'Media library access is required to select a photo.');
-      return;
+      return Alert.alert('Permission denied', 'Location permission is required.');
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    setIsLoading(true);
+    try {
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+        maximumAge: 10000,
+        timeout: 5000
+      });
+      
+      const { latitude, longitude } = location.coords;
+      setLocationCoords({ latitude, longitude });
+      setLocationStr(`${latitude}, ${longitude}`);
+    } catch (error) {
+      console.error('Location error:', error);
+      Alert.alert('Error', 'Failed to get your location. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
+  // Upload single image to Cloudinary
+  const uploadImageToCloudinary = async (uri) => {
+    const data = new FormData();
+    data.append('file', {
+      uri,
+      type: 'image/jpeg',
+      name: 'upload.jpg',
+    });
+    data.append('upload_preset', 'firsttry');
+
+    try {
+      const res = await fetch('https://api.cloudinary.com/v1_1/dmp2fq2sb/image/upload', {
+        method: 'POST',
+        body: data,
+      });
+      const json = await res.json();
+      if (json.secure_url) {
+        return json.secure_url;
+      } else {
+        throw new Error('Cloudinary upload failed');
+      }
+    } catch (error) {
+      console.error('Cloudinary upload failed:', error);
+      throw error;
     }
   };
 
   const handleSubmit = async () => {
-    if (!title || !description || !location || !image) {
-      Alert.alert('Error', 'Please fill in all fields and upload an image.');
-      return;
+    if (!title || !description || !locationStr) {
+      return Alert.alert('Missing Information', 'Please fill all required fields.');
     }
 
+    if (images.length === 0) {
+      return Alert.alert('No Images', 'Please add at least one image.');
+    }
+
+    setIsLoading(true);
     try {
-      const response = await axios.post(`${API_BASE}/donationItems/addItem`, {
+      // Upload images to Cloudinary and collect URLs
+      const uploadedImageUrls = [];
+      for (const uri of images) {
+        const url = await uploadImageToCloudinary(uri);
+        uploadedImageUrls.push(url);
+      }
+
+      const payload = {
         title,
         description,
-        location,
-        image: [image],
-        UserId: Uid
-      });
-      Alert.alert('Thank You!',
-        'Your request has been submitted successfully and waiting approval from SADAKA. Your kindness will make a difference!' );
-      navigation.goBack();
+        location: locationStr,
+        image: uploadedImageUrls,
+        UserId: Uid,
+      };
+
+      await axios.post(`${API_BASE}/donationItems/addItem`, payload);
+
+      Alert.alert(
+        'Thank You!',
+        'Your donation has been submitted successfully and waiting approval from SADAKA. Your kindness will make a difference!',
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
     } catch (error) {
-      console.error('Error adding donation item:', error);
-      Alert.alert('Error', 'Failed to add donation item. Please try again.');
+      console.error(error);
+      Alert.alert('Error', 'Failed to create donation. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const removeImage = (index) => {
+    Alert.alert(
+      'Remove Image',
+      'Are you sure you want to remove this image?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Remove', 
+          style: 'destructive',
+          onPress: () => {
+            const filtered = images.filter((_, i) => i !== index);
+            setImages(filtered);
+          }
+        }
+      ]
+    );
+  };
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.header}>Add Donation Item</Text>
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          placeholder="Title"
-          value={title}
-          onChangeText={setTitle}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Description"
-          value={description}
-          onChangeText={setDescription}
-          style={[styles.input, styles.textArea]}
-          multiline
-        />
-        <TextInput
-          placeholder="Location"
-          value={location}
-          onChangeText={setLocation}
-          style={styles.input}
-        />
-      </View>
-
-      <TouchableOpacity style={styles.imagePicker} onPress={handleImagePick}>
-        {image ? (
-          <Image source={{ uri: image }} style={styles.imagePreview} />
-        ) : (
-          <View style={styles.imagePlaceholder}>
-            <Ionicons name="camera-outline" size={40} color="#666" />
-            <Text style={styles.imagePlaceholderText}>Upload Image</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="chevron-back" size={28} color="#00C44F" />
+          </TouchableOpacity>
+          <View style={styles.logoContainer}>
+            <FontAwesome5 name="hand-holding-heart" size={32} color="#00C44F" />
           </View>
-        )}
-      </TouchableOpacity>
+          <Text style={styles.headerTitle}>Create Donation</Text>
+        </View>
+        
+        <View style={styles.formCard}>
+          <Text style={styles.label}>Title <Text style={styles.required}>*</Text></Text>
+          <TextInput 
+            style={styles.input} 
+            value={title} 
+            onChangeText={setTitle} 
+            placeholder="What are you donating?"
+            placeholderTextColor="#a3a3a3"
+          />
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitButtonText}>Submit</Text>
-      </TouchableOpacity>
-    </ScrollView>
+          <Text style={styles.label}>Description <Text style={styles.required}>*</Text></Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Please describe your donation item..."
+            placeholderTextColor="#a3a3a3"
+            multiline
+          />
+
+          <Text style={styles.sectionTitle}>Location</Text>
+          <Text style={styles.label}>Pick Location <Text style={styles.required}>*</Text></Text>
+          <TouchableOpacity 
+            style={styles.mapContainer}
+            onPress={() => navigation.navigate('PickLocationScreen', {
+              initialLatitude: locationCoords.latitude,
+              initialLongitude: locationCoords.longitude,
+              returnScreen: 'AddDonation',
+            })}
+          >
+            <MapView
+              style={styles.map}
+              region={{
+                ...locationCoords,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+              scrollEnabled={false}
+              zoomEnabled={false}
+            >
+              <Marker coordinate={locationCoords} pinColor="#00C44F" />
+            </MapView>
+          </TouchableOpacity>
+
+          {locationStr ? (
+            <View style={styles.locationInfoContainer}>
+              <Ionicons name="location" size={16} color="#00C44F" />
+              <Text style={styles.locationInfo}>
+                Selected: {locationStr}
+              </Text>
+            </View>
+          ) : null}
+
+          <Text style={styles.sectionTitle}>Images</Text>
+          <Text style={styles.imageHelper}>Add photos of your donation item</Text>
+          
+          <View style={styles.imageButtonsContainer}>
+            <TouchableOpacity onPress={() => pickImage(false)} style={styles.iconButton}>
+              <Ionicons name="images" size={24} color="white" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity onPress={() => pickImage(true)} style={styles.iconButton}>
+              <Ionicons name="camera" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
+
+          {images.length > 0 && (
+            <View style={styles.imagePreview}>
+              {images.map((uri, index) => (
+                <TouchableOpacity 
+                  key={index} 
+                  onLongPress={() => removeImage(index)}
+                  style={styles.imageContainer}
+                >
+                  <Image source={{ uri }} style={styles.imageThumb} />
+                  <View style={styles.imageRemoveButton}>
+                    <Ionicons name="close-circle" size={20} color="#f44336" />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <TouchableOpacity 
+          style={styles.submitButton} 
+          onPress={handleSubmit}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <Text style={styles.submitText}>Submitting...</Text>
+          ) : (
+            <>
+              <Ionicons name="heart" size={20} color="white" />
+              <Text style={styles.submitText}>Submit Donation</Text>
+            </>
+          )}
+        </TouchableOpacity>
+        
+        <Text style={styles.footerText}>
+          Thank you for your generosity. Your donation will make a difference.
+        </Text>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 20,
+  safeArea: {
+    flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#4CAF50',
-    marginBottom: 20,
-    textAlign: 'center',
+  container: {
+    padding: 16,
+    paddingBottom: 32,
   },
-  inputContainer: {
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  logoContainer: {
+    marginRight: 10,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#00C44F',
+  },
+  formCard: {
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#333',
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 6,
+    color: '#444',
+  },
+  required: {
+    color: 'red',
   },
   input: {
-    borderWidth: 1,
+    backgroundColor: '#fff',
     borderColor: '#ddd',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-    fontSize: 16,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 16,
+    fontSize: 14,
+    color: '#333',
   },
   textArea: {
     height: 100,
     textAlignVertical: 'top',
   },
-  imagePicker: {
+  mapContainer: {
+    height: 200,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  map: {
+    flex: 1,
+  },
+  locationInfoContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 12,
+  },
+  locationInfo: {
+    marginLeft: 6,
+    fontSize: 14,
+    color: '#00C44F',
+  },
+  iconButton: {
+    backgroundColor: '#00C44F',
+    borderRadius: 40,
+    width: 48,
+    height: 48,
     justifyContent: 'center',
-    marginBottom: 20,
+    alignItems: 'center',
+    marginVertical: 10,
+    marginRight: 10,
+  },
+  imageHelper: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 8,
+  },
+  imageButtonsContainer: {
+    flexDirection: 'row',
+    marginBottom: 12,
   },
   imagePreview: {
-    width: 200,
-    height: 200,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  imageContainer: {
+    position: 'relative',
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  imageThumb: {
+    width: 80,
+    height: 80,
     borderRadius: 10,
   },
-  imagePlaceholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    width: 200,
-    height: 200,
-    backgroundColor: '#f9f9f9',
-  },
-  imagePlaceholderText: {
-    marginTop: 10,
-    color: '#666',
+  imageRemoveButton: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: '#fff',
+    borderRadius: 12,
   },
   submitButton: {
-    backgroundColor: '#4CAF50',
-    padding: 15,
-    borderRadius: 25,
+    backgroundColor: '#00C44F',
+    borderRadius: 12,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 10,
   },
-  submitButtonText: {
-    color: '#fff',
+  submitText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  footerText: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#666',
+    fontSize: 13,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  closeButton: {
+    padding: 8,
+  },
+  modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: '#333',
+  },
+  locateButton: {
+    padding: 8,
+  },
+  fullScreenMap: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height - 80,
   },
 });

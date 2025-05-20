@@ -14,7 +14,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     text: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true
+    },
+    imageUrl: {
+      type: DataTypes.TEXT('LONG'),
+      allowNull: true
     },
     timestamp: {
       type: DataTypes.DATE,

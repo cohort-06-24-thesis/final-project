@@ -3,9 +3,13 @@
 const express = require('express');
 const router = express.Router();
 const messageController = require('../controllers/message.controller');
+const upload = require('../middleware/upload');
 
 // Create a new message
 router.post('/', messageController.createMessage);
+
+// Upload image message
+router.post('/upload', upload.array('images', 10), messageController.uploadImage);
 
 // Get all messages
 router.get('/', messageController.getAllMessages);
