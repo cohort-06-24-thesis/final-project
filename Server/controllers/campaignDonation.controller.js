@@ -1,4 +1,5 @@
-const { CampaignDonations } = require('../Database/index.js');
+const { CampaignDonations, User, Notification } = require('../Database/index.js');
+const { getIO } = require('../socket');
 
 // Create a new Campaign
 module.exports = {
@@ -11,6 +12,12 @@ module.exports = {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
+      // Fetch the user who created the campaign
+      const user = await User.findByPk(UserId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
       const newCampaign = await CampaignDonations.create({
         title,
         description,
@@ -21,6 +28,26 @@ module.exports = {
         isApproved: false,
         status:'active',
         UserId,
+      });
+
+      // Construct notification message
+      const message = `New Campaign: "${title}" by ${user.name}`;
+
+      // Create notification in DB
+      const notification = await Notification.create({
+        message,
+        isRead: false,
+        UserId,
+        itemId: newCampaign.id,
+        itemType: 'campaign'
+      });
+
+      // Emit notification to admin clients
+      const io = getIO();
+      io.to('admins').emit('new_campaign_notification', {
+        ...notification.dataValues,
+        campaign: newCampaign,
+        timestamp: new Date().toISOString(),
       });
 
       res.status(201).json(newCampaign);
@@ -70,6 +97,9 @@ module.exports = {
         return res.status(404).json({ error: 'Campaign not found' });
       }
 
+      // Store the previous approval status
+      const wasApproved = campaign.isApproved;
+
       // Update only provided fields
       const updatedData = {
         title: title || campaign.title,
@@ -84,6 +114,27 @@ module.exports = {
       };
 
       await campaign.update(updatedData);
+
+      // Send notification if approval status changed to true
+      if (isApproved === true && wasApproved !== true) {
+        const userId = campaign.UserId;
+
+        // Create notification in DB
+        const notification = await Notification.create({
+          message: `Your campaign "${campaign.title}" has been approved!`,
+          isRead: false,
+          UserId: userId,
+          itemId: campaign.id,
+          itemType: 'campaign'
+        });
+
+        // Emit real-time notification to the user
+        const io = getIO();
+        io.to(`user_${userId}`).emit('new_notification', {
+          ...notification.dataValues,
+          timestamp: new Date().toISOString()
+        });
+      }
 
       res.status(200).json(campaign);
     } catch (error) {
