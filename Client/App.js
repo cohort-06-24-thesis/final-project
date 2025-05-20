@@ -7,8 +7,11 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
 import { useState, useContext } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { NotificationProvider, NotificationContext } from "./src/context/NotificationContext";
-import Toast from 'react-native-toast-message';
+import {
+  NotificationProvider,
+  NotificationContext,
+} from "./src/context/NotificationContext";
+import Toast from "react-native-toast-message";
 
 import Login from "./screens/Login";
 import Signup from "./screens/Signup";
@@ -42,7 +45,7 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function TabNavigator() {
-  const { unreadCount } = useContext(NotificationContext);
+  // const { unreadCount } = useContext(NotificationContext);
 
   return (
     <Tab.Navigator
@@ -91,14 +94,6 @@ function TabNavigator() {
         name="Events"
         component={Events}
         options={{ title: "Events" }}
-      />
-      <Tab.Screen
-        name="Notifications"
-        component={NotificationScreen}
-        options={{
-          title: "Notifications",
-          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
-        }}
       />
     </Tab.Navigator>
   );
@@ -269,6 +264,11 @@ export default function App() {
                 headerTitle: "Profile",
                 headerBackTitle: "Back",
               }}
+            />
+            <Stack.Screen
+              name="Notifications"
+              component={NotificationScreen}
+              options={{ title: "Notifications", headerShown: true }}
             />
           </Stack.Navigator>
         </NavigationContainer>

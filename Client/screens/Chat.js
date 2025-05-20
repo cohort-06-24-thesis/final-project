@@ -17,6 +17,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io from 'socket.io-client';
 import { API_BASE } from '../config';
+import { NotificationContext } from '../src/context/NotificationContext';
+import Toast from 'react-native-toast-message';
 
 // Extract base URL without /api
 const SOCKET_BASE = API_BASE.replace('/api', '');
@@ -35,11 +37,14 @@ export default function Chat({ route, navigation }) {
   const flatListRef = useRef(null);
   const roomIdRef = useRef(null);
   const[customReason, setCustomReason] = useState('');
+  const { notifications, markChatNotificationsAsRead } = React.useContext(NotificationContext);
 
   const scrollToBottom = () => {
-    if (flatListRef.current) {
+    if (flatListRef.current && messages.length > 0) {
       setTimeout(() => {
-        flatListRef.current.scrollToEnd({ animated: true });
+        if (flatListRef.current) {
+          flatListRef.current.scrollToEnd({ animated: true });
+        }
       }, 100);
     }
   };
@@ -292,6 +297,20 @@ export default function Chat({ route, navigation }) {
       Alert.alert('Error', 'Failed to submit report. Please try again.');
     }
   };
+
+  // Mark chat notifications as read when messages load or change, but only if there are unread ones
+  useEffect(() => {
+    if (messages.length > 0 && markChatNotificationsAsRead && notifications) {
+      const messageIds = messages.map(m => m.id).filter(Boolean);
+      const unreadChatNotifs = notifications.filter(
+        n => n.itemType === 'chat' && !n.isRead && messageIds.includes(n.itemId)
+      );
+      if (unreadChatNotifs.length > 0) {
+        markChatNotificationsAsRead(messageIds);
+      }
+    }
+    // eslint-disable-next-line
+  }, [messages, notifications]);
 
   return (
     <KeyboardAvoidingView

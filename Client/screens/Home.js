@@ -46,7 +46,12 @@ export default function Home({ navigation }) {
   const [reportReason, setReportReason] = useState('');
   const [customReason, setCustomReason] = useState('');
   const [userProfilePic, setUserProfilePic] = useState(null);
-  const { unreadCount } = useContext(NotificationContext); // Access unreadCount
+  const { unreadCount, notifications } = useContext(NotificationContext); // Access unreadCount and notifications
+
+  // Compute unseen chat count
+  const unseenChatCount = notifications ? notifications.filter(n => n.itemType === 'chat' && !n.isRead).length : 0;
+  // Compute unseen non-chat notification count
+  const unseenNotifCount = notifications ? notifications.filter(n => n.itemType !== 'chat' && !n.isRead).length : 0;
 
   const fetchData = async () => {
     try {
@@ -123,11 +128,11 @@ export default function Home({ navigation }) {
       color: "#FFD166",
       gradient: ['#FFD166', '#FFC107'],
     },
-    { 
-      id: 4, 
-      title: "Events", 
-      data: events, 
-      icon: "calendar-alt", 
+    {
+      id: 4,
+      title: "Events",
+      data: events,
+      icon: "calendar-alt",
       screen: "Events",
       color: "#9C27B0",
       gradient: ['#9C27B0', '#6A0572'],
@@ -156,7 +161,7 @@ export default function Home({ navigation }) {
   const renderCampaignCard = (item, index) => {
     const progress = Math.random() * 100;
     const progressWidth = `${progress}%`;
-    
+
     return (
       <TouchableOpacity
         key={item.id || index}
@@ -263,7 +268,7 @@ export default function Home({ navigation }) {
               resizeMode="cover"
             />
           ) : (
-            <View style={[styles.campaignImagePlaceholder, { borderTopLeftRadius: 16, borderTopRightRadius: 16, height: '100%' }] }>
+            <View style={[styles.campaignImagePlaceholder, { borderTopLeftRadius: 16, borderTopRightRadius: 16, height: '100%' }]}>
               <FontAwesome5 name="gift" size={24} color="#fff" />
             </View>
           )}
@@ -297,10 +302,10 @@ export default function Home({ navigation }) {
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-      
+
       {/* Animated Header */}
       <Animated.View style={[styles.header, { height: headerHeight }]}>
-        <Animated.View 
+        <Animated.View
           style={[styles.headerContent, { opacity: headerContentOpacity, backgroundColor: '#00C44F', borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }]}
         >
           <LottieView
@@ -311,17 +316,22 @@ export default function Home({ navigation }) {
           />
         </Animated.View>
         {/* Compact header title (visible on scroll) */}
-        <Animated.View 
+        <Animated.View
           style={[styles.headerTitleContainer, { opacity: headerTitleOpacity }]}
         >
           <Text style={styles.headerTitle}>Sadaꓘa</Text>
         </Animated.View>
         <View style={styles.headerButtons}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.headerButton, { marginRight: 12 }]}
             onPress={() => navigation.navigate('Conversation')}
           >
             <Ionicons name="chatbubble-outline" size={30} color="#fff" />
+            {unseenChatCount > 0 && (
+              <View style={styles.chatBadge}>
+                <Text style={styles.chatBadgeText}>{unseenChatCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
           {/* Notification Bell Button */}
           <TouchableOpacity
@@ -329,9 +339,13 @@ export default function Home({ navigation }) {
             onPress={() => navigation.navigate('Notifications')}
           >
             <MaterialIcons name="notifications-none" size={30} color="#fff" />
-            {unreadCount > 0 && <View style={styles.notificationDot} />}
+            {unseenNotifCount > 0 && (
+              <View style={styles.notifBadge}>
+                <Text style={styles.notifBadgeText}>{unseenNotifCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.headerButton, styles.profileButton]}
             onPress={() => setProfileMenuVisible(true)}
           >
@@ -430,22 +444,22 @@ export default function Home({ navigation }) {
                         Alert.alert('Error', 'Please describe your problem.');
                         return;
                       }
-                  
+
                       try {
                         const userId = await AsyncStorage.getItem('userUID');
-                        
+
                         if (!userId) {
                           Alert.alert('Error', 'Please login to submit a report');
                           return;
                         }
-                  
+
                         await axios.post(`${API_BASE}/report/createReport`, {
                           reason: customReason.trim(),
                           userId: userId,
                           itemType: "general",
                           itemId: null
                         });
-                  
+
                         Alert.alert('Thank you', 'Your report has been submitted.');
                         setReportModalVisible(false);
                         setCustomReason('');
@@ -501,8 +515,8 @@ export default function Home({ navigation }) {
         }
         scrollEventThrottle={16}
         refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
+          <RefreshControl
+            refreshing={refreshing}
             onRefresh={onRefresh}
             colors={["#4CAF50"]}
             tintColor="#4CAF50"
@@ -518,15 +532,15 @@ export default function Home({ navigation }) {
         ) : (
           <>
             {/* Stats Grid */}
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false} 
-              style={{ 
-                paddingLeft: 20, 
-                marginBottom: 20, 
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{
+                paddingLeft: 20,
+                marginBottom: 20,
                 marginTop: 45, // Reduced from 65 to 45 to maintain proper spacing
-              }} 
-              contentContainerStyle={{ 
+              }}
+              contentContainerStyle={{
                 paddingRight: 20,
                 paddingTop: 25,
                 gap: 10,
@@ -563,7 +577,7 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="star" size={16} color="#4CAF50" style={styles.sectionIcon} />
                   <Text style={styles.sectionTitle}>Featured Campaigns</Text>
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.seeAllButton}
                   onPress={() => navigation.navigate("Campaign")}
                 >
@@ -571,9 +585,9 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
                 </TouchableOpacity>
               </View>
-              
-              <ScrollView 
-                horizontal 
+
+              <ScrollView
+                horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.campaignsScrollContent}
               >
@@ -595,7 +609,7 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="gift" size={16} color="#FFD166" style={styles.sectionIcon} />
                   <Text style={styles.sectionTitle}>Donation Items</Text>
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.seeAllButton}
                   onPress={() => navigation.navigate("Donations")}
                 >
@@ -626,7 +640,7 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="users" size={16} color="#4ECDC4" style={styles.sectionIcon} />
                   <Text style={styles.sectionTitle}>People In Need</Text>
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.seeAllButton}
                   onPress={() => navigation.navigate("InNeed")}
                 >
@@ -634,7 +648,7 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
                 </TouchableOpacity>
               </View>
-              
+
               {Array.isArray(inNeeds) && inNeeds.length > 0 ? (
                 inNeeds.slice(0, 3).map((inNeed, index) => renderInNeedCard(inNeed, index))
               ) : (
@@ -652,7 +666,7 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="calendar-alt" size={16} color="#9C27B0" style={styles.sectionIcon} />
                   <Text style={styles.sectionTitle}>Events</Text>
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.seeAllButton}
                   onPress={() => navigation.navigate("Events")}
                 >
@@ -660,8 +674,8 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
                 </TouchableOpacity>
               </View>
-              <ScrollView 
-                horizontal 
+              <ScrollView
+                horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.campaignsScrollContent}
               >
@@ -707,7 +721,7 @@ export default function Home({ navigation }) {
             <View style={styles.impactSection}>
               <Text style={styles.impactTitle}>Your Impact</Text>
               <Text style={styles.impactSubtitle}>Together we're making a difference</Text>
-              
+
               <View style={styles.impactStats}>
                 <View style={styles.impactStatCard}>
                   <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}>
@@ -716,7 +730,7 @@ export default function Home({ navigation }) {
                   <Text style={styles.impactStatValue}>+120K TND</Text>
                   <Text style={styles.impactStatLabel}>Funds Raised</Text>
                 </View>
-                
+
                 <View style={styles.impactStatCard}>
                   <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(78, 205, 196, 0.1)' }]}>
                     <FontAwesome5 name="users" size={20} color="#4ECDC4" />
@@ -724,7 +738,7 @@ export default function Home({ navigation }) {
                   <Text style={styles.impactStatValue}>5,000+</Text>
                   <Text style={styles.impactStatLabel}>People Helped</Text>
                 </View>
-                
+
                 <View style={styles.impactStatCard}>
                   <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 209, 102, 0.1)' }]}>
                     <FontAwesome5 name="globe-americas" size={20} color="#FFD166" />
@@ -1227,5 +1241,41 @@ const styles = StyleSheet.create({
     height: '100%',
     width: '100%',
     borderRadius: 17.5,
+  },
+  chatBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 18,
+    height: 18,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chatBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 18,
+    height: 18,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notifBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });

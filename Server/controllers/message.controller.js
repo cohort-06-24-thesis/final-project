@@ -1,7 +1,8 @@
 // controllers/messageController.js
 
-const { Message, Conversation } = require('../Database/index');
+const { Message, Conversation, User, Notification } = require('../Database/index');
 const { Op } = require('sequelize');
+const { getIO } = require('../socket');
 
 // Create a new message
 exports.createMessage = async (req, res) => {
@@ -41,6 +42,29 @@ exports.createMessage = async (req, res) => {
             receiverId,
             ConversationId: conversation.id
         });
+
+        // --- Notification logic ---
+        // Get sender's name
+        const sender = await User.findByPk(senderId);
+        const senderName = sender ? sender.name : 'Someone';
+        const notifMessage = `New message from ${senderName}: "${text}"`;
+
+        // Create notification in DB
+        const notification = await Notification.create({
+            message: notifMessage,
+            isRead: false,
+            UserId: receiverId,
+            itemId: newMessage.id,
+            itemType: 'chat',
+        });
+
+        // Emit notification to receiver's room
+        const io = getIO();
+        io.to(`user_${receiverId}`).emit('new_notification', {
+            ...notification.dataValues,
+            timestamp: new Date().toISOString(),
+        });
+        // --- End notification logic ---
 
         res.status(201).json(newMessage);
     } catch (error) {
