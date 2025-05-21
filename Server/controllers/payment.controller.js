@@ -1,11 +1,12 @@
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { Payment, CampaignDonations,User } = require('../Database/index.js');
+const { Payment, CampaignDonations, User, Notification } = require('../Database/index.js');
+const { getIO } = require('../socket');
 
 const paymentController = {
   createPaymentIntent: async (req, res) => {
     try {
-      const { amount, campaignId,userId } = req.body;
+      const { amount, campaignId, userId } = req.body;
 
       const amountInCents = Math.round(amount * 100);
 
@@ -16,31 +17,14 @@ const paymentController = {
           enabled: true,
         },
         metadata: {
-          campaignId
+          campaignId,
+          userId
         }
       });
 
-      const payment = await Payment.create({
-        amount: amount.toFixed(2),
-        transaction_id: paymentIntent.id,
-        campaignId: campaignId,
-        userId
-      });
-
-      const campaign = await CampaignDonations.findByPk(campaignId);
-      if (campaign) {
-        const newTotalRaised = parseFloat(campaign.totalRaised) + parseFloat(amount);
-        const newProgress = (newTotalRaised / campaign.goal) * 100;
-
-        await campaign.update({
-          totalRaised: newTotalRaised,
-          progress: newProgress
-        });
-      }
-
       res.json({
         clientSecret: paymentIntent.client_secret,
-        paymentId: payment.id
+        paymentIntentId: paymentIntent.id
       });
 
     } catch (error) {
@@ -58,19 +42,62 @@ const paymentController = {
 
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
-      const payment = await Payment.findOne({
-        where: { transaction_id: paymentIntentId }
+      // Only proceed if payment was successful
+      if (paymentIntent.status !== 'succeeded') {
+        return res.status(400).json({
+          error: 'Payment not successful',
+          status: paymentIntent.status
+        });
+      }
+
+      // Get campaign and user info from payment intent metadata
+      const { campaignId, userId } = paymentIntent.metadata;
+      const amount = (paymentIntent.amount / 100).toFixed(2);
+
+      // Create payment record
+      const payment = await Payment.create({
+        amount: amount,
+        transaction_id: paymentIntentId,
+        campaignId: campaignId,
+        userId: userId
       });
 
-      if (!payment) {
-        return res.status(404).json({
-          error: 'Payment not found'
+      const campaign = await CampaignDonations.findByPk(campaignId);
+      const user = await User.findByPk(userId);
+
+      if (campaign) {
+        const newTotalRaised = parseFloat(campaign.totalRaised) + parseFloat(amount);
+        const newProgress = (newTotalRaised / campaign.goal) * 100;
+
+        await campaign.update({
+          totalRaised: newTotalRaised,
+          progress: newProgress
+        });
+
+        // Create notification for payment
+        const notification = await Notification.create({
+          message: `New payment of TND ${amount} received for campaign "${campaign.title}" from ${user.name}`,
+          isRead: false,
+          UserId: userId,
+          itemId: payment.id,
+          itemType: 'payment'
+        });
+
+        // Emit notification to admin clients
+        const io = getIO();
+        io.to('admins').emit('new_payment_notification', {
+          ...notification.dataValues,
+          payment,
+          campaign,
+          user,
+          timestamp: new Date().toISOString()
         });
       }
 
       res.json({
-        amount: payment.amount,
-        paymentId: payment.id
+        amount: amount,
+        paymentId: payment.id,
+        status: 'success'
       });
 
     } catch (error) {
@@ -88,7 +115,6 @@ const paymentController = {
       const payments = await Payment.findAll({
         include: {
           model: CampaignDonations,
-         
           attributes: ['title', 'goal', 'totalRaised']
         },
         order: [['createdAt', 'DESC']]
