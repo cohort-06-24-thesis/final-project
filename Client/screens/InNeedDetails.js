@@ -314,6 +314,7 @@ export default function InNeedDetails({ route, navigation }) {
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
               }}
+              scrollEnabled={false}
             >
               <Marker
                 coordinate={{
