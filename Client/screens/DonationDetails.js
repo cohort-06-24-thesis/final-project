@@ -71,19 +71,100 @@ export default function DonationDetails({ route, navigation }) {
     }
   };
 
-  const handleClaim = async () => {
+  const handleStatusChange = async (newStatus) => {
     try {
-      const response = await axios.put(`${API_BASE}/donationItems/updateStatus/${item.id}`, {
-        status: 'claimed'
+      const response = await axios.put(`${API_BASE}/donationItems/${item.id}`, {
+        ...item,
+        status: newStatus
       });
       if (response.data) {
-        setItem(prev => ({ ...prev, status: 'claimed' }));
-        Alert.alert('Success', 'Item marked as claimed');
+        setItem(prev => ({ ...prev, status: newStatus }));
+        Alert.alert('Success', `Item marked as ${newStatus}`);
       }
     } catch (error) {
-      console.error('Error claiming item:', error);
-      Alert.alert('Error', 'Failed to claim item');
+      console.error('Error updating status:', error);
+      Alert.alert('Error', 'Failed to update status');
     }
+  };
+
+  const renderStatusButton = () => {
+    if (String(item?.User?.id) !== String(currentUserId)) {
+      return null;
+    }
+
+    let buttonConfig = {
+      text: '',
+      onPress: () => {},
+      style: {},
+      icon: '',
+      textColor: ''
+    };
+
+    switch (item.status) {
+      case 'available':
+        buttonConfig = {
+          text: 'Mark as Reserved',
+          onPress: () => handleStatusChange('reserved'),
+          style: { 
+            backgroundColor: '#FFC107',
+            borderColor: '#FFC107',
+            borderWidth: 2
+          },
+          icon: 'time-outline',
+          textColor: '#fff'
+        };
+        break;
+      case 'reserved':
+        buttonConfig = {
+          text: 'Mark as Claimed',
+          onPress: () => handleStatusChange('claimed'),
+          style: { 
+            backgroundColor: '#4CAF50',
+            borderColor: '#4CAF50',
+            borderWidth: 2
+          },
+          icon: 'checkmark-circle-outline',
+          textColor: '#fff'
+        };
+        break;
+      case 'claimed':
+        buttonConfig = {
+          text: 'Mark as Available',
+          onPress: () => handleStatusChange('available'),
+          style: { 
+            backgroundColor: '#2196F3',
+            borderColor: '#2196F3',
+            borderWidth: 2
+          },
+          icon: 'refresh-outline',
+          textColor: '#fff'
+        };
+        break;
+      default:
+        buttonConfig = {
+          text: 'Mark as Available',
+          onPress: () => handleStatusChange('available'),
+          style: { 
+            backgroundColor: '#2196F3',
+            borderColor: '#2196F3',
+            borderWidth: 2
+          },
+          icon: 'refresh-outline',
+          textColor: '#fff'
+        };
+    }
+
+    return (
+      <TouchableOpacity 
+        style={[styles.statusButton, buttonConfig.style]}
+        onPress={buttonConfig.onPress}
+      >
+        <Text style={[styles.statusButtonText, { color: buttonConfig.textColor }]}>
+          {buttonConfig.text}
+        </Text>
+        <Ionicons name={buttonConfig.icon} size={18} color={buttonConfig.textColor} />
+      </TouchableOpacity>
+    );
   };
 
   // Add useEffect to get current user ID when component mounts
@@ -216,24 +297,9 @@ export default function DonationDetails({ route, navigation }) {
           <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
           {/* <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text> */}
         </TouchableOpacity>
+        
         {String(item?.User?.id) === String(currentUserId) ? (
-          <TouchableOpacity 
-            style={[
-              styles.contactButton, 
-              { backgroundColor: item.status === 'claimed' ? '#666' : '#4CAF50' }
-            ]}
-            onPress={handleClaim}
-            disabled={item.status === 'claimed'}
-          >
-            <Text style={styles.contactButtonText}>
-              {item.status === 'claimed' ? 'Claimed' : 'Mark as Claimed'}
-            </Text>
-            <Ionicons 
-              name={item.status === 'claimed' ? "checkmark-circle" : "checkmark-circle-outline"} 
-              size={18} 
-              color="#fff" 
-            />
-          </TouchableOpacity>
+          renderStatusButton()
         ) : (
           <TouchableOpacity 
             style={[
@@ -372,17 +438,43 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 2, // Add some space between name and rating
   },
+  statusButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    gap: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  statusButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
   contactButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
     backgroundColor: '#EFD13D',
-    paddingVertical: 20,
-    paddingHorizontal: 38,
-    right: 8,
-    borderRadius: 12,
+    gap: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   contactButtonText: {
-    color: '#fff',
+    color: '#1a1a1a',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   modalContainer: {
     flex: 1,
