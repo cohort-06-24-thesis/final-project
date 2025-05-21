@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     color: '#00C44F',
   },
   iconButton: {
-    backgroundColor: '#00C44F',
+    backgroundColor: '#000000',
     borderRadius: 40,
     width: 48,
     height: 48,
