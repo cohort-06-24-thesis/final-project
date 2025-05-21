@@ -83,8 +83,16 @@ export default function Payment({ route, navigation }) {
       const verifyResponse = await axios.get(`${API_BASE}/payment/verify/${response.data.paymentIntentId}`);
       
       if (verifyResponse.data.status === 'success') {
-        Alert.alert("Success", "Payment completed successfully!");
-        navigation.goBack();
+       
+Alert.alert(
+  "Thanks!",
+  "🙏 You made a difference. Explore other campaigns that need your help."
+);
+        navigation.navigate('MainApp', { screen: 'Campaign' });
+
+
+
+
       } else {
         throw new Error("Payment verification failed");
       }
