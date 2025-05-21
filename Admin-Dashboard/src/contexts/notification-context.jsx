@@ -9,6 +9,22 @@ export const useNotification = () => useContext(NotificationContext);
 const NOTIF_KEY = "admin_notifications";
 const UNSEEN_KEY = "unseen_count";
 
+// Common toast configuration
+const toastConfig = {
+  position: "top-right",
+  autoClose: 5000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  style: {
+    background: "#fff",
+    color: "#333",
+    borderRadius: "8px",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+  },
+};
+
 export const NotificationProvider = ({ children }) => {
   const [unseenCount, setUnseenCount] = useState(() => {
     const stored = localStorage.getItem(UNSEEN_KEY);
@@ -77,7 +93,13 @@ export const NotificationProvider = ({ children }) => {
         setUnseenCount(newUnseenCount);
         saveToStorage(updatedNotifications, newUnseenCount);
 
-        toast.info(data.message || "📢 New In-Need request!");
+        toast.info(
+          <div>
+            <p className="font-semibold">New In-Need Request! 📢</p>
+            <p>{data.message}</p>
+          </div>,
+          toastConfig
+        );
       }
     });
 
@@ -95,17 +117,10 @@ export const NotificationProvider = ({ children }) => {
 
         toast.info(
           <div>
-            <p className="font-semibold">New Donation Item!</p>
+            <p className="font-semibold">New Donation Item! 🎁</p>
             <p>{data.message}</p>
           </div>,
-          {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          }
+          toastConfig
         );
       }
     });
@@ -124,17 +139,10 @@ export const NotificationProvider = ({ children }) => {
 
         toast.info(
           <div>
-            <p className="font-semibold">New Campaign!</p>
+            <p className="font-semibold">New Campaign! 🎯</p>
             <p>{data.message}</p>
           </div>,
-          {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          }
+          toastConfig
         );
       }
     });
@@ -153,17 +161,32 @@ export const NotificationProvider = ({ children }) => {
 
         toast.info(
           <div>
-            <p className="font-semibold">New Event!</p>
+            <p className="font-semibold">New Event! 📅</p>
             <p>{data.message}</p>
           </div>,
-          {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          }
+          toastConfig
+        );
+      }
+    });
+
+    socket.on("new_payment_notification", (data) => {
+      console.log("✅ New payment notification received via socket:", data);
+      socketUpdatedRef.current = true;
+
+      if (data.itemType !== 'chat') {
+        const updatedNotifications = [data, ...notifications];
+        const newUnseenCount = unseenCount + 1;
+
+        setNotifications(updatedNotifications);
+        setUnseenCount(newUnseenCount);
+        saveToStorage(updatedNotifications, newUnseenCount);
+
+        toast.success(
+          <div>
+            <p className="font-semibold">New Payment Received! 💰</p>
+            <p>{data.message}</p>
+          </div>,
+          toastConfig
         );
       }
     });
@@ -173,6 +196,7 @@ export const NotificationProvider = ({ children }) => {
       socket.off("new_donation_notification");
       socket.off("new_campaign_notification");
       socket.off("new_event_notification");
+      socket.off("new_payment_notification");
     };
   }, []);
 

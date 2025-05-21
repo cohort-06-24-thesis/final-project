@@ -206,7 +206,6 @@ export default function InNeedDetails({ route, navigation }) {
         };
 
         const response = await axios.post(`${API_BASE}/comment/createComment`, commentData);
-        setComments(prev => [response.data, ...prev]);
         setNewComment('');
         socket.emit('post_comment', response.data);
     } catch (error) {

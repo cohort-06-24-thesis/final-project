@@ -98,6 +98,8 @@ Conversation.belongsToMany(User, { through: 'UserConversations', foreignKey: 'Co
 CampaignDonations.hasMany(Payment, { foreignKey: 'campaignId' });
 Payment.belongsTo(CampaignDonations, { foreignKey: 'campaignId' });
 
+
+
 Event.hasMany(DonationItem, { foreignKey: 'eventId' });
 DonationItem.belongsTo(Event, { foreignKey: 'eventId' });
 
