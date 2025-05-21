@@ -8,7 +8,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Dimensions
+  Dimensions,
+  Platform,
+  TouchableWithoutFeedback
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -21,7 +23,7 @@ import Animated, {
   useSharedValue 
 } from 'react-native-reanimated';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default function UserProfile({ navigation }) {
   const [user, setUser] = useState(null);
@@ -45,6 +47,8 @@ export default function UserProfile({ navigation }) {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 3;
   const [wishlistItems, setWishlistItems] = useState([]);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const sidebarAnimation = useSharedValue(-width); // Change from -500 to -width
 
   useEffect(() => {
     fetchUserData();
@@ -255,6 +259,19 @@ export default function UserProfile({ navigation }) {
     };
   });
 
+  const sidebarStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: sidebarAnimation.value }]
+  }));
+
+  const toggleSidebar = () => {
+    if (isSidebarVisible) {
+      sidebarAnimation.value = withSpring(-width);
+    } else {
+      sidebarAnimation.value = withSpring(0);
+    }
+    setIsSidebarVisible(!isSidebarVisible);
+  };
+
   // Update the StatCard component
 const StatCard = ({ icon, label, value }) => (
   <View style={styles.statCard}>
@@ -275,20 +292,24 @@ const StatCard = ({ icon, label, value }) => (
   </View>
 );
 
-  const ActionButton = ({ icon, label, onPress, color = "#666" }) => (
-    <TouchableOpacity 
-      onPressIn={() => scale.value = 0.95}
-      onPressOut={() => scale.value = 1}
-      style={[styles.actionButton, animatedStyle]}
-      onPress={onPress}
-    >
-      <View style={[styles.actionIcon, { backgroundColor: `${color}15` }]}>
-        <Ionicons name={icon} size={24} color={color} />
+  // Update the ActionButton component
+const ActionButton = ({ icon, label, onPress, color = "#666", description }) => (
+  <TouchableOpacity 
+    style={styles.actionButton}
+    onPress={onPress}
+  >
+    <View style={styles.actionInner}>
+      <View style={[styles.actionIconWrapper, { backgroundColor: `${color}15` }]}>
+        <Ionicons name={icon} size={22} color={color} />
       </View>
-      <Text style={[styles.actionText, { color }]}>{label}</Text>
-      <Ionicons name="chevron-forward" size={24} color={color} />
-    </TouchableOpacity>
-  );
+      <View style={styles.actionTexts}>
+        <Text style={styles.actionLabel}>{label}</Text>
+        {description && <Text style={styles.actionDescription}>{description}</Text>}
+      </View>
+    </View>
+    <Ionicons name="chevron-forward" size={20} color="#ccc" />
+  </TouchableOpacity>
+);
 
   const ActivityItem = ({ activity }) => (
     <TouchableOpacity style={styles.activityItem}>
@@ -358,220 +379,310 @@ const StatCard = ({ icon, label, value }) => (
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <LinearGradient
-        colors={['#4CAF50', '#45a049']}
-        style={styles.headerGradient}
-      >
-        <View style={styles.header}>
-          <View style={styles.profileImageContainer}>
-            <LinearGradient
-              colors={['#4CAF50', '#45a049', '#388E3C']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.imageGradientBorder}
-            >
-              <View style={styles.imageWrapper}>
-                <Image
-                  source={{ uri: user?.profilePic || 'https://via.placeholder.com/150' }}
-                  style={styles.profileImage}
-                />
-              </View>
-            </LinearGradient>
-            <TouchableOpacity 
-              style={styles.editImageButton}
-              onPress={() => navigation.navigate('EditProfile')}
-            >
-              <LinearGradient
-                colors={['#4CAF50', '#388E3C']}
-                style={styles.editButtonGradient}
-              >
-                <MaterialCommunityIcons name="pencil" size={16} color="#fff" />
-              </LinearGradient>
-            </TouchableOpacity>
-            {user?.verified && (
-              <View style={styles.verifiedBadge}>
-                <MaterialCommunityIcons name="check-decagram" size={24} color="#4CAF50" />
-              </View>
-            )}
-          </View>
-          <Text style={styles.name}>{user?.name || 'Anonymous'}</Text>
-          <Text style={styles.email}>{user?.email}</Text>
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={20} color="#FFD700" />
-            <Text style={styles.rating}>{user?.rating?.toFixed(1) || '0.0'}</Text>
-          </View>
-        </View>
-      </LinearGradient>
-
-      <View style={styles.content}>
-        <View style={styles.bioSection}>
-          <View style={styles.infoHeader}>
-            <Text style={styles.infoTitle}>Profile Information</Text>
-          </View>
-          <View style={styles.infoContainer}>
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconContainer}>
-                <Ionicons name="calendar" size={18} color="#4CAF50" />
-              </View>
-              <View style={styles.infoTextContainer}>
-                <Text style={styles.infoLabel}>Member Since</Text>
-                <Text style={styles.infoText}>{user?.joinDate}</Text>
-              </View>
-            </View>
-            <View style={styles.infoDivider} />
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconContainer}>
-                <Ionicons name="people" size={18} color="#4CAF50" />
-              </View>
-              <View style={styles.infoTextContainer}>
-                <Text style={styles.infoLabel}>Impact</Text>
-                <Text style={styles.infoText}>
-                  Helped <Text style={styles.infoHighlight}>{user?.totalHelped}</Text> people
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.statsContainer}>
-        <StatCard 
-          icon="gift-outline" 
-          label="Donations" 
-          value={stats.donations} 
-        />
-        <StatCard 
-          icon="calendar-outline" 
-          label="Events" 
-          value={stats.events} 
-        />
-        <StatCard 
-          icon="bullhorn-outline" 
-          label="Campaigns" 
-          value={stats.campaigns} 
-        />
-        <StatCard 
-          icon="hand-heart-outline" 
-          label="In Needs" 
-          value={stats.inNeeds} 
-        />
-      </View>
-
-      <View style={styles.wishlistSection}>
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionHeaderLeft}>
-            <MaterialCommunityIcons name="heart" size={24} color="#FF6B6B" />
-            <Text style={styles.sectionTitle}>Your Wishlist</Text>
-          </View>
-        </View>
-        
-        {wishlistItems.length > 0 ? (
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.wishlistContainer}
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <LinearGradient
+          colors={['#4CAF50', '#45a049']}
+          style={styles.headerGradient}
+        >
+          {/* Add the settings button here */}
+          <TouchableOpacity 
+            style={styles.settingsButton}
+            onPress={toggleSidebar}
           >
-            {wishlistItems.map((item) => (
-              <WishlistItem key={item.id} item={item} />
-            ))}
-          </ScrollView>
-        ) : (
-          <View style={styles.emptyWishlist}>
-            <MaterialCommunityIcons name="heart-outline" size={40} color="#ddd" />
-            <Text style={styles.emptyWishlistText}>Your wishlist is empty</Text>
-          </View>
-        )}
-      </View>
+            <Ionicons name="settings-outline" size={24} color="#fff" />
+          </TouchableOpacity>
 
-      <View style={styles.recentActivity}>
-        <View style={styles.activityHeader}>
-          <View style={styles.activityHeaderLeft}>
-            <MaterialCommunityIcons name="history" size={24} color="#4CAF50" />
-            <Text style={styles.sectionTitle}>Your Activity</Text>
+          <View style={styles.header}>
+            <View style={styles.profileImageContainer}>
+              <LinearGradient
+                colors={['#4CAF50', '#45a049', '#388E3C']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.imageGradientBorder}
+              >
+                <View style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: user?.profilePic || 'https://via.placeholder.com/150' }}
+                    style={styles.profileImage}
+                  />
+                </View>
+              </LinearGradient>
+              <TouchableOpacity 
+                style={styles.editImageButton}
+                onPress={() => navigation.navigate('EditProfile')}
+              >
+                <LinearGradient
+                  colors={['#4CAF50', '#388E3C']}
+                  style={styles.editButtonGradient}
+                >
+                  <MaterialCommunityIcons name="pencil" size={16} color="#fff" />
+                </LinearGradient>
+              </TouchableOpacity>
+              {user?.verified && (
+                <View style={styles.verifiedBadge}>
+                  <MaterialCommunityIcons name="check-decagram" size={24} color="#4CAF50" />
+                </View>
+              )}
+            </View>
+            <Text style={styles.name}>{user?.name || 'Anonymous'}</Text>
+            <Text style={styles.email}>{user?.email}</Text>
+            <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={20} color="#FFD700" />
+              <Text style={styles.rating}>{user?.rating?.toFixed(1) || '0.0'}</Text>
+            </View>
+          </View>
+        </LinearGradient>
+
+        <View style={styles.content}>
+          <View style={styles.bioSection}>
+            <View style={styles.infoHeader}>
+              <Text style={styles.infoTitle}>Profile Information</Text>
+            </View>
+            <View style={styles.infoContainer}>
+              <View style={styles.infoRow}>
+                <View style={styles.infoIconContainer}>
+                  <Ionicons name="calendar" size={18} color="#4CAF50" />
+                </View>
+                <View style={styles.infoTextContainer}>
+                  <Text style={styles.infoLabel}>Member Since</Text>
+                  <Text style={styles.infoText}>{user?.joinDate}</Text>
+                </View>
+              </View>
+              <View style={styles.infoDivider} />
+              <View style={styles.infoRow}>
+                <View style={styles.infoIconContainer}>
+                  <Ionicons name="people" size={18} color="#4CAF50" />
+                </View>
+                <View style={styles.infoTextContainer}>
+                  <Text style={styles.infoLabel}>Impact</Text>
+                  <Text style={styles.infoText}>
+                    Helped <Text style={styles.infoHighlight}>{user?.totalHelped}</Text> people
+                  </Text>
+                </View>
+              </View>
+            </View>
           </View>
         </View>
-        
-        {user?.recentActivity?.length > 0 ? (
-          <>
-            <View style={styles.activityList}>
-              {user.recentActivity
-                .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                .map((activity, index) => (
-                  <ActivityItem key={index} activity={activity} />
-                ))}
+
+        <View style={styles.statsContainer}>
+          <StatCard 
+            icon="gift-outline" 
+            label="Donations" 
+            value={stats.donations} 
+          />
+          <StatCard 
+            icon="calendar-outline" 
+            label="Events" 
+            value={stats.events} 
+          />
+          <StatCard 
+            icon="bullhorn-outline" 
+            label="Campaigns" 
+            value={stats.campaigns} 
+          />
+          <StatCard 
+            icon="hand-heart-outline" 
+            label="In Needs" 
+            value={stats.inNeeds} 
+          />
+        </View>
+
+        <View style={styles.wishlistSection}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionHeaderLeft}>
+              <MaterialCommunityIcons name="heart" size={24} color="#FF6B6B" />
+              <Text style={styles.sectionTitle}>Your Wishlist</Text>
             </View>
-
-            {user.recentActivity.length > ITEMS_PER_PAGE && (
-              <View style={styles.paginationControls}>
-                <TouchableOpacity 
-                  style={[
-                    styles.paginationButton,
-                    currentPage === 1 && styles.paginationButtonDisabled
-                  ]}
-                  onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                >
-                  <Ionicons 
-                    name="chevron-back" 
-                    size={20} 
-                    color={currentPage === 1 ? '#ccc' : '#4CAF50'} 
-                  />
-                </TouchableOpacity>
-
-                <Text style={styles.paginationText}>
-                  {currentPage} of {Math.ceil(user.recentActivity.length / ITEMS_PER_PAGE)}
-                </Text>
-
-                <TouchableOpacity 
-                  style={[
-                    styles.paginationButton,
-                    currentPage >= Math.ceil(user.recentActivity.length / ITEMS_PER_PAGE) && 
-                    styles.paginationButtonDisabled
-                  ]}
-                  onPress={() => setCurrentPage(prev => prev + 1)}
-                  disabled={currentPage >= Math.ceil(user.recentActivity.length / ITEMS_PER_PAGE)}
-                >
-                  <Ionicons 
-                    name="chevron-forward" 
-                    size={20} 
-                    color={currentPage >= Math.ceil(user.recentActivity.length / ITEMS_PER_PAGE) ? '#ccc' : '#4CAF50'} 
-                  />
-                </TouchableOpacity>
-              </View>
-            )}
-          </>
-        ) : (
-          <View style={styles.noActivityContainer}>
-            <MaterialCommunityIcons name="calendar-blank" size={50} color="#ccc" />
-            <Text style={styles.noActivityText}>No recent activity</Text>
-            <Text style={styles.noActivitySubtext}>Your activities will appear here</Text>
           </View>
-        )}
-      </View>
+          
+          {wishlistItems.length > 0 ? (
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.wishlistContainer}
+            >
+              {wishlistItems.map((item) => (
+                <WishlistItem key={item.id} item={item} />
+              ))}
+            </ScrollView>
+          ) : (
+            <View style={styles.emptyWishlist}>
+              <MaterialCommunityIcons name="heart-outline" size={40} color="#ddd" />
+              <Text style={styles.emptyWishlistText}>Your wishlist is empty</Text>
+            </View>
+          )}
+        </View>
 
-      <View style={styles.actionsContainer}>
-        <Text style={styles.sectionTitle}>Account Settings</Text>
-        <ActionButton
-          icon="person-outline"
-          label="Edit Profile"
-          onPress={() => navigation.navigate('EditProfile')}
-          color="#4CAF50"
-        />
-        <ActionButton
-          icon="settings-outline"
-          label="Settings"
-          onPress={() => navigation.navigate('Settings')}
-          color="#5C6BC0"
-        />
-        <ActionButton
-          icon="log-out-outline"
-          label="Logout"
-          onPress={handleLogout}
-          color="#FF6B6B"
-        />
-      </View>
-    </ScrollView>
+        <View style={styles.recentActivity}>
+          <View style={styles.activityHeader}>
+            <View style={styles.activityHeaderLeft}>
+              <MaterialCommunityIcons name="history" size={24} color="#4CAF50" />
+              <Text style={styles.sectionTitle}>Your Activity</Text>
+            </View>
+          </View>
+          
+          {user?.recentActivity?.length > 0 ? (
+            <>
+              <View style={styles.activityList}>
+                {user.recentActivity
+                  .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                  .map((activity, index) => (
+                    <ActivityItem key={index} activity={activity} />
+                  ))}
+              </View>
+
+              {user.recentActivity.length > ITEMS_PER_PAGE && (
+                <View style={styles.paginationControls}>
+                  <TouchableOpacity 
+                    style={[
+                      styles.paginationButton,
+                      currentPage === 1 && styles.paginationButtonDisabled
+                    ]}
+                    onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <Ionicons 
+                      name="chevron-back" 
+                      size={20} 
+                      color={currentPage === 1 ? '#ccc' : '#4CAF50'} 
+                    />
+                  </TouchableOpacity>
+
+                  <Text style={styles.paginationText}>
+                    {currentPage} of {Math.ceil(user.recentActivity.length / ITEMS_PER_PAGE)}
+                  </Text>
+
+                  <TouchableOpacity 
+                    style={[
+                      styles.paginationButton,
+                      currentPage >= Math.ceil(user.recentActivity.length / ITEMS_PER_PAGE) && 
+                      styles.paginationButtonDisabled
+                    ]}
+                    onPress={() => setCurrentPage(prev => prev + 1)}
+                    disabled={currentPage >= Math.ceil(user.recentActivity.length / ITEMS_PER_PAGE)}
+                  >
+                    <Ionicons 
+                      name="chevron-forward" 
+                      size={20} 
+                      color={currentPage >= Math.ceil(user.recentActivity.length / ITEMS_PER_PAGE) ? '#ccc' : '#4CAF50'} 
+                    />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </>
+          ) : (
+            <View style={styles.noActivityContainer}>
+              <MaterialCommunityIcons name="calendar-blank" size={50} color="#ccc" />
+              <Text style={styles.noActivityText}>No recent activity</Text>
+              <Text style={styles.noActivitySubtext}>Your activities will appear here</Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
+
+      {/* Move the sidebar OUTSIDE of the main ScrollView */}
+      <Animated.View style={[styles.sidebar, sidebarStyle]}>
+        <View style={styles.sidebarHeader}>
+          <Text style={styles.sidebarTitle}>Settings</Text>
+          <TouchableOpacity onPress={toggleSidebar}>
+            <Ionicons name="close" size={24} color="#333" />
+          </TouchableOpacity>
+        </View>
+        
+        <ScrollView 
+          style={styles.sidebarContent}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
+        >
+          <View style={styles.settingsGroup}>
+            <Text style={styles.groupLabel}>Profile</Text>
+            <ActionButton
+              icon="person-outline"
+              label="Edit Profile"
+              description="Update your personal information"
+              onPress={() => {
+                toggleSidebar();
+                navigation.navigate('EditProfile');
+              }}
+              color="#4CAF50"
+            />
+            <ActionButton
+              icon="image-outline"
+              label="Change Avatar"
+              description="Update your profile picture"
+              onPress={() => {
+                toggleSidebar();
+                navigation.navigate('EditProfile');
+              }}
+              color="#5C6BC0"
+            />
+          </View>
+
+          <View style={styles.settingsGroup}>
+            <Text style={styles.groupLabel}>Preferences</Text>
+            <ActionButton
+              icon="notifications-outline"
+              label="Notifications"
+              description="Manage your notifications"
+              onPress={() => {
+                toggleSidebar();
+                navigation.navigate('Settings');
+              }}
+              color="#FF9800"
+            />
+            <ActionButton
+              icon="shield-checkmark-outline"
+              label="Privacy"
+              description="Control your privacy settings"
+              onPress={() => {
+                toggleSidebar();
+                navigation.navigate('Settings');
+              }}
+              color="#009688"
+            />
+          </View>
+
+          <View style={styles.settingsGroup}>
+            <Text style={styles.groupLabel}>Support</Text>
+            <ActionButton
+              icon="help-circle-outline"
+              label="Help Center"
+              description="Get help and support"
+              onPress={() => {}}
+              color="#7E57C2"
+            />
+            <ActionButton
+              icon="mail-outline"
+              label="Contact Us"
+              description="Send us a message"
+              onPress={() => {}}
+              color="#26A69A"
+            />
+          </View>
+
+          <View style={styles.settingsGroup}>
+            <Text style={styles.groupLabel}>Account</Text>
+            <ActionButton
+              icon="log-out-outline"
+              label="Logout"
+              description="Sign out from your account"
+              onPress={() => {
+                toggleSidebar();
+                handleLogout();
+              }}
+              color="#FF5252"
+            />
+          </View>
+        </ScrollView>
+      </Animated.View>
+
+      {isSidebarVisible && (
+        <TouchableWithoutFeedback onPress={toggleSidebar}>
+          <View style={styles.overlay} />
+        </TouchableWithoutFeedback>
+      )}
+    </View>
   );
 }
 
@@ -819,19 +930,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    marginBottom: 8,
-  },
-  actionIcon: {
-    padding: 10,
     borderRadius: 12,
-    marginRight: 14,
+    marginBottom: 8,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
   },
-  actionText: {
+  actionInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
+  },
+  actionIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  actionTexts: {
+    flex: 1,
+  },
+  actionLabel: {
     fontSize: 16,
     fontWeight: '500',
+    color: '#333',
+  },
+  actionDescription: {
+    fontSize: 13,
+    color: '#666',
+    lineHeight: 18,
   },
   loadingContainer: {
     flex: 1,
@@ -1104,5 +1233,95 @@ const styles = StyleSheet.create({
   },
   activePageNumberText: {
     color: '#fff',
+  },
+  settingsWrapper: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    marginHorizontal: 16,
+    marginBottom: 24,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  settingsContainer: {
+    padding: 20,
+  },
+  settingsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  settingsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  settingsGroup: {
+    marginTop: 24,
+  },
+  groupLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#666',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 24,
+    marginBottom: 12,
+  },
+  sidebar: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: width * 0.85,
+    height: '100%',
+    backgroundColor: '#fff',
+    zIndex: 1000,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: -2, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+  },
+  sidebarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  sidebarTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  sidebarContent: {
+    flex: 1,
+    padding: 20,
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    zIndex: 999,
+  },
+  settingsButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 30,
+    right: 20,
+    zIndex: 100,
+    padding: 8,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 20,
   },
 });

@@ -16,10 +16,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    imageUrl: {
-      type: DataTypes.TEXT('LONG'),
-      allowNull: true
-    },
     timestamp: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW

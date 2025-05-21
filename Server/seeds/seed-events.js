@@ -7,7 +7,7 @@ const events = [
 
     images: ['https://www.willistonfoodshelf.com/uploads/1/3/4/3/134363529/vsecu-donation-boxes-at-branch_orig.jpg'],
 
-    date: new Date('2024-04-15'),
+    date: new Date('2025-12-17'),
     location: 'Tunis Central Community Center',
     status: 'upcoming',
 
@@ -25,7 +25,7 @@ const events = [
 
     images: ['https://english.news.cn/20250427/0a3c9bf155254ab7b1ae4bd6568bf52c/202504270a3c9bf155254ab7b1ae4bd6568bf52c_202504270945b823282d4d7ab2ed6c244a4c7c44.jpg'],
 
-    date: new Date('2024-05-01'),
+    date: new Date('2025-07-01'),
     location: 'Sfax Public Library',
     status: 'upcoming',
 
@@ -43,7 +43,7 @@ const events = [
 
     images: ['https://www.providertech.com/wp-content/uploads/2018/12/AdobeStock_179244223-1080x675.jpeg'],
 
-    date: new Date('2024-04-20'),
+    date: new Date('2025-07-20'),
     location: 'Sousse Medical Center',
     status: 'upcoming',
 
@@ -60,7 +60,7 @@ const events = [
     title: 'Beach Cleanup Initiative',
     description: 'Help us clean and preserve our beautiful coastline for future generations.',
     images: ['https://images.ctfassets.net/f7tuyt85vtoa/HlFT09bB1nX1KaBwf4iod/b3d38fd109a3b88def6d3eaf1d478de8/AFEMEA_Venturina_resized.JPG'],
-    date: new Date('2024-06-10'),
+    date: new Date('2025-06-10'),
     location: 'Hammamet Beach',
     status: 'upcoming',
 
@@ -75,7 +75,7 @@ const events = [
     title: 'Senior Tech Workshop',
     description: 'Teaching basic computer and smartphone skills to elderly community members.',
     images: ['https://nelowvision.com/wp-content/uploads/2024/10/group-of-seniors-attending-it-class-in-community-c-2024-10-18-09-41-10-utc.jpg'],
-    date: new Date('2024-05-20'),
+    date: new Date('2025-05-31'),
     location: 'Nabeul Community Center',
     status: 'upcoming',
 
@@ -91,7 +91,7 @@ const events = [
     title: 'Youth Mentorship Program',
     description: 'Connect with and guide local youth through career and education choices.',
     images: ['https://www.phatkidsmentoring.org/resources/1481.jpg.opt558x313o0%2C0s558x313.jpg'],
-    date: new Date('2024-07-01'),
+    date: new Date('2025-07-01'),
     location: 'Mahdia Youth Center',
     status: 'upcoming',
 
@@ -107,7 +107,7 @@ const events = [
     title: 'Animal Shelter Support Day',
     description: 'Help local animal shelters with cleaning, feeding, and animal care.',
     images: ['https://cdn.shopify.com/s/files/1/0310/8093/9564/files/Celebrate_Shelter_Pet_Day_480x480.jpg?v=1649707434'],
-    date: new Date('2024-04-30'),
+    date: new Date('2025-11-23'),
     location: 'Monastir Animal Shelter',
     status: 'upcoming',
 
@@ -124,7 +124,7 @@ const events = [
     description: 'Create and maintain a sustainable community garden for local produce.',
     images: ['https://www.startts.org.au/media/Karen-Gardens-1200-x-700-5.jpg'],
 
-    date: new Date('2024-05-15'),
+    date: new Date('2025-08-05'),
     location: 'Kairouan Green Space',
     status: 'upcoming',
 
@@ -140,7 +140,7 @@ const events = [
     title: 'Coding Workshop for Kids',
     description: 'Introduce children to basic programming concepts through fun activities.',
     images: ['https://funtechsummercamps.com/blog/wp-content/uploads/2019/07/minecraft-coding-copy.jpg'],
-    date: new Date('2024-06-05'),
+    date: new Date('2025-06-05'),
     location: 'Bizerte Tech Hub',
     status: 'upcoming',
 
@@ -156,7 +156,7 @@ const events = [
     title: 'Arts and Crafts Fair',
     description: 'Showcase local artisans and support traditional craftsmanship.',
     images: ['https://static1.squarespace.com/static/5e71036b8bb60b55f6cf2873/t/6133d2250ed21f4e573067a6/1630786091068/craftfair.jpg'],
-    date: new Date('2024-07-15'),
+    date: new Date('2025-06-15'),
     location: 'Sidi Bou Said Cultural Center',
 
     status: 'upcoming',
