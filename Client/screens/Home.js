@@ -128,11 +128,11 @@ export default function Home({ navigation }) {
       color: "#FFD166",
       gradient: ['#FFD166', '#FFC107'],
     },
-    { 
-      id: 4, 
-      title: "Events", 
-      data: events, 
-      icon: "calendar-alt", 
+    {
+      id: 4,
+      title: "Events",
+      data: events,
+      icon: "calendar-alt",
       screen: "Events",
       color: "#9C27B0",
       gradient: ['#9C27B0', '#6A0572'],
@@ -161,7 +161,7 @@ export default function Home({ navigation }) {
   const renderCampaignCard = (item, index) => {
     const progress = Math.random() * 100;
     const progressWidth = `${progress}%`;
-    
+
     return (
       <TouchableOpacity
         key={item.id || index}
@@ -268,7 +268,7 @@ export default function Home({ navigation }) {
               resizeMode="cover"
             />
           ) : (
-            <View style={[styles.campaignImagePlaceholder, { borderTopLeftRadius: 16, borderTopRightRadius: 16, height: '100%' }] }>
+            <View style={[styles.campaignImagePlaceholder, { borderTopLeftRadius: 16, borderTopRightRadius: 16, height: '100%' }]}>
               <FontAwesome5 name="gift" size={24} color="#fff" />
             </View>
           )}
@@ -302,10 +302,10 @@ export default function Home({ navigation }) {
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-      
+
       {/* Animated Header */}
       <Animated.View style={[styles.header, { height: headerHeight }]}>
-        <Animated.View 
+        <Animated.View
           style={[styles.headerContent, { opacity: headerContentOpacity, backgroundColor: '#00C44F', borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }]}
         >
           <LottieView
@@ -316,13 +316,13 @@ export default function Home({ navigation }) {
           />
         </Animated.View>
         {/* Compact header title (visible on scroll) */}
-        <Animated.View 
+        <Animated.View
           style={[styles.headerTitleContainer, { opacity: headerTitleOpacity }]}
         >
           <Text style={styles.headerTitle}>Sadaꓘa</Text>
         </Animated.View>
         <View style={styles.headerButtons}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.headerButton, { marginRight: 12 }]}
             onPress={() => navigation.navigate('Conversation')}
           >
@@ -345,7 +345,7 @@ export default function Home({ navigation }) {
               </View>
             )}
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.headerButton, styles.profileButton]}
             onPress={() => setProfileMenuVisible(true)}
           >
@@ -444,22 +444,22 @@ export default function Home({ navigation }) {
                         Alert.alert('Error', 'Please describe your problem.');
                         return;
                       }
-                  
+
                       try {
                         const userId = await AsyncStorage.getItem('userUID');
-                        
+
                         if (!userId) {
                           Alert.alert('Error', 'Please login to submit a report');
                           return;
                         }
-                  
+
                         await axios.post(`${API_BASE}/report/createReport`, {
                           reason: customReason.trim(),
                           userId: userId,
                           itemType: "general",
                           itemId: null
                         });
-                  
+
                         Alert.alert('Thank you', 'Your report has been submitted.');
                         setReportModalVisible(false);
                         setCustomReason('');
@@ -478,11 +478,19 @@ export default function Home({ navigation }) {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* Search Bar (visible only at top) */}
+      {/* Search Bar (always visible) */}
       <Animated.View
         style={[
           styles.searchContainer,
-          { opacity: headerContentOpacity }
+          {
+            transform: [{
+              translateY: scrollY.interpolate({
+                inputRange: [0, HEADER_SCROLL_DISTANCE],
+                outputRange: [HEADER_MAX_HEIGHT - 85, 0],
+                extrapolate: 'clamp'
+              })
+            }]
+          }
         ]}
       >
         <View style={styles.searchBar}>
@@ -507,8 +515,8 @@ export default function Home({ navigation }) {
         }
         scrollEventThrottle={16}
         refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
+          <RefreshControl
+            refreshing={refreshing}
             onRefresh={onRefresh}
             colors={["#4CAF50"]}
             tintColor="#4CAF50"
@@ -524,15 +532,15 @@ export default function Home({ navigation }) {
         ) : (
           <>
             {/* Stats Grid */}
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false} 
-              style={{ 
-                paddingLeft: 20, 
-                marginBottom: 20, 
-                marginTop: 95,
-              }} 
-              contentContainerStyle={{ 
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{
+                paddingLeft: 20,
+                marginBottom: 20,
+                marginTop: 45, // Reduced from 65 to 45 to maintain proper spacing
+              }}
+              contentContainerStyle={{
                 paddingRight: 20,
                 paddingTop: 25,
                 gap: 10,
@@ -569,7 +577,7 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="star" size={16} color="#4CAF50" style={styles.sectionIcon} />
                   <Text style={styles.sectionTitle}>Featured Campaigns</Text>
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.seeAllButton}
                   onPress={() => navigation.navigate("Campaign")}
                 >
@@ -577,9 +585,9 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
                 </TouchableOpacity>
               </View>
-              
-              <ScrollView 
-                horizontal 
+
+              <ScrollView
+                horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.campaignsScrollContent}
               >
@@ -601,7 +609,7 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="gift" size={16} color="#FFD166" style={styles.sectionIcon} />
                   <Text style={styles.sectionTitle}>Donation Items</Text>
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.seeAllButton}
                   onPress={() => navigation.navigate("Donations")}
                 >
@@ -632,7 +640,7 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="users" size={16} color="#4ECDC4" style={styles.sectionIcon} />
                   <Text style={styles.sectionTitle}>People In Need</Text>
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.seeAllButton}
                   onPress={() => navigation.navigate("InNeed")}
                 >
@@ -640,7 +648,7 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
                 </TouchableOpacity>
               </View>
-              
+
               {Array.isArray(inNeeds) && inNeeds.length > 0 ? (
                 inNeeds.slice(0, 3).map((inNeed, index) => renderInNeedCard(inNeed, index))
               ) : (
@@ -658,7 +666,7 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="calendar-alt" size={16} color="#9C27B0" style={styles.sectionIcon} />
                   <Text style={styles.sectionTitle}>Events</Text>
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.seeAllButton}
                   onPress={() => navigation.navigate("Events")}
                 >
@@ -666,8 +674,8 @@ export default function Home({ navigation }) {
                   <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
                 </TouchableOpacity>
               </View>
-              <ScrollView 
-                horizontal 
+              <ScrollView
+                horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.campaignsScrollContent}
               >
@@ -713,7 +721,7 @@ export default function Home({ navigation }) {
             <View style={styles.impactSection}>
               <Text style={styles.impactTitle}>Your Impact</Text>
               <Text style={styles.impactSubtitle}>Together we're making a difference</Text>
-              
+
               <View style={styles.impactStats}>
                 <View style={styles.impactStatCard}>
                   <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}>
@@ -722,7 +730,7 @@ export default function Home({ navigation }) {
                   <Text style={styles.impactStatValue}>+120K TND</Text>
                   <Text style={styles.impactStatLabel}>Funds Raised</Text>
                 </View>
-                
+
                 <View style={styles.impactStatCard}>
                   <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(78, 205, 196, 0.1)' }]}>
                     <FontAwesome5 name="users" size={20} color="#4ECDC4" />
@@ -730,7 +738,7 @@ export default function Home({ navigation }) {
                   <Text style={styles.impactStatValue}>5,000+</Text>
                   <Text style={styles.impactStatLabel}>People Helped</Text>
                 </View>
-                
+
                 <View style={styles.impactStatCard}>
                   <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 209, 102, 0.1)' }]}>
                     <FontAwesome5 name="globe-americas" size={20} color="#FFD166" />
@@ -790,7 +798,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     position: 'absolute',
-    top: HEADER_MAX_HEIGHT - 55, // Changed from -45 to -55 to move search bar higher
+    top: HEADER_MAX_HEIGHT - 170, // Changed from -35 to -20 to move search bar lower
     left: 20,
     right: 20,
     zIndex: 1000,
@@ -799,8 +807,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 16,
+    padding: 14,
+    borderRadius: 12,
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -815,10 +823,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    marginTop: HEADER_MAX_HEIGHT - 55, // Update to match searchContainer
+    marginTop: HEADER_MAX_HEIGHT - 25, // Update to match searchContainer
   },
   scrollContent: {
-    paddingBottom: 30,
+    paddingBottom: 10,
   },
   loader: {
     marginTop: 50,

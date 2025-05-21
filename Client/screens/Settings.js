@@ -1,22 +1,25 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Switch,
-  TouchableOpacity,
-  Alert
+  View, Text, StyleSheet, ScrollView, Switch, 
+  TouchableOpacity, Alert, Dimensions, Animated,
+  TouchableWithoutFeedback
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 
+const { width, height } = Dimensions.get('window');
+
 export default function Settings({ navigation }) {
   const [notifications, setNotifications] = useState(true);
+  const [isVisible, setIsVisible] = useState(true);
+  const slideAnim = useState(new Animated.Value(0))[0];
 
-  const SettingItem = ({ icon, label, value, onValueChange, type = 'toggle' }) => (
-    <View style={styles.settingItem}>
+  const SettingItem = ({ icon, label, value, onValueChange, type = 'toggle', onPress }) => (
+    <TouchableOpacity 
+      style={styles.settingItem}
+      onPress={type === 'link' ? onPress : null}
+    >
       <View style={styles.settingLeft}>
         <Ionicons name={icon} size={24} color="#4CAF50" />
         <Text style={styles.settingLabel}>{label}</Text>
@@ -31,7 +34,7 @@ export default function Settings({ navigation }) {
       ) : (
         <Ionicons name="chevron-forward" size={24} color="#666" />
       )}
-    </View>
+    </TouchableOpacity>
   );
 
   const handleDeleteAccount = () => {
@@ -61,77 +64,163 @@ export default function Settings({ navigation }) {
     );
   };
 
+  const hide = () => {
+    Animated.timing(slideAnim, {
+      toValue: height,
+      duration: 300,
+      useNativeDriver: true
+    }).start(() => {
+      setIsVisible(false);
+      navigation.goBack();
+    });
+  };
+
+  const show = () => {
+    setIsVisible(true);
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true
+    }).start();
+  };
+
+  if (!isVisible) {
+    return null;
+  }
+
   return (
-    <ScrollView style={styles.container}>
-      <LinearGradient
-        colors={['#4CAF50', '#45a049']}
-        style={styles.header}
+    <>
+      <TouchableWithoutFeedback onPress={hide}>
+        <View style={styles.overlay} />
+      </TouchableWithoutFeedback>
+      
+      <Animated.View 
+        style={[
+          styles.container,
+          {
+            transform: [{ translateY: slideAnim }]
+          }
+        ]}
       >
-        <Text style={styles.headerTitle}>Settings</Text>
-      </LinearGradient>
-
-      <View style={styles.content}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notifications</Text>
-          <View style={styles.card}>
-            <SettingItem
-              icon="notifications-outline"
-              label="Push Notifications"
-              value={notifications}
-              onValueChange={setNotifications}
-            />
-          </View>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Settings</Text>
+          <TouchableOpacity onPress={hide}>
+            <Ionicons name="close" size={24} color="#fff" />
+          </TouchableOpacity>
         </View>
 
-        
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
-          <View style={styles.card}>
-            <SettingItem
-              icon="information-circle-outline"
-              label="Privacy Policy"
-              type="link"
-              onValueChange={() => {}}
-            />
-            <SettingItem
-              icon="document-text-outline"
-              label="Terms of Service"
-              type="link"
-              onValueChange={() => {}}
-            />
-            <SettingItem
-              icon="help-circle-outline"
-              label="Help & Support"
-              type="link"
-              onValueChange={() => {}}
-            />
+        <ScrollView style={styles.content}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Account</Text>
+            <View style={styles.card}>
+              <SettingItem
+                icon="person-outline"
+                label="Edit Profile"
+                type="link"
+                onPress={() => {
+                  hide();
+                  navigation.navigate('EditProfile');
+                }}
+              />
+              <SettingItem
+                icon="notifications-outline"
+                label="Push Notifications"
+                value={notifications}
+                onValueChange={(value) => {
+                  setNotifications(value);
+                  // Add your notification toggle logic here
+                }}
+              />
+            </View>
           </View>
-        </View>
 
-        <TouchableOpacity 
-          style={styles.deleteButton}
-          onPress={handleDeleteAccount}
-        >
-          <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
-          <Text style={styles.deleteButtonText}>Delete Account</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Privacy & Security</Text>
+            <View style={styles.card}>
+              <SettingItem
+                icon="lock-closed-outline"
+                label="Change Password" 
+                type="link"
+                onPress={() => {
+                  hide();
+                  navigation.navigate('ChangePassword');
+                }}
+              />
+              <SettingItem
+                icon="shield-checkmark-outline"
+                label="Privacy Settings"
+                type="link"
+                onPress={() => {
+                  hide();
+                  navigation.navigate('PrivacySettings');
+                }}
+              />
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Help & Support</Text>
+            <View style={styles.card}>
+              <SettingItem
+                icon="help-circle-outline"
+                label="FAQ"
+                type="link"
+                onPress={() => {
+                  hide();
+                  navigation.navigate('FAQ');
+                }}
+              />
+              <SettingItem
+                icon="mail-outline"
+                label="Contact Us"
+                type="link"
+                onPress={() => {
+                  hide();
+                  navigation.navigate('ContactUs');
+                }}
+              />
+            </View>
+          </View>
+
+          <TouchableOpacity 
+            style={styles.deleteButton}
+            onPress={handleDeleteAccount}
+          >
+            <Ionicons name="trash-outline" size={24} color="#FF6B6B" />
+            <Text style={styles.deleteButtonText}>Delete Account</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </Animated.View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
   container: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: width * 0.85,
+    height: height,
     backgroundColor: '#f5f5f5',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: -2, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    zIndex: 1000,
   },
   header: {
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    paddingTop: 50,
+    backgroundColor: '#4CAF50',
   },
   headerTitle: {
     fontSize: 24,
@@ -146,10 +235,12 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#666',
     marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   card: {
     backgroundColor: '#fff',
@@ -187,6 +278,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 15,
     marginTop: 24,
+    marginBottom: 40,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
