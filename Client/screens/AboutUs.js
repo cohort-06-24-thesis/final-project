@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -104,11 +104,11 @@ export default function AboutUs({ navigation }) {
     return {
       opacity: fadeAnim,
       transform: [
-        { 
+        {
           translateY: Animated.multiply(
-            translateYAnim, 
+            translateYAnim,
             new Animated.Value(1 + index * 0.2)
-          ) 
+          )
         },
         { scale: Animated.add(0.9, Animated.multiply(scaleAnim, new Animated.Value(0.1))) }
       ],
@@ -252,7 +252,7 @@ export default function AboutUs({ navigation }) {
             <View style={styles.glassCard}>
               <BlurView intensity={80} tint="light" style={styles.blurViewCard}>
                 <Text style={styles.sectionText}>
-                  Sadaꓘa is dedicated to creating a world where acts of kindness and charity are easily accessible to everyone. We believe in the power of community and the impact of collective giving.
+                  Sadaꓘa is dedicated to making acts of kindness and charity accessible to everyone in Tunisia. We believe in the power of our Tunisian community and the impact of collective giving to support local causes and families in need.
                 </Text>
               </BlurView>
             </View>
@@ -279,7 +279,7 @@ export default function AboutUs({ navigation }) {
             <View style={styles.glassCard}>
               <BlurView intensity={80} tint="light" style={styles.blurViewCard}>
                 <Text style={styles.sectionText}>
-                  To become the most trusted and efficient platform for charitable giving, connecting donors with those in need, and making a positive impact in communities worldwide.
+                  To become Tunisia's most trusted and efficient platform for charitable giving, connecting donors with those in need across the country, and making a positive impact in every region.
                 </Text>
               </BlurView>
             </View>
@@ -295,10 +295,10 @@ export default function AboutUs({ navigation }) {
             </View>
             <View style={styles.featuresGrid}>
               {[
-                { icon: "hand-holding-heart", title: "Easy Donations", text: "Simple and secure donation process" },
-                { icon: "users", title: "Community", text: "Connect with like-minded people" },
-                { icon: "chart-line", title: "Transparency", text: "Track your impact in real-time" },
-                { icon: "shield-alt", title: "Security", text: "Safe and secure transactions" }
+                { icon: "hand-holding-heart", title: "Easy Donations", text: "Donate easily and securely to Tunisian causes" },
+                { icon: "users", title: "Community", text: "Connect with Tunisians who care" },
+                { icon: "chart-line", title: "Transparency", text: "Track your impact in Tunisia in real-time" },
+                { icon: "shield-alt", title: "Security", text: "Safe and secure transactions for all Tunisians" }
               ].map((feature, index) => (
                 <Animated.View 
                   key={index} 
@@ -342,9 +342,9 @@ export default function AboutUs({ navigation }) {
             </View>
             <View style={styles.statsContainer}>
               {[
-                { value: "10K+", label: "Donors" },
-                { value: "$500K", label: "Raised" },
-                { value: "50+", label: "Projects" },
+                { value: "10K+", label: "Tunisian Donors" },
+                { value: "1.5M TND", label: "Raised Locally" },
+                { value: "100+", label: "Projects in Tunisia" },
               ].map((stat, index) => (
                 <View key={index} style={styles.statItem}>
                   <Text style={styles.statValue}>{stat.value}</Text>
@@ -377,7 +377,7 @@ export default function AboutUs({ navigation }) {
               <BlurView intensity={80} tint="light" style={styles.blurViewCard}>
                 <View style={styles.contactInfo}>
                   {[
-                    { icon: "mail-outline", text: "support@sadaka.com" },
+                    { icon: "mail-outline", text: "support@sadaka.tn" },
                     { icon: "call-outline", text: "+216 XX XXX XXX" },
                     { icon: "location-outline", text: "Tunis, Tunisia" }
                   ].map((contact, index) => (
@@ -394,43 +394,6 @@ export default function AboutUs({ navigation }) {
                 </View>
               </BlurView>
             </View>
-          </Animated.View>
-
-          {/* Support Us Button with Animation */}
-          <Animated.View 
-            style={[
-              styles.supportButtonContainer,
-              {
-                opacity: fadeAnim,
-                transform: [
-                  { scale: scaleAnim }
-                ]
-              }
-            ]}
-          >
-            <TouchableOpacity
-              onPress={() => nav.navigate('Payment', { campaign: { title: 'Support the Team', id: 'support' } })}
-              style={styles.supportButtonWrapper}
-            >
-              <LinearGradient
-                colors={['#00C44F', '#80ED99']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.supportButton}
-              >
-                <View style={styles.heartContainer}>
-                  <LottieView
-                    ref={lottieRef}
-                    source={require('../assets/heart-animation.json')}
-                    style={styles.lottieHeart}
-                    autoPlay={true}
-                    loop={true}
-                    speed={0.8}
-                  />
-                </View>
-                <Text style={styles.supportButtonText}>Support Us</Text>
-              </LinearGradient>
-            </TouchableOpacity>
           </Animated.View>
 
           {/* Social Media Links */}
@@ -450,8 +413,8 @@ export default function AboutUs({ navigation }) {
           {/* Simple Support Sadaꓘa Button (Above Footer) */}
           <View style={{ alignItems: 'center', marginBottom: 8, marginTop: -8 }}>
             <TouchableOpacity
-              onPress={() => nav.navigate('Payment', { campaign: { title: 'Support Sadaꓘa', id: 'support-sadaka' } })}
               style={styles.simpleSupportButton}
+              onPress={() => nav.navigate('SupportScreen')}
             >
               <Text style={styles.simpleSupportButtonText}>Support Sadaꓘa</Text>
             </TouchableOpacity>
@@ -721,43 +684,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#555',
   },
-  supportButtonContainer: {
-    marginVertical: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  supportButtonWrapper: {
-    width: '100%',
-    maxWidth: 300,
-  },
-  supportButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-    minHeight: 60,
-  },
-  heartContainer: {
-    width: 50,
-    height: 50,
-    position: 'absolute',
-    left: 20,
-    top: '50%',
-    transform: [{ translateY: -25 }],
-    zIndex: 1,
-  },
-  lottieHeart: {
-    width: '100%',
-    height: '100%',
-  },
-  supportButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 40,
-  },
   socialContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -777,6 +703,27 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  simpleSupportButton: {
+    backgroundColor: '#00C44F',
+    paddingVertical: 16,
+    paddingHorizontal: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 180,
+    elevation: 2,
+    shadowColor: '#00C44F',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+  },
+  simpleSupportButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
+    textTransform: 'none',
   },
   footer: {
     alignItems: 'center',
@@ -802,26 +749,5 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  simpleSupportButton: {
-    backgroundColor: '#00C44F',
-    paddingVertical: 16,
-    paddingHorizontal: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 180,
-    elevation: 2,
-    shadowColor: '#00C44F',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-  },
-  simpleSupportButtonText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-    textTransform: 'none',
   },
 });

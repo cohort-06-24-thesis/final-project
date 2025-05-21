@@ -5,7 +5,7 @@ const { Payment, CampaignDonations } = require('../Database/index.js');
 const paymentController = {
   createPaymentIntent: async (req, res) => {
     try {
-      const { amount, campaignId } = req.body;
+      const { amount, campaignId, type } = req.body;
 
       // Convert amount to cents for Stripe
       const amountInCents = Math.round(amount * 100);
@@ -18,33 +18,42 @@ const paymentController = {
           enabled: true,
         },
         metadata: {
-          campaignId
+          campaignId,
+          type
         }
       });
 
-      // Save payment information to database
-      const payment = await Payment.create({
-        amount: amount.toFixed(2),
-        transaction_id: paymentIntent.id,
-        campaignId: campaignId
-      });
+      // Only create payment record for campaign donations
+      if (type !== 'team_support') {
+        // Save payment information to database
+        const payment = await Payment.create({
+          amount: amount.toFixed(2),
+          transaction_id: paymentIntent.id,
+          campaignId: campaignId
+        });
 
-      // Find the campaign and update its totalRaised and progress
-      const campaign = await CampaignDonations.findByPk(campaignId);
-      if (campaign) {
-        const newTotalRaised = parseFloat(campaign.totalRaised) + parseFloat(amount);
-        const newProgress = (newTotalRaised / campaign.goal) * 100;
-        
-        await campaign.update({
-          totalRaised: newTotalRaised,
-          progress: newProgress
+        // Find the campaign and update its totalRaised and progress
+        const campaign = await CampaignDonations.findByPk(campaignId);
+        if (campaign) {
+          const newTotalRaised = parseFloat(campaign.totalRaised) + parseFloat(amount);
+          const newProgress = (newTotalRaised / campaign.goal) * 100;
+          
+          await campaign.update({
+            totalRaised: newTotalRaised,
+            progress: newProgress
+          });
+        }
+
+        // Return client secret and payment ID to frontend
+        return res.json({
+          clientSecret: paymentIntent.client_secret,
+          paymentId: payment.id
         });
       }
 
-      // Return client secret to frontend
+      // For team support, just return the client secret
       res.json({
-        clientSecret: paymentIntent.client_secret,
-        paymentId: payment.id
+        clientSecret: paymentIntent.client_secret
       });
 
     } catch (error) {

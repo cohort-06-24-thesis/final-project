@@ -43,6 +43,7 @@ import NotificationScreen from "./screens/notification";
 import PickLocationScreen from "./screens/PickLocationScreen";
 import HelpCenter from "./screens/HelpCenter";
 import AboutUs from "./screens/AboutUs";
+import SupportScreen from "./screens/SupportScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -281,14 +282,17 @@ export default function App() {
             <Stack.Screen
               name="HelpCenter"
               component={HelpCenter}
-              options={{
-                headerShown: false,
-              }}
+              options={{ title: "Help Center" }}
             />
             <Stack.Screen
               name="AboutUs"
               component={AboutUs}
               options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="SupportScreen"
+              component={SupportScreen}
+              options={{ title: "Support Sadaꓘa", headerShown: true }}
             />
           </Stack.Navigator>
         </NavigationContainer>

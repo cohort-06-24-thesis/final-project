@@ -24,7 +24,7 @@ const Comment= require('../models/comment.model')(sequelize,DataTypes);
 const inNeed= require('../models/InNeed')(sequelize,DataTypes);
 const EventParticipantModel = require('../models/EventParticipant.model');
 const EventParticipant = EventParticipantModel(sequelize, DataTypes);
-
+const TeamSupport = require('../models/TeamSupport.model')(sequelize, DataTypes);
 
 const CampaignDonations = require('../models/CampaignDonations')(sequelize,DataTypes);
 const Event = require('../models/Event.model')(sequelize,DataTypes);
@@ -148,6 +148,11 @@ Comment.belongsTo(inNeed, {
     as: 'inNeed'
 });
 
+User.hasMany(TeamSupport, { foreignKey: 'UserId' });
+TeamSupport.belongsTo(User, { foreignKey: 'UserId' });
+Payment.hasMany(TeamSupport, { foreignKey: 'paymentId' });
+TeamSupport.belongsTo(Payment, { foreignKey: 'paymentId' });
+
   try {
    sequelize.authenticate();
     console.log('Connection has been established successfully.');
@@ -182,6 +187,7 @@ module.exports={
     Message,
     Conversation,
     EventParticipant,
+    TeamSupport,
 };
 
 
