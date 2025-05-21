@@ -176,7 +176,7 @@ export default function App() {
             <Stack.Screen
               name="AddInNeed"
               component={AddInNeed}
-              options={{ title: "Add In Need", headerShown: true }}
+              options={{ title: "", headerShown: true }}
             />
             <Stack.Screen
               name="AddDonation"
