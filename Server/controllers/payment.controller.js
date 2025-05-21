@@ -6,7 +6,7 @@ const { getIO } = require('../socket');
 const paymentController = {
   createPaymentIntent: async (req, res) => {
     try {
-      const { amount, campaignId, userId } = req.body;
+      const { amount, campaignId, type } = req.body;
 
       const amountInCents = Math.round(amount * 100);
 
@@ -18,13 +18,41 @@ const paymentController = {
         },
         metadata: {
           campaignId,
-          userId
+          type
         }
       });
 
+      // Only create payment record for campaign donations
+      if (type !== 'team_support') {
+        // Save payment information to database
+        const payment = await Payment.create({
+          amount: amount.toFixed(2),
+          transaction_id: paymentIntent.id,
+          campaignId: campaignId
+        });
+
+        // Find the campaign and update its totalRaised and progress
+        const campaign = await CampaignDonations.findByPk(campaignId);
+        if (campaign) {
+          const newTotalRaised = parseFloat(campaign.totalRaised) + parseFloat(amount);
+          const newProgress = (newTotalRaised / campaign.goal) * 100;
+          
+          await campaign.update({
+            totalRaised: newTotalRaised,
+            progress: newProgress
+          });
+        }
+
+        // Return client secret and payment ID to frontend
+        return res.json({
+          clientSecret: paymentIntent.client_secret,
+          paymentId: payment.id
+        });
+      }
+
+      // For team support, just return the client secret
       res.json({
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id
+        clientSecret: paymentIntent.client_secret
       });
 
     } catch (error) {
