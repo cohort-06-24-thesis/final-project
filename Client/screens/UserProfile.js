@@ -607,40 +607,6 @@ const ActionButton = ({ icon, label, onPress, color = "#666", description }) => 
               }}
               color="#4CAF50"
             />
-            <ActionButton
-              icon="image-outline"
-              label="Change Avatar"
-              description="Update your profile picture"
-              onPress={() => {
-                toggleSidebar();
-                navigation.navigate('EditProfile');
-              }}
-              color="#5C6BC0"
-            />
-          </View>
-
-          <View style={styles.settingsGroup}>
-            <Text style={styles.groupLabel}>Preferences</Text>
-            <ActionButton
-              icon="notifications-outline"
-              label="Notifications"
-              description="Manage your notifications"
-              onPress={() => {
-                toggleSidebar();
-                navigation.navigate('Settings');
-              }}
-              color="#FF9800"
-            />
-            <ActionButton
-              icon="shield-checkmark-outline"
-              label="Privacy"
-              description="Control your privacy settings"
-              onPress={() => {
-                toggleSidebar();
-                navigation.navigate('Settings');
-              }}
-              color="#009688"
-            />
           </View>
 
           <View style={styles.settingsGroup}>
@@ -649,15 +615,11 @@ const ActionButton = ({ icon, label, onPress, color = "#666", description }) => 
               icon="help-circle-outline"
               label="Help Center"
               description="Get help and support"
-              onPress={() => {}}
+              onPress={() => {
+                toggleSidebar();
+                navigation.navigate('HelpCenter'); // Add this navigation
+              }}
               color="#7E57C2"
-            />
-            <ActionButton
-              icon="mail-outline"
-              label="Contact Us"
-              description="Send us a message"
-              onPress={() => {}}
-              color="#26A69A"
             />
           </View>
 
