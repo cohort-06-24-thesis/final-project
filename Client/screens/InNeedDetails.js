@@ -487,7 +487,7 @@ export default function InNeedDetails({ route, navigation }) {
           >
             <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
           </TouchableOpacity>
-          <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
+         
         </View>
 
         {String(item?.User?.id) !== String(Uid) ? (

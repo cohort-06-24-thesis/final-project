@@ -20,6 +20,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
+const BADGE_LEVELS = [
+  { name: 'Beginner', icon: 'seed', threshold: 1, color: '#4CAF50' },
+  { name: 'Helper', icon: 'handshake', threshold: 5, color: '#2196F3' },
+  { name: 'Supporter', icon: 'heart', threshold: 10, color: '#9C27B0' },
+  { name: 'Champion', icon: 'trophy', threshold: 20, color: '#FF9800' },
+  { name: 'Legend', icon: 'crown', threshold: 50, color: '#F44336' }
+];
+
 export default function OtherUser({ route, navigation }) {
   const { userId } = route.params; // Get the userId from navigation params
   const [user, setUser] = useState(null);
@@ -37,10 +45,23 @@ export default function OtherUser({ route, navigation }) {
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [customReason, setCustomReason] = useState('');
+  const [userBadge, setUserBadge] = useState(null);
 
   useEffect(() => {
     fetchUserData();
   }, [userId]);
+
+  const calculateUserBadge = (totalActivity) => {
+    // Find the highest badge level the user qualifies for
+    const badge = BADGE_LEVELS.reduce((highest, current) => {
+      if (totalActivity >= current.threshold) {
+        return current;
+      }
+      return highest;
+    }, BADGE_LEVELS[0]);
+    
+    return badge;
+  };
 
   const fetchUserData = async () => {
     try {
@@ -71,6 +92,10 @@ export default function OtherUser({ route, navigation }) {
         const userCampaigns = campaigns.data?.filter(campaign => campaign.UserId === userId) || [];
         const userInNeeds = inNeeds.data?.filter(need => need.UserId === userId) || [];
 
+        const totalActivity = userDonations.length + userEvents.length + userCampaigns.length + userInNeeds.length;
+        const badge = calculateUserBadge(totalActivity);
+        setUserBadge(badge);
+
         setStats({
           donations: userDonations.length,
           events: userEvents.length,
@@ -95,7 +120,7 @@ export default function OtherUser({ route, navigation }) {
 
         setUser(prev => ({
           ...prev,
-          totalHelped: userDonations.length + userEvents.length + userCampaigns.length,
+          totalHelped: totalActivity,
           recentActivity
         }));
       }
@@ -176,6 +201,19 @@ export default function OtherUser({ route, navigation }) {
     </View>
   );
 
+  // Add BadgeDisplay component
+  const BadgeDisplay = ({ badge }) => (
+    <View style={styles.badgeContainer}>
+      <LinearGradient
+        colors={[badge.color, `${badge.color}80`]}
+        style={styles.badgeGradient}
+      >
+        <MaterialCommunityIcons name={badge.icon} size={24} color="#fff" />
+        <Text style={styles.badgeText}>{badge.name}</Text>
+      </LinearGradient>
+    </View>
+  );
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -213,10 +251,7 @@ export default function OtherUser({ route, navigation }) {
           </View>
           <Text style={styles.name}>{user?.name}</Text>
           <Text style={styles.email}>{user?.email}</Text>
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={20} color="#FFD700" />
-            <Text style={styles.rating}>{user?.rating?.toFixed(1) || '0.0'}</Text>
-          </View>
+          {userBadge && <BadgeDisplay badge={userBadge} />}
         </View>
       </LinearGradient>
 
@@ -484,21 +519,6 @@ const styles = StyleSheet.create({
     opacity: 0.9,
     marginBottom: 10,
     textAlign: 'center',
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-    marginBottom: 10,
-  },
-  rating: {
-    marginLeft: 5,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
   },
   content: {
     flex: 1,
@@ -877,5 +897,27 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: '#666',
     fontSize: 16,
-  }
+  },
+  badgeContainer: {
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  badgeGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
 });
