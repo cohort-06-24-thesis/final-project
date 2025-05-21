@@ -5,17 +5,14 @@ const teamSupportController = require('../controllers/teamSupport.controller');
 // Create a new team support donation
 router.post('/', teamSupportController.createTeamSupport);
 
-// Get all team support donations
-router.get('/all', teamSupportController.getAllTeamSupports);
+// Get all team support donations (admin only)
+router.get('/', teamSupportController.getAllTeamSupports);
 
 // Get team support donations for a specific user
-router.get('/user', teamSupportController.getUserTeamSupports);
+router.get('/user/:userUID', teamSupportController.getUserTeamSupports);
 
-// Get total team support amount
+// Get total amount of team support donations
 router.get('/total', teamSupportController.getTotalTeamSupport);
-
-// Update team support payment
-router.patch('/:id/payment', teamSupportController.updateTeamSupportPayment);
 
 // Get team support statistics
 router.get('/stats', teamSupportController.getTeamSupportStats);

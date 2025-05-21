@@ -1,4 +1,4 @@
-const { TeamSupport, User, Payment } = require('../Database');
+const { TeamSupport, User } = require('../Database');
 const { Op } = require('sequelize');
 
 // Create a new team support donation
@@ -45,11 +45,6 @@ const getAllTeamSupports = async (req, res) => {
                     model: User,
                     as: 'supporter',
                     attributes: ['id', 'name', 'email', 'profilePic']
-                },
-                {
-                    model: Payment,
-                    as: 'payment',
-                    attributes: ['id', 'amount', 'status', 'transaction_id']
                 }
             ],
             order: [['createdAt', 'DESC']]
@@ -77,13 +72,6 @@ const getUserTeamSupports = async (req, res) => {
 
         const teamSupports = await TeamSupport.findAll({
             where: { UserId: user.id },
-            include: [
-                {
-                    model: Payment,
-                    as: 'payment',
-                    attributes: ['id', 'amount', 'status', 'transaction_id']
-                }
-            ],
             order: [['createdAt', 'DESC']]
         });
 
@@ -100,15 +88,7 @@ const getUserTeamSupports = async (req, res) => {
 // Get total amount of team support donations
 const getTotalTeamSupport = async (req, res) => {
     try {
-        const total = await TeamSupport.sum('amount', {
-            include: [{
-                model: Payment,
-                as: 'payment',
-                where: {
-                    status: 'paid'
-                }
-            }]
-        });
+        const total = await TeamSupport.sum('amount');
 
         res.status(200).json({
             message: 'Total team support amount retrieved successfully',
@@ -122,61 +102,11 @@ const getTotalTeamSupport = async (req, res) => {
     }
 };
 
-// Update team support payment
-const updateTeamSupportPayment = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { transaction_id } = req.body;
-
-        const teamSupport = await TeamSupport.findByPk(id);
-        if (!teamSupport) {
-            return res.status(404).json({ message: 'Team support donation not found' });
-        }
-
-        // Update payment with transaction ID
-        const payment = await Payment.findByPk(teamSupport.paymentId);
-        if (!payment) {
-            return res.status(400).json({ message: 'Payment record not found' });
-        }
-
-        await payment.update({
-            transaction_id,
-            status: 'paid'
-        });
-
-        res.status(200).json({
-            message: 'Team support payment updated successfully',
-            data: teamSupport
-        });
-    } catch (error) {
-        console.error('Error updating team support payment:', error);
-        res.status(500).json({ message: 'Error updating team support payment' });
-    }
-};
-
 // Get team support statistics
 const getTeamSupportStats = async (req, res) => {
     try {
-        const totalDonations = await TeamSupport.count({
-            include: [{
-                model: Payment,
-                as: 'payment',
-                where: {
-                    status: 'paid'
-                }
-            }]
-        });
-        
-        const totalAmount = await TeamSupport.sum('amount', {
-            include: [{
-                model: Payment,
-                as: 'payment',
-                where: {
-                    status: 'paid'
-                }
-            }]
-        });
-        
+        const totalDonations = await TeamSupport.count();
+        const totalAmount = await TeamSupport.sum('amount');
         const averageAmount = totalAmount / totalDonations || 0;
 
         res.status(200).json({
@@ -198,6 +128,5 @@ module.exports = {
     getAllTeamSupports,
     getUserTeamSupports,
     getTotalTeamSupport,
-    updateTeamSupportPayment,
     getTeamSupportStats
 }; 

@@ -152,8 +152,6 @@ Comment.belongsTo(inNeed, {
 
 User.hasMany(TeamSupport, { foreignKey: 'UserId' });
 TeamSupport.belongsTo(User, { foreignKey: 'UserId' });
-Payment.hasMany(TeamSupport, { foreignKey: 'paymentId' });
-TeamSupport.belongsTo(Payment, { foreignKey: 'paymentId' });
 
   try {
    sequelize.authenticate();
