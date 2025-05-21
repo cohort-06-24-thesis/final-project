@@ -214,7 +214,7 @@ export default function DonationDetails({ route, navigation }) {
           }}
         >
           <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
-          <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
+          {/* <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text> */}
         </TouchableOpacity>
         {String(item?.User?.id) === String(currentUserId) ? (
           <TouchableOpacity 

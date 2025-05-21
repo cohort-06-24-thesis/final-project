@@ -38,45 +38,47 @@ const DonationItemDetails = () => {
     };
 
     if (!item) return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             <div className="text-lg font-medium text-gray-600 animate-pulse">Loading item details...</div>
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 sm:p-6">
-            <div className="mx-auto max-w-3xl w-full bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-                <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">{item.title}</h1>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+            <div className="mx-auto max-w-4xl w-full bg-white rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 space-y-8">
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">{item.title}</h1>
                 
                 {item.image?.length > 0 ? (
-                    <div className="relative mb-6">
-                        <div className="overflow-hidden rounded-xl">
+                    <div className="relative rounded-2xl overflow-hidden shadow-lg">
+                        <div className="aspect-w-16 aspect-h-9">
                             <img 
                                 src={item.image[currentImageIndex]} 
                                 alt={item.title} 
-                                className="w-full h-64 sm:h-80 object-cover transition-transform duration-300"
+                                className="w-full h-[400px] object-cover transition-all duration-500 hover:scale-105"
                             />
                         </div>
                         {item.image.length > 1 && (
                             <>
                                 <button 
                                     onClick={prevImage}
-                                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white transition-colors"
+                                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 p-3 rounded-full shadow-lg hover:bg-white transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-gray-400"
                                 >
-                                    <ChevronLeft className="w-5 h-5 text-gray-600" />
+                                    <ChevronLeft className="w-6 h-6 text-gray-700" />
                                 </button>
                                 <button 
                                     onClick={nextImage}
-                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white transition-colors"
+                                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 p-3 rounded-full shadow-lg hover:bg-white transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-gray-400"
                                 >
-                                    <ChevronRight className="w-5 h-5 text-gray-600" />
+                                    <ChevronRight className="w-6 h-6 text-gray-700" />
                                 </button>
-                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-3">
                                     {item.image.map((_, index) => (
                                         <div
                                             key={index}
-                                            className={`w-2 h-2 rounded-full ${
-                                                index === currentImageIndex ? "bg-gray-800" : "bg-gray-400"
+                                            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                                                index === currentImageIndex 
+                                                    ? "bg-white scale-125" 
+                                                    : "bg-white/50 hover:bg-white/75"
                                             }`}
                                         />
                                     ))}
@@ -85,37 +87,47 @@ const DonationItemDetails = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="w-full h-64 sm:h-80 bg-gray-200 rounded-xl flex items-center justify-center mb-6">
-                        <span className="text-gray-500">No image available</span>
+                    <div className="w-full h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center">
+                        <span className="text-gray-500 text-lg">No image available</span>
                     </div>
                 )}
 
-                <div className="space-y-4">
-                    <p className="text-gray-700">
-                        <span className="font-medium">Description:</span> {item.description}
-                    </p>
-                    <p className="text-gray-600">
-                        <span className="font-medium">Location:</span> {item.location}
-                    </p>
-                    <p className="text-gray-600">
-                        <span className="font-medium">Status:</span> {item.status}
-                    </p>
-                    <p className="text-gray-600">
-                        <span className="font-medium">Approved:</span> 
-                        <span className={`ml-2 inline-block px-2 py-1 rounded-full text-sm ${
-                            item.isApproved ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                        }`}>
-                            {item.isApproved ? "Yes" : "No"}
-                        </span>
-                    </p>
+                <div className="space-y-6 bg-gray-50 rounded-2xl p-6">
+                    <div className="space-y-4">
+                        <p className="text-gray-700 leading-relaxed">
+                            <span className="font-semibold text-gray-900">Description:</span> {item.description}
+                        </p>
+                        <p className="text-gray-700">
+                            <span className="font-semibold text-gray-900">Location:</span> {item.location}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+                        <div className="flex items-center space-x-3">
+                            <span className="font-semibold text-gray-900">Status:</span>
+                            <span className="px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
+                                {item.status}
+                            </span>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <span className="font-semibold text-gray-900">Approval:</span>
+                            <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                                item.isApproved 
+                                    ? "bg-green-100 text-green-700" 
+                                    : "bg-red-100 text-red-700"
+                            }`}>
+                                {item.isApproved ? "Approved" : "Not Approved"}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 <button 
                     onClick={toggleApproval}
-                    className={`mt-6 w-full sm:w-auto px-6 py-2.5 rounded-lg font-medium text-white transition-colors duration-200 shadow-md hover:shadow-lg ${
+                    className={`w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                         item.isApproved 
-                            ? "bg-red-600 hover:bg-red-700" 
-                            : "bg-green-600 hover:bg-green-700"
+                            ? "bg-red-600 hover:bg-red-700 focus:ring-red-500" 
+                            : "bg-green-600 hover:bg-green-700 focus:ring-green-500"
                     }`}
                 >
                     {item.isApproved ? "Mark as Not Approved" : "Mark as Approved"}

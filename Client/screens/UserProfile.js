@@ -25,6 +25,14 @@ import Animated, {
 
 const { width, height } = Dimensions.get('window');
 
+const BADGE_LEVELS = [
+  { name: 'Beginner', icon: 'seed', threshold: 1, color: '#4CAF50' },
+  { name: 'Helper', icon: 'handshake', threshold: 5, color: '#2196F3' },
+  { name: 'Supporter', icon: 'heart', threshold: 10, color: '#9C27B0' },
+  { name: 'Champion', icon: 'trophy', threshold: 20, color: '#FF9800' },
+  { name: 'Legend', icon: 'crown', threshold: 50, color: '#F44336' }
+];
+
 export default function UserProfile({ navigation }) {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState({
@@ -49,6 +57,19 @@ export default function UserProfile({ navigation }) {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const sidebarAnimation = useSharedValue(-width); // Change from -500 to -width
+  const [userBadge, setUserBadge] = useState(null);
+
+  const calculateUserBadge = (totalActivity) => {
+    // Find the highest badge level the user qualifies for
+    const badge = BADGE_LEVELS.reduce((highest, current) => {
+      if (totalActivity >= current.threshold) {
+        return current;
+      }
+      return highest;
+    }, BADGE_LEVELS[0]);
+    
+    return badge;
+  };
 
   useEffect(() => {
     fetchUserData();
@@ -91,6 +112,10 @@ export default function UserProfile({ navigation }) {
         const userCampaigns = campaigns.data?.filter(campaign => campaign.UserId === userId) || [];
         const userInNeeds = inNeeds.data?.filter(need => need.UserId === userId) || [];
 
+        const totalActivity = userDonations.length + userEvents.length + userCampaigns.length + userInNeeds.length;
+        const badge = calculateUserBadge(totalActivity);
+        setUserBadge(badge);
+
         // Set stats
         setStats({
           donations: userDonations.length,
@@ -117,7 +142,7 @@ export default function UserProfile({ navigation }) {
         // Update user with calculated data
         setUser(prev => ({
           ...prev,
-          totalHelped: userDonations.length + userEvents.length + userCampaigns.length,
+          totalHelped: totalActivity,
           recentActivity
         }));
       }
@@ -370,6 +395,19 @@ const ActionButton = ({ icon, label, onPress, color = "#666", description }) => 
     );
 };
 
+  // Add BadgeDisplay component
+  const BadgeDisplay = ({ badge }) => (
+    <View style={styles.badgeContainer}>
+      <LinearGradient
+        colors={[badge.color, `${badge.color}80`]}
+        style={styles.badgeGradient}
+      >
+        <MaterialCommunityIcons name={badge.icon} size={24} color="#fff" />
+        <Text style={styles.badgeText}>{badge.name}</Text>
+      </LinearGradient>
+    </View>
+  );
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -427,10 +465,7 @@ const ActionButton = ({ icon, label, onPress, color = "#666", description }) => 
             </View>
             <Text style={styles.name}>{user?.name || 'Anonymous'}</Text>
             <Text style={styles.email}>{user?.email}</Text>
-            <View style={styles.ratingContainer}>
-              <Ionicons name="star" size={20} color="#FFD700" />
-              <Text style={styles.rating}>{user?.rating?.toFixed(1) || '0.0'}</Text>
-            </View>
+            {userBadge && <BadgeDisplay badge={userBadge} />}
           </View>
         </LinearGradient>
 
@@ -607,40 +642,6 @@ const ActionButton = ({ icon, label, onPress, color = "#666", description }) => 
               }}
               color="#4CAF50"
             />
-            <ActionButton
-              icon="image-outline"
-              label="Change Avatar"
-              description="Update your profile picture"
-              onPress={() => {
-                toggleSidebar();
-                navigation.navigate('EditProfile');
-              }}
-              color="#5C6BC0"
-            />
-          </View>
-
-          <View style={styles.settingsGroup}>
-            <Text style={styles.groupLabel}>Preferences</Text>
-            <ActionButton
-              icon="notifications-outline"
-              label="Notifications"
-              description="Manage your notifications"
-              onPress={() => {
-                toggleSidebar();
-                navigation.navigate('Settings');
-              }}
-              color="#FF9800"
-            />
-            <ActionButton
-              icon="shield-checkmark-outline"
-              label="Privacy"
-              description="Control your privacy settings"
-              onPress={() => {
-                toggleSidebar();
-                navigation.navigate('Settings');
-              }}
-              color="#009688"
-            />
           </View>
 
           <View style={styles.settingsGroup}>
@@ -649,15 +650,11 @@ const ActionButton = ({ icon, label, onPress, color = "#666", description }) => 
               icon="help-circle-outline"
               label="Help Center"
               description="Get help and support"
-              onPress={() => {}}
+              onPress={() => {
+                toggleSidebar();
+                navigation.navigate('HelpCenter'); // Add this navigation
+              }}
               color="#7E57C2"
-            />
-            <ActionButton
-              icon="mail-outline"
-              label="Contact Us"
-              description="Send us a message"
-              onPress={() => {}}
-              color="#26A69A"
             />
           </View>
 
@@ -776,20 +773,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     opacity: 0.9,
     marginBottom: 10,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-  },
-  rating: {
-    marginLeft: 5,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
   },
   content: {
     flex: 1,
@@ -1323,5 +1306,27 @@ const styles = StyleSheet.create({
     padding: 8,
     backgroundColor: 'rgba(255,255,255,0.2)',
     borderRadius: 20,
+  },
+  badgeContainer: {
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  badgeGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
   },
 });
