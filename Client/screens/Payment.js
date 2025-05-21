@@ -21,10 +21,10 @@ export default function Payment({ route, navigation }) {
   const { campaign } = route.params;
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
-    const [Uid, setUid] = useState('');
+  const [Uid, setUid] = useState('');
   
   const { initPaymentSheet, presentPaymentSheet } = usePaymentSheet();
-    useEffect(() => {
+  useEffect(() => {
     const loadUid = async () => {
       const storedUid = await AsyncStorage.getItem('userUID');
       if (storedUid) {
@@ -51,11 +51,11 @@ export default function Payment({ route, navigation }) {
 
     setLoading(true);
     try {
+      // Create payment intent
       const response = await axios.post(`${API_BASE}/payment/create-intent`, {
         amount: parseFloat(amount),
         campaignId: campaign.id,
-         userId: Uid,
-        
+        userId: Uid,
       });
 
       if (!response.data?.clientSecret) {
@@ -79,9 +79,15 @@ export default function Payment({ route, navigation }) {
         throw new Error(paymentError.message);
       }
 
-      // Payment successful
-      Alert.alert("Success", "Payment completed successfully!");
-      navigation.goBack();
+      // Verify the payment after successful completion
+      const verifyResponse = await axios.get(`${API_BASE}/payment/verify/${response.data.paymentIntentId}`);
+      
+      if (verifyResponse.data.status === 'success') {
+        Alert.alert("Success", "Payment completed successfully!");
+        navigation.goBack();
+      } else {
+        throw new Error("Payment verification failed");
+      }
     } catch (error) {
       console.error("Payment error:", error);
       let errorMessage = "Failed to process payment.";
