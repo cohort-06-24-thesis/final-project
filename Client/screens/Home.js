@@ -308,6 +308,13 @@ export default function Home({ navigation }) {
         <Animated.View
           style={[styles.headerContent, { opacity: headerContentOpacity, backgroundColor: '#00C44F', borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }]}
         >
+          {/* About Us icon in expanded header */}
+          <TouchableOpacity
+            style={styles.aboutButtonExpanded}
+            onPress={() => navigation.navigate('AboutUs')}
+          >
+            <Ionicons name="information-circle-outline" size={28} color="#fff" />
+          </TouchableOpacity>
           <LottieView
             source={require('../assets/lottie.json')}
             autoPlay
@@ -319,7 +326,14 @@ export default function Home({ navigation }) {
         <Animated.View
           style={[styles.headerTitleContainer, { opacity: headerTitleOpacity }]}
         >
+          <TouchableOpacity
+            style={styles.aboutButton}
+            onPress={() => navigation.navigate('AboutUs')}
+          >
+            <Ionicons name="information-circle-outline" size={24} color="#fff" />
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>Sadaꓘa</Text>
+          <View style={{ width: 24 }} />
         </Animated.View>
         <View style={styles.headerButtons}>
           <TouchableOpacity
@@ -1277,5 +1291,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  aboutButton: {
+    padding: 8,
+  },
+  aboutButtonExpanded: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 30,
+    left: 24,
+    zIndex: 10,
+    padding: 8,
   },
 });

@@ -41,6 +41,7 @@ import Conversation from "./screens/Conversation";
 import OtherUser from "./screens/OtherUser";
 import NotificationScreen from "./screens/notification";
 import PickLocationScreen from "./screens/PickLocationScreen";
+import AboutUs from "./screens/AboutUs";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -275,6 +276,11 @@ export default function App() {
               name="PickLocationScreen"
               component={PickLocationScreen}
               options={{ title: "Pick Location" }}
+            />
+            <Stack.Screen
+              name="AboutUs"
+              component={AboutUs}
+              options={{ headerShown: false }}
             />
           </Stack.Navigator>
         </NavigationContainer>
