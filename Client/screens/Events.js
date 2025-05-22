@@ -27,7 +27,7 @@ const calculateTimeLeft = (eventDate) => {
     const months = Math.floor(days / 30);
     const remainingDays = days % 30;
     return remainingDays > 0 
-      ? `Still ${months}m ${remainingDays}d`
+       ? `Still ${months}m ${remainingDays}d`
       : `Still ${months} month${months > 1 ? 's' : ''}`;
   }
   

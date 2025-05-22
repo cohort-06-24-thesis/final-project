@@ -226,8 +226,8 @@ const CampaignDonationsTable = () => {
                       {campaign.description.substring(0, 50)}...
                     </td>
                     <td className="px-6 py-4 text-gray-700">{campaign.progress}%</td>
-                    <td className="px-6 py-4 text-gray-700">${campaign.goal}</td>
-                    <td className="px-6 py-4 text-gray-700">${campaign.totalRaised}</td>
+                    <td className="px-6 py-4 text-gray-700">TND{campaign.goal}</td>
+                    <td className="px-6 py-4 text-gray-700">TND{campaign.totalRaised}</td>
                     <td className="px-6 py-4 text-gray-700">
                       {new Date(campaign.startDate).toLocaleDateString()}
                     </td>
