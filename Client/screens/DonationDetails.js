@@ -54,8 +54,43 @@ export default function DonationDetails({ route, navigation }) {
     }
   }, [item.id]);
 
-  const handleFavorite = () => {
-    setIsFavorited(!isFavorited);
+  const handleFavorite = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userUID');
+      if (!userId) {
+        Alert.alert('Error', 'Please login to manage favorites');
+        return;
+      }
+
+      if (isFavorited) {
+        // Find the favorite first before deleting
+        const favoritesResponse = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
+        const favorite = favoritesResponse.data.find(fav => 
+          fav.donationItemId === item.id
+        );
+        
+        if (favorite) {
+          await axios.delete(`${API_BASE}/favourite/deleteFavourite/${favorite.id}`);
+          setIsFavorited(false);
+          Alert.alert('Success', 'Item removed from wishlist');
+        }
+      } else {
+        // Add to favorites
+        const response = await axios.post(`${API_BASE}/favourite/createFavourite`, {
+          userId,
+          donationItemId: item.id,
+          type: 'donation'
+        });
+
+        if (response.data) {
+          setIsFavorited(true);
+          Alert.alert('Success', 'Item added to wishlist');
+        }
+      }
+    } catch (error) {
+      console.error('Error managing favorites:', error?.response?.data || error.message);
+      Alert.alert('Error', 'Failed to update wishlist');
+    }
   };
 
   const handleContact = () => {
