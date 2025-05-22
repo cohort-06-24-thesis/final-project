@@ -58,7 +58,7 @@ export default function CampaignDetails({ route, navigation }) {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statBox}>
-              <Text style={styles.statValue}>{campaign.progress}%</Text>
+              <Text style={styles.statValue}>{Math.round(campaign.progress)}%</Text>
               <Text style={styles.statLabel}>Progress</Text>
             </View>
           </View>
@@ -68,7 +68,7 @@ export default function CampaignDetails({ route, navigation }) {
               <Animated.View 
                 style={[
                   styles.progressFill, 
-                  { width: `${campaign.progress}%` }
+                  { width: `${Math.round(campaign.progress)}%` }
                 ]} 
               />
             </View>
@@ -118,17 +118,12 @@ export default function CampaignDetails({ route, navigation }) {
             </View>
             <View style={styles.detailsContainer}>
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Start Date</Text>
+                <Text style={styles.detailLabel}>Created at</Text>
                 <Text style={styles.detailValue}>
-                  {new Date(campaign.startDate).toLocaleDateString()}
+                  {new Date(campaign.createdAt).toLocaleDateString()}
                 </Text>
               </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>End Date</Text>
-                <Text style={styles.detailValue}>
-                  {new Date(campaign.endDate).toLocaleDateString()}
-                </Text>
-              </View>
+             
               <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
                 <Text style={styles.detailLabel}>Status</Text>
                 <View style={[
