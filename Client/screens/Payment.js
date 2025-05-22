@@ -139,7 +139,7 @@ export default function Payment({ route, navigation }) {
       <Text style={styles.title}>Support {campaign.title}</Text>
 
       <View style={styles.amountContainer}>
-        <Text style={styles.label}>Enter Amount (USD)</Text>
+        <Text style={styles.label}>Enter Amount (TND )</Text>
         <TextInput
           style={styles.input}
           value={amount}
@@ -152,7 +152,7 @@ export default function Payment({ route, navigation }) {
 
       <View style={styles.infoContainer}>
         <Text style={styles.infoText}>
-          • Minimum donation amount: $1{"\n"}
+          • Minimum donation amount: TND 1{"\n"}
           • Secure payment powered by Stripe{"\n"}
           • Supports all major credit cards{"\n"}
           • Your donation will help: {campaign.description}
