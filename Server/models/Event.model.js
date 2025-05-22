@@ -21,6 +21,16 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false
         },
+        latitude: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
+            defaultValue: 36.8065
+        },
+        longitude: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
+            defaultValue: 10.1815
+        },
         images: {
             type: DataTypes.ARRAY(DataTypes.STRING),
             defaultValue: []

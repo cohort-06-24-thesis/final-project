@@ -9,6 +9,8 @@ const events = [
 
     date: new Date('2025-12-17'),
     location: 'Tunis Central Community Center',
+    latitude: 36.8065,
+    longitude: 10.1815,
     status: 'upcoming',
 
     participators: 0,
@@ -27,6 +29,8 @@ const events = [
 
     date: new Date('2025-07-01'),
     location: 'Sfax Public Library',
+    latitude: 34.7478,
+    longitude: 10.7662,
     status: 'upcoming',
 
     participators: 0,
@@ -45,6 +49,8 @@ const events = [
 
     date: new Date('2025-07-20'),
     location: 'Sousse Medical Center',
+    latitude: 35.8245,
+    longitude: 10.6346,
     status: 'upcoming',
 
     participators: 0,
@@ -62,6 +68,8 @@ const events = [
     images: ['https://images.ctfassets.net/f7tuyt85vtoa/HlFT09bB1nX1KaBwf4iod/b3d38fd109a3b88def6d3eaf1d478de8/AFEMEA_Venturina_resized.JPG'],
     date: new Date('2025-06-10'),
     location: 'Hammamet Beach',
+    latitude: 36.4000,
+    longitude: 10.6167,
     status: 'upcoming',
 
     participators: 0,
@@ -77,6 +85,8 @@ const events = [
     images: ['https://nelowvision.com/wp-content/uploads/2024/10/group-of-seniors-attending-it-class-in-community-c-2024-10-18-09-41-10-utc.jpg'],
     date: new Date('2025-05-31'),
     location: 'Nabeul Community Center',
+    latitude: 36.4561,
+    longitude: 10.7376,
     status: 'upcoming',
 
     participators: 0,
@@ -93,6 +103,8 @@ const events = [
     images: ['https://www.phatkidsmentoring.org/resources/1481.jpg.opt558x313o0%2C0s558x313.jpg'],
     date: new Date('2025-07-01'),
     location: 'Mahdia Youth Center',
+    latitude: 35.5047,
+    longitude: 11.0622,
     status: 'upcoming',
 
     participators: 0,
@@ -109,6 +121,8 @@ const events = [
     images: ['https://cdn.shopify.com/s/files/1/0310/8093/9564/files/Celebrate_Shelter_Pet_Day_480x480.jpg?v=1649707434'],
     date: new Date('2025-11-23'),
     location: 'Monastir Animal Shelter',
+    latitude: 35.7770,
+    longitude: 10.8261,
     status: 'upcoming',
 
     participators: 0,
@@ -126,6 +140,8 @@ const events = [
 
     date: new Date('2025-08-05'),
     location: 'Kairouan Green Space',
+    latitude: 35.6781,
+    longitude: 10.0963,
     status: 'upcoming',
 
     participators: 0,
@@ -143,6 +159,8 @@ const events = [
     date: new Date('2025-06-05'),
     location: 'Bizerte Tech Hub',
     status: 'upcoming',
+    latitude: 37.2793,
+    longitude: 9.8740,    
 
     participators: 0,
 
@@ -158,6 +176,8 @@ const events = [
     images: ['https://static1.squarespace.com/static/5e71036b8bb60b55f6cf2873/t/6133d2250ed21f4e573067a6/1630786091068/craftfair.jpg'],
     date: new Date('2025-06-15'),
     location: 'Sidi Bou Said Cultural Center',
+    latitude: 36.8361,
+    longitude: 10.2923,
 
     status: 'upcoming',
 

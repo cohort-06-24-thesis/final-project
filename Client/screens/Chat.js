@@ -28,7 +28,7 @@ const SOCKET_BASE = API_BASE.replace('/api', '');
 const BASE_URL = API_BASE.replace('/api', '');
 
 export default function Chat({ route, navigation }) {
-  const { recipientId, recipientName, recipientProfilePic, itemTitle } = route.params;
+  const { recipientId, recipientName, recipientProfilePic: initialRecipientProfilePic, itemTitle } = route.params;
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportReason, setReportReason] = useState('');
@@ -36,6 +36,8 @@ export default function Chat({ route, navigation }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUserProfilePic, setCurrentUserProfilePic] = useState(null);
+  const [recipientProfilePic, setRecipientProfilePic] = useState(initialRecipientProfilePic);
   const [socket, setSocket] = useState(null);
   const flatListRef = useRef(null);
   const roomIdRef = useRef(null);
@@ -82,12 +84,39 @@ export default function Chat({ route, navigation }) {
     const initializeChat = async () => {
       try {
         const userId = await AsyncStorage.getItem('userUID');
+        console.log('User ID from AsyncStorage:', userId);
         if (!userId) {
           console.error('No user ID found');
           setLoading(false);
           return;
         }
         setCurrentUserId(userId);
+
+        // Fetch current user's profile picture
+        try {
+          console.log('Attempting to fetch current user profile with ID:', userId);
+          const userProfileResponse = await axios.get(`${API_BASE}/user/getById/${userId}`);
+          if (userProfileResponse.data && userProfileResponse.data.profilePic) {
+            setCurrentUserProfilePic(userProfileResponse.data.profilePic);
+            console.log('Successfully fetched current user profile picture.');
+          }
+        } catch (userError) {
+          console.error('Error fetching current user profile:', userError);
+        }
+
+        // Fetch recipient's profile picture if not already available or needs refresh
+        if (!recipientProfilePic) {
+           try {
+            console.log('Attempting to fetch recipient profile with ID:', recipientId);
+            const recipientProfileResponse = await axios.get(`${API_BASE}/user/getById/${recipientId}`);
+            if (recipientProfileResponse.data && recipientProfileResponse.data.profilePic) {
+              setRecipientProfilePic(recipientProfileResponse.data.profilePic);
+              console.log('Successfully fetched recipient profile picture.');
+            }
+           } catch (recipientError) {
+             console.error('Error fetching recipient profile:', recipientError);
+           }
+        }
 
         // Create roomId before socket connection
         const roomId = [userId, recipientId].sort().join('-');
@@ -274,17 +303,36 @@ export default function Chat({ route, navigation }) {
       displayTime = new Date(dateValue).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    const avatarSource = isCurrentUser ? currentUserProfilePic : recipientProfilePic;
+
     return (
       <View style={[
-        styles.messageContainer,
-        isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage
+        styles.messageWrapper,
+        isCurrentUser ? styles.currentUserWrapper : styles.otherUserWrapper
       ]}>
-        <Text style={styles.messageText}>{item.text}</Text>
-        <Text style={styles.timestamp}>{displayTime}</Text>
+        {!isCurrentUser && (
+          <Image
+            source={{ uri: avatarSource || 'https://via.placeholder.com/40' }}
+            style={styles.messageAvatar}
+          />
+        )}
+        <View style={[
+          styles.messageContainer,
+          isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage
+        ]}>
+          <Text style={styles.messageText}>{item.text}</Text>
+          <Text style={styles.timestamp}>{displayTime}</Text>
+          {isCurrentUser && (
+            <Text style={styles.messageStatus}>
+              {item.isRead ? 'Seen' : 'Delivered'}
+            </Text>
+          )}
+        </View>
         {isCurrentUser && (
-          <Text style={styles.messageStatus}>
-            {item.isRead ? 'Seen' : 'Delivered'}
-          </Text>
+          <Image
+            source={{ uri: avatarSource || 'https://via.placeholder.com/40' }}
+            style={styles.messageAvatar}
+          />
         )}
       </View>
     );
@@ -295,18 +343,46 @@ export default function Chat({ route, navigation }) {
     if (socket && roomIdRef.current && messages.length > 0) {
       const unreadMessages = messages.filter(msg => 
         !msg.isRead && 
-        msg.senderId !== currentUserId
+        msg.senderId !== currentUserId &&
+        msg.id // Only include messages with valid IDs
       );
 
       if (unreadMessages.length > 0) {
-        console.log('Marking messages as read:', unreadMessages.map(m => m.id));
-        socket.emit('mark_as_read', {
-          roomId: roomIdRef.current,
-          messageIds: unreadMessages.map(msg => msg.id)
-        });
+        const messageIds = unreadMessages.map(msg => msg.id).filter(Boolean);
+        if (messageIds.length > 0) {
+          console.log('Marking messages as read:', messageIds);
+          socket.emit('mark_as_read', {
+            roomId: roomIdRef.current,
+            messageIds: messageIds
+          });
+        }
       }
     }
   }, [messages, socket, currentUserId]);
+
+  // Listen for message read status
+  useEffect(() => {
+    if (socket) {
+      socket.on('messages_read', (data) => {
+        if (data.messageIds && Array.isArray(data.messageIds)) {
+          console.log('Messages marked as read:', data);
+          setMessages(prevMessages => 
+            prevMessages.map(msg => 
+              data.messageIds.includes(msg.id) 
+                ? { ...msg, isRead: true }
+                : msg
+            )
+          );
+        }
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.off('messages_read');
+      }
+    };
+  }, [socket]);
 
   // User info header for the chat
   const renderUserHeader = () => (
@@ -538,31 +614,56 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   messagesList: {
-    padding: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 5,
+  },
+  messageWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginVertical: 4,
+    paddingHorizontal: 0,
+  },
+  currentUserWrapper: {
+    justifyContent: 'flex-end',
+  },
+  otherUserWrapper: {
+    justifyContent: 'flex-start',
+  },
+  messageAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginHorizontal: 8,
   },
   messageContainer: {
-    maxWidth: '80%',
+    maxWidth: '70%',
     padding: 12,
-    borderRadius: 16,
-    marginBottom: 8,
+    borderRadius: 20,
+    marginVertical: 2,
   },
   currentUserMessage: {
-    alignSelf: 'flex-end',
     backgroundColor: '#EFD13D',
+    borderBottomRightRadius: 4,
   },
   otherUserMessage: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#fff',
+    backgroundColor: '#f0f0f0',
+    borderBottomLeftRadius: 4,
   },
   messageText: {
     fontSize: 16,
-    color: '#000',
+    color: '#333',
+    marginBottom: 4,
   },
   timestamp: {
     fontSize: 12,
     color: '#666',
-    marginTop: 4,
     alignSelf: 'flex-end',
+  },
+  messageStatus: {
+    fontSize: 11,
+    color: '#666',
+    alignSelf: 'flex-end',
+    marginTop: 2,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -587,12 +688,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#EFD13D',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  messageStatus: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
-    alignSelf: 'flex-end',
   },
   userHeader: {
     alignItems: 'center',

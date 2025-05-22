@@ -285,6 +285,10 @@ const EventDetails = ({ route, navigation }) => {
               latitudeDelta: 0.02,
               longitudeDelta: 0.02,
             }}
+            scrollEnabled={false}
+            zoomEnabled={false}
+            rotateEnabled={false}
+            pitchEnabled={false}
           >
             <Marker
               coordinate={{
