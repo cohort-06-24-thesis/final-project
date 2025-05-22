@@ -30,9 +30,11 @@ export default function CampaignDetails({ route, navigation }) {
           <Text style={styles.batteryPercentage}>{campaign.progress}%</Text>
         </View>
 
-        <TouchableOpacity style={styles.donateButton} onPress={handleSupport}>
-          <Text style={styles.donateButtonText}>I support</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.donateButton} onPress={handleSupport}>
+            <Text style={styles.donateButtonText}>I support</Text>
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.description}>{campaign.description}</Text>
       </View>
@@ -65,7 +67,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   amount: {
-    fontSize: 32,
+    fontSize: 25,
     fontWeight: 'bold',
     color: '#000000',
   },
@@ -107,12 +109,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
   },
+  buttonContainer: {
+    alignItems: 'center',
+    marginVertical: 20,
+  },
   donateButton: {
     backgroundColor: '#00C44F',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
-    marginVertical: 20,
+    width: '80%',
     shadowColor: '#00C44F',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
