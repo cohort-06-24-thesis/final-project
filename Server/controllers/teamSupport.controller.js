@@ -1,5 +1,6 @@
 const { TeamSupport, User } = require('../Database');
 const { Op } = require('sequelize');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Create a new team support donation
 const createTeamSupport = async (req, res) => {
@@ -14,6 +15,12 @@ const createTeamSupport = async (req, res) => {
         const user = await User.findOne({ where: { id: userUID } });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Verify the payment with Stripe
+        const paymentIntent = await stripe.paymentIntents.retrieve(transaction_id);
+        if (paymentIntent.status !== 'succeeded') {
+            return res.status(400).json({ message: 'Payment not successful' });
         }
 
         // Create team support record
