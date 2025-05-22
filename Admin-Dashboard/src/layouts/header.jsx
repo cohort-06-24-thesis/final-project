@@ -43,20 +43,7 @@ export const Header = ({ collapsed, setCollapsed }) => {
             <Bell size={20} />
             {unseenCount > 0 && (
               <span
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                  backgroundColor: "red",
-                  color: "white",
-                  borderRadius: "50%",
-                  padding: "2px 6px",
-                  fontSize: 12,
-                  fontWeight: "bold",
-                  lineHeight: 1,
-                  transform: "translate(50%, -50%)",
-                  pointerEvents: "none",
-                }}
+                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
               >
                 {unseenCount}
               </span>

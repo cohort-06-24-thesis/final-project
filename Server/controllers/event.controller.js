@@ -73,7 +73,7 @@ module.exports = {
         date,
         location,
         images: Array.isArray(images) ? images : [images], // Handle single image string
-        participators, // Fixed spelling here
+        participators, 
         status: 'upcoming',
         isApproved: false,
         UserId
@@ -127,7 +127,31 @@ module.exports = {
         });
       }
 
+      // Store the previous approval status
+      const wasApproved = event.isApproved;
+
       await event.update(updateData);
+
+      // Send notification if approval status changed to true
+      if (updateData.isApproved === true && wasApproved !== true) {
+        const userId = event.UserId;
+
+        // Create notification in DB
+        const notification = await Notification.create({
+          message: `Your event "${event.title}" has been approved!`,
+          isRead: false,
+          UserId: userId,
+          itemId: event.id,
+          itemType: 'event'
+        });
+
+        // Emit real-time notification to the user
+        const io = getIO();
+        io.to(`user_${userId}`).emit('new_notification', {
+          ...notification.dataValues,
+          timestamp: new Date().toISOString()
+        });
+      }
       
       res.status(200).json({
         success: true,

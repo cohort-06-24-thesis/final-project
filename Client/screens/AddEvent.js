@@ -12,8 +12,7 @@ import {
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const API_URL = 'http://192.168.1.19:3000';
+import { API_BASE } from '../config'; // Import the API base URL from config
 
 export default function AddEvent({ navigation }) {
   const [title, setTitle] = useState('');
@@ -106,36 +105,54 @@ export default function AddEvent({ navigation }) {
       const eventData = {
         title,
         description,
-        date: new Date(date),
+        date: new Date(date).toISOString(),
         location,
-        participators,
+        participators: parseInt(participators),
         images: images ? [images] : [],
         status: 'upcoming',
         UserId: Uid,
-
       };
 
-      const response = await axios.post(`${API_URL}/api/event/addEvent`, eventData, {
+      console.log('Sending event data:', eventData);
+
+      // Use API_BASE instead of hardcoded URL
+      const response = await axios.post(`${API_BASE}/event/addEvent`, eventData, {
         headers: {
           'Content-Type': 'application/json',
         },
-        timeout: 5000 
+        timeout: 15000, // Increased timeout
+        validateStatus: function (status) {
+          return status >= 200 && status < 500; // Accept all responses for better error handling
+        }
       });
+
+      console.log('Server response:', response.data);
 
       if (response.data.success) {
         Alert.alert('Success', 'Event created successfully');
         navigation.goBack();
+      } else {
+        Alert.alert('Error', response.data.message || 'Failed to create event');
       }
     } catch (error) {
       console.error('Error creating event:', error);
       
       let errorMessage = 'Failed to create event';
+      
       if (error.code === 'ECONNABORTED') {
-        errorMessage = 'Connection timeout - Server is not responding';
+        errorMessage = 'Connection timeout - Please check your internet connection and try again';
       } else if (error.code === 'ERR_NETWORK') {
-        errorMessage = 'Network error - Please check your connection and API server';
+        errorMessage = 'Network error - Please check your internet connection';
       } else if (error.response) {
-        errorMessage = `Server error: ${error.response.data.message || error.response.status}`;
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+        errorMessage = error.response.data.message || `Server error: ${error.response.status}`;
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+        errorMessage = 'No response from server - Please check your connection and server status';
+      } else {
+        console.error('Error message:', error.message);
+        errorMessage = error.message;
       }
 
       Alert.alert('Error', errorMessage);

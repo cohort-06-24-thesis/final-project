@@ -12,6 +12,7 @@ const eventRouter = require('./event.router');
 const messageRouter = require('./message.router');
 const conversationRouter = require('./conversation.router');
 const userRouter = require('./user.route');
+const teamSupportRouter = require('./teamSupport.routes');
 
 
 const router = express.Router();
@@ -28,5 +29,5 @@ router.use('/event', eventRouter);
 router.use('/message', messageRouter);
 router.use('/conversation', conversationRouter);
 router.use('/user', userRouter);
-
+router.use('/teamSupport', teamSupportRouter);
 module.exports = router;

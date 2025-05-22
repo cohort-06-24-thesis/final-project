@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 const SplashScreen = ({ onGetStarted }) => {
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/sadaqah.png')} style={styles.logo} />
+      <Image source={require('../assets/logoApp.png')} style={styles.logo} />
       <Text style={styles.title}>Sadaꓘa</Text>
       <TouchableOpacity style={styles.getStartedButton} onPress={onGetStarted}>
         <Text style={styles.getStartedButtonText}>Get Started</Text>

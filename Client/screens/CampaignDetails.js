@@ -26,15 +26,13 @@ export default function CampaignDetails({ route, navigation }) {
           <View style={[styles.progressFill, { width: `${campaign.progress}%` }]} />
         </View>
 
-        {/* <Text style={styles.donorsCount}>{campaign.totalDonors} people donated</Text> */}
+      
 
         <TouchableOpacity style={styles.donateButton} onPress={handleSupport}>
           <Text style={styles.donateButtonText}>I support</Text>
         </TouchableOpacity>
 
-        {/* <TouchableOpacity style={styles.shareButton}>
-          <Text style={styles.shareButtonText}>Share</Text>
-        </TouchableOpacity> */}
+       
 
         <Text style={styles.description}>{campaign.description}</Text>
       </View>

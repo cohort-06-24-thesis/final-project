@@ -206,7 +206,6 @@ export default function InNeedDetails({ route, navigation }) {
         };
 
         const response = await axios.post(`${API_BASE}/comment/createComment`, commentData);
-        setComments(prev => [response.data, ...prev]);
         setNewComment('');
         socket.emit('post_comment', response.data);
     } catch (error) {
@@ -315,6 +314,7 @@ export default function InNeedDetails({ route, navigation }) {
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
               }}
+              scrollEnabled={false}
             >
               <Marker
                 coordinate={{
@@ -487,7 +487,7 @@ export default function InNeedDetails({ route, navigation }) {
           >
             <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
           </TouchableOpacity>
-          <Text style={styles.userRating}>⭐ {item?.User?.rating || '0.0'}</Text>
+         
         </View>
 
         {String(item?.User?.id) !== String(Uid) ? (

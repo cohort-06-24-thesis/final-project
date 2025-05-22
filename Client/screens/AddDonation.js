@@ -31,6 +31,7 @@ export default function AddDonation({ navigation, route }) {
     longitude: 10.1815,
   });
   const [locationStr, setLocationStr] = useState('');
+  const [cityName, setCityName] = useState('');
   const [images, setImages] = useState([]);
   const [Uid, setUid] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -50,14 +51,35 @@ export default function AddDonation({ navigation, route }) {
     loadUid();
   }, []);
 
+  const getAddressFromCoordinates = async (latitude, longitude) => {
+    try {
+      const reverseGeocode = await Location.reverseGeocodeAsync({
+        latitude,
+        longitude
+      });
+
+      if (reverseGeocode && reverseGeocode.length > 0) {
+        const address = reverseGeocode[0];
+        const city = address.city || address.region || 'Unknown Location';
+        setCityName(city);
+        setLocationStr(city);
+      }
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+      setLocationStr(`${latitude}, ${longitude}`);
+    }
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       if (route?.params?.pickedLatitude && route?.params?.pickedLongitude) {
+        const latitude = route.params.pickedLatitude;
+        const longitude = route.params.pickedLongitude;
         setLocationCoords({
-          latitude: route.params.pickedLatitude,
-          longitude: route.params.pickedLongitude,
+          latitude,
+          longitude,
         });
-        setLocationStr(`${route.params.pickedLatitude}, ${route.params.pickedLongitude}`);
+        getAddressFromCoordinates(latitude, longitude);
         // Clear the params so it doesn't trigger again
         navigation.setParams({ pickedLatitude: undefined, pickedLongitude: undefined });
       }
@@ -103,7 +125,7 @@ export default function AddDonation({ navigation, route }) {
       
       const { latitude, longitude } = location.coords;
       setLocationCoords({ latitude, longitude });
-      setLocationStr(`${latitude}, ${longitude}`);
+      getAddressFromCoordinates(latitude, longitude);
     } catch (error) {
       console.error('Location error:', error);
       Alert.alert('Error', 'Failed to get your location. Please try again.');

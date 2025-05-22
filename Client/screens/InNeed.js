@@ -87,11 +87,11 @@ const InNeedScreen = ({ navigation }) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {needs.filter(item => item.isApproved).length === 0 ? (
-          <Text style={styles.noData}>No approved requests at the moment.</Text>
+        {needs.filter(item => item.isApproved && !item.isDone).length === 0 ? (
+          <Text style={styles.noData}>No active requests at the moment.</Text>
         ) : (
           needs
-            .filter(item => item.isApproved)
+            .filter(item => item.isApproved && !item.isDone)
             .map(item => (
               <InNeedCard
                 key={item.id || item.title}

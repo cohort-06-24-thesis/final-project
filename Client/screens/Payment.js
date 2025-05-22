@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { initStripe, usePaymentSheet } from "@stripe/stripe-react-native";
 import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { API_BASE } from "../config";
 
 // Configure axios defaults
@@ -19,7 +21,21 @@ export default function Payment({ route, navigation }) {
   const { campaign } = route.params;
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
+  const [Uid, setUid] = useState('');
+  
   const { initPaymentSheet, presentPaymentSheet } = usePaymentSheet();
+  useEffect(() => {
+    const loadUid = async () => {
+      const storedUid = await AsyncStorage.getItem('userUID');
+      if (storedUid) {
+        setUid(storedUid);
+      } else {
+        Alert.alert('Error', 'User ID not found. Please log in again.');
+        navigation.goBack();
+      }
+    };
+    loadUid();
+  }, []);
   useEffect(() => {
     initStripe({
       publishableKey:
@@ -35,9 +51,11 @@ export default function Payment({ route, navigation }) {
 
     setLoading(true);
     try {
+      // Create payment intent
       const response = await axios.post(`${API_BASE}/payment/create-intent`, {
         amount: parseFloat(amount),
         campaignId: campaign.id,
+        userId: Uid,
       });
 
       if (!response.data?.clientSecret) {
@@ -61,9 +79,23 @@ export default function Payment({ route, navigation }) {
         throw new Error(paymentError.message);
       }
 
-      // Payment successful
-      Alert.alert("Success", "Payment completed successfully!");
-      navigation.goBack();
+      // Verify the payment after successful completion
+      const verifyResponse = await axios.get(`${API_BASE}/payment/verify/${response.data.paymentIntentId}`);
+      
+      if (verifyResponse.data.status === 'success') {
+       
+Alert.alert(
+  "Thanks!",
+  "🙏 You made a difference. Explore other campaigns that need your help."
+);
+        navigation.navigate('MainApp', { screen: 'Campaign' });
+
+
+
+
+      } else {
+        throw new Error("Payment verification failed");
+      }
     } catch (error) {
       console.error("Payment error:", error);
       let errorMessage = "Failed to process payment.";

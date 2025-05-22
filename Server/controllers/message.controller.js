@@ -3,12 +3,12 @@
 const { Message, Conversation, User, Notification } = require('../Database/index');
 const { Op } = require('sequelize');
 const { getIO } = require('../socket');
-const path = require('path');
 
 // Create a new message
 exports.createMessage = async (req, res) => {
     try {
         const { text, isRead, roomId, senderId, receiverId } = req.body;
+        console.log('Creating message:', { text, roomId, senderId, receiverId });
         
         // First, find or create a conversation
         let conversation = await Conversation.findOne({
@@ -27,6 +27,7 @@ exports.createMessage = async (req, res) => {
                 lastMessageTime: new Date()
             });
         } else {
+            console.log('Found existing conversation:', conversation.id);
             // Update last message
             await conversation.update({
                 lastMessage: text,
@@ -41,8 +42,11 @@ exports.createMessage = async (req, res) => {
             roomId,
             senderId,
             receiverId,
-            ConversationId: conversation.id
+            ConversationId: conversation.id,
+            timestamp: new Date()
         });
+
+        console.log('Created new message:', newMessage.id);
 
         // --- Notification logic ---
         // Get sender's name
@@ -65,8 +69,14 @@ exports.createMessage = async (req, res) => {
             ...notification.dataValues,
             timestamp: new Date().toISOString(),
         });
-        // --- End notification logic ---
 
+        // Also emit the message to the room
+        io.to(roomId).emit('receive_message', {
+            ...newMessage.dataValues,
+            timestamp: new Date().toISOString(),
+        });
+
+        console.log('Message created and notifications sent successfully');
         res.status(201).json(newMessage);
     } catch (error) {
         console.error('Error creating message:', error);
@@ -89,14 +99,20 @@ exports.getAllMessages = async (req, res) => {
 exports.getMessagesByRoomId = async (req, res) => {
     try {
         const { roomId } = req.params;
+        console.log('Fetching messages for room:', roomId);
+
         const messages = await Message.findAll({
             where: { roomId },
-            order: [['createdAt', 'ASC']]
+            order: [['timestamp', 'ASC']]
         });
+
+        console.log('Found', messages.length, 'messages for room', roomId);
+        console.log('Message IDs:', messages.map(m => m.id));
+
         res.status(200).json(messages);
     } catch (error) {
         console.error('Error fetching messages by room:', error);
-        res.status(500).json({ error: 'Something went wrong while fetching room messages.' });
+        res.status(500).json({ error: 'Something went wrong while fetching messages.' });
     }
 };
 
@@ -156,93 +172,5 @@ exports.deleteMessage = async (req, res) => {
     } catch (error) {
         console.error('Error deleting message:', error);
         res.status(500).json({ error: 'Something went wrong while deleting the message.' });
-    }
-};
-
-// Upload image message
-exports.uploadImage = async (req, res) => {
-    try {
-        console.log('Received files count:', req.files ? req.files.length : 0);
-        console.log('Request body keys:', Object.keys(req.body));
-
-        if (!req.files || req.files.length === 0) {
-            return res.status(400).json({ error: 'No image files provided' });
-        }
-
-        const { roomId, senderId, receiverId } = req.body;
-        
-        // First, find or create a conversation
-        let conversation = await Conversation.findOne({
-            where: {
-                members: {
-                    [Op.contains]: [senderId, receiverId]
-                }
-            }
-        });
-
-        if (!conversation) {
-            conversation = await Conversation.create({
-                members: [senderId, receiverId],
-                lastMessage: req.files.length > 1 ? `[${req.files.length} Images]` : '[Image]',
-                lastMessageTime: new Date()
-            });
-        } else {
-            await conversation.update({
-                lastMessage: req.files.length > 1 ? `[${req.files.length} Images]` : '[Image]',
-                lastMessageTime: new Date()
-            });
-        }
-
-        // Create messages for each image
-        const messages = await Promise.all(req.files.map(async (file) => {
-            try {
-                console.log('Processing file:', file.originalname, 'Size:', file.size);
-                // Convert buffer to base64 string without logging it
-                const base64Image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-                
-                const message = await Message.create({ 
-                    text: null,
-                    imageUrl: base64Image,
-                    isRead: false,
-                    roomId,
-                    senderId,
-                    receiverId,
-                    ConversationId: conversation.id
-                });
-                
-                console.log('Message created successfully:', message.id);
-                return message;
-            } catch (error) {
-                console.error('Error creating message for file:', file.originalname, error.message);
-                throw error;
-            }
-        }));
-
-        // --- Notification logic ---
-        const sender = await User.findByPk(senderId);
-        const senderName = sender ? sender.name : 'Someone';
-        const notifMessage = req.files.length > 1 
-            ? `${senderName} sent ${req.files.length} images`
-            : `New image from ${senderName}`;
-
-        const notification = await Notification.create({
-            message: notifMessage,
-            isRead: false,
-            UserId: receiverId,
-            itemId: messages[0].id,
-            itemType: 'chat',
-        });
-
-        const io = getIO();
-        io.to(`user_${receiverId}`).emit('new_notification', {
-            ...notification.dataValues,
-            timestamp: new Date().toISOString(),
-        });
-
-        console.log('Successfully processed all images');
-        res.status(201).json(messages);
-    } catch (error) {
-        console.error('Error uploading images:', error.message);
-        res.status(500).json({ error: 'Something went wrong while uploading the images.' });
     }
 }; 
