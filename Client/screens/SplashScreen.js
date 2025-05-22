@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#00C44F',
   },
   logo: {
-    width: 150,
+    width: 300,
     height: 150,
     marginBottom: 20,
   },
