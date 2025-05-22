@@ -50,7 +50,7 @@ const getAllTeamSupports = async (req, res) => {
             include: [
                 {
                     model: User,
-                    as: 'supporter',
+                    as: 'User',
                     attributes: ['id', 'name', 'email', 'profilePic']
                 }
             ],

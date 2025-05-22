@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
     TeamSupport.associate = (models) => {
         TeamSupport.belongsTo(models.User, {
             foreignKey: 'UserId',
-            as: 'supporter'
+            as: 'User'
         });
     };
 
