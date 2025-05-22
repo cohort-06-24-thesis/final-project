@@ -25,12 +25,53 @@ import Animated, {
 
 const { width, height } = Dimensions.get('window');
 
+// Update the BADGE_LEVELS array with better structure
 const BADGE_LEVELS = [
-  { name: 'Beginner', icon: 'seed', threshold: 1, color: '#4CAF50' },
-  { name: 'Helper', icon: 'handshake', threshold: 5, color: '#2196F3' },
-  { name: 'Supporter', icon: 'heart', threshold: 10, color: '#9C27B0' },
-  { name: 'Champion', icon: 'trophy', threshold: 20, color: '#FF9800' },
-  { name: 'Legend', icon: 'crown', threshold: 50, color: '#F44336' }
+  { 
+    name: 'Beginner',
+    icon: 'seed',
+    threshold: 1,
+    gradient: ['#43A047', '#2E7D32'],
+    borderColor: '#81C784',
+    description: 'Just started your journey of giving',
+    perks: ['Access to basic features', 'Create donations']
+  },
+  { 
+    name: 'Helper',
+    icon: 'handshake',
+    threshold: 5,
+    gradient: ['#1E88E5', '#1565C0'],
+    borderColor: '#64B5F6',
+    description: 'Making a difference in the community',
+    perks: ['Create events', 'Extended reach']
+  },
+  { 
+    name: 'Supporter',
+    icon: 'heart',
+    threshold: 10,
+    gradient: ['#8E24AA', '#6A1B9A'],
+    borderColor: '#BA68C8',
+    description: 'Consistent contributor to the cause',
+    perks: ['Priority support', 'Campaign creation']
+  },
+  { 
+    name: 'Champion',
+    icon: 'trophy',
+    threshold: 20,
+    gradient: ['#FB8C00', '#EF6C00'],
+    borderColor: '#FFB74D',
+    description: 'Making significant impact',
+    perks: ['Featured profile', 'Verification badge']
+  },
+  { 
+    name: 'Legend',
+    icon: 'crown',
+    threshold: 50,
+    gradient: ['#E53935', '#C62828'],
+    borderColor: '#E57373',
+    description: 'Elite member of our community',
+    perks: ['All platform features', 'Community leader status']
+  }
 ];
 
 export default function UserProfile({ navigation }) {
@@ -337,25 +378,24 @@ const ActionButton = ({ icon, label, onPress, color = "#666", description }) => 
 );
 
   const ActivityItem = ({ activity }) => (
-    <TouchableOpacity style={styles.activityItem}>
-      <View style={styles.activityLeft}>
-        <View style={styles.activityIconContainer}>
-          <MaterialCommunityIcons 
-            name={activity.type === 'donation' ? 'gift' : 'calendar'} 
-            size={20} 
-            color="#fff"
-          />
-        </View>
-        <View style={styles.activityContent}>
-          <Text style={styles.activityText}>{activity.description}</Text>
-          <Text style={styles.activityDate}>
-            {new Date(activity.date).toLocaleDateString()}
-          </Text>
-        </View>
+  <TouchableOpacity style={styles.activityItem}>
+    <View style={styles.activityLeft}>
+      <View style={styles.activityIconContainer}>
+        <MaterialCommunityIcons 
+          name={activity.type === 'donation' ? 'gift' : 'calendar'} 
+          size={20} 
+          color="#fff"
+        />
       </View>
-      <MaterialCommunityIcons name="chevron-right" size={20} color="#ccc" />
-    </TouchableOpacity>
-  );
+      <View style={styles.activityContent}>
+        <Text style={styles.activityText}>{activity.description}</Text>
+        <Text style={styles.activityDate}>
+          {new Date(activity.date).toLocaleDateString()}
+        </Text>
+      </View>
+    </View>
+  </TouchableOpacity>
+);
 
   const WishlistItem = ({ item }) => {
     const imageUrl = item.type === 'event' ? 
@@ -395,18 +435,27 @@ const ActionButton = ({ icon, label, onPress, color = "#666", description }) => 
     );
 };
 
-  // Add BadgeDisplay component
-  const BadgeDisplay = ({ badge }) => (
-    <View style={styles.badgeContainer}>
-      <LinearGradient
-        colors={[badge.color, `${badge.color}80`]}
-        style={styles.badgeGradient}
-      >
-        <MaterialCommunityIcons name={badge.icon} size={24} color="#fff" />
-        <Text style={styles.badgeText}>{badge.name}</Text>
-      </LinearGradient>
-    </View>
-  );
+  // Update the BadgeDisplay component
+  const BadgeDisplay = ({ badge }) => {
+    return (
+      <View style={styles.badgeContainer}>
+        <View style={[styles.badgeWrapper, { borderColor: badge.borderColor }]}>
+          <MaterialCommunityIcons 
+            name={badge.icon} 
+            size={20} 
+            color={badge.gradient[0]} 
+          />
+          <Text style={[styles.badgeName, { color: badge.gradient[0] }]}>
+            Level {BADGE_LEVELS.indexOf(badge) + 1}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const calculateProgress = (current, target) => {
+    return Math.min((current / target) * 100, 100);
+  };
 
   if (loading) {
     return (
@@ -1308,25 +1357,21 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   badgeContainer: {
-    marginTop: 10,
-    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 4,
   },
-  badgeGradient: {
+  badgeWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    backgroundColor: '#fff',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 20,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    borderWidth: 1,
+    gap: 6,
   },
-  badgeText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 8,
-  },
+  badgeName: {
+    fontSize: 14,
+    fontWeight: '600',
+  }
 });

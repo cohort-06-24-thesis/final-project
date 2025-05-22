@@ -340,18 +340,30 @@ export default function AboutUs({ navigation }) {
               </View>
               <Text style={styles.sectionTitle}>Our Impact</Text>
             </View>
-            <View style={styles.statsContainer}>
-              {[
-                { value: "10K+", label: "Tunisian Donors" },
-                { value: "1.5M TND", label: "Raised Locally" },
-                { value: "100+", label: "Projects in Tunisia" },
-              ].map((stat, index) => (
-                <View key={index} style={styles.statItem}>
-                  <Text style={styles.statValue}>{stat.value}</Text>
-                  <Text style={styles.statLabel}>{stat.label}</Text>
-                  <View style={[styles.statBar, { width: `${70 + index * 10}%` }]} />
+            <View style={styles.impactStats}>
+              <View style={styles.impactStatCard}>
+                <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}>
+                  <FontAwesome5 name="hand-holding-usd" size={20} color="#FF6B6B" />
                 </View>
-              ))}
+                <Text style={styles.impactStatValue}>120K TND</Text>
+                <Text style={styles.impactStatLabel}>Funds Raised</Text>
+              </View>
+
+              <View style={styles.impactStatCard}>
+                <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(78, 205, 196, 0.1)' }]}>
+                  <FontAwesome5 name="users" size={20} color="#4ECDC4" />
+                </View>
+                <Text style={styles.impactStatValue}>5,000+</Text>
+                <Text style={styles.impactStatLabel}>People Helped</Text>
+              </View>
+
+              <View style={styles.impactStatCard}>
+                <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 209, 102, 0.1)' }]}>
+                  <FontAwesome5 name="globe-americas" size={20} color="#FFD166" />
+                </View>
+                <Text style={styles.impactStatValue}>24</Text>
+                <Text style={styles.impactStatLabel}>States</Text>
+              </View>
             </View>
           </Animated.View>
 
@@ -633,6 +645,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
+  },
+  impactStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  impactStatCard: {
+    alignItems: 'center',
+  },
+  impactIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  impactStatValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  impactStatLabel: {
+    fontSize: 12,
+    color: '#666',
   },
   statsContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
