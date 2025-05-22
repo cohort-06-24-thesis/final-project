@@ -126,10 +126,11 @@ export default function CharityDashboard() {
     return months.map((name, i) => ({ name, amount: monthlyData[i] }));
   }, [campaignDonations]);
 
-  const userVsNeedData = useMemo(() => [
-    { name: "Users", count: users.length },
-    { name: "In Need Request", count: inNeedPeople.length },
-  ], [users.length, inNeedPeople.length]);
+const userVsNeedData = useMemo(() => [
+  { name: "In Need Requests", count: inNeedPeople.length },
+  { name: "Donation Items", count: donationItems.length },
+], [inNeedPeople.length, donationItems.length]);
+
 
   const eventStatusData = useMemo(() => {
     const upcomingCount = events.filter((e) => e.status === "upcoming").length;
@@ -233,7 +234,8 @@ export default function CharityDashboard() {
 
         {/* Users vs People in Need Bar Chart */}
         <div className="rounded-lg bg-white p-6 shadow">
-          <h3 className="mb-4 text-lg font-semibold text-gray-700">Users vs. In Need Requests</h3>
+          <h3 className="mb-4 text-lg font-semibold text-gray-700">In Need Requests vs. Donation Items</h3>
+
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={userVsNeedData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
