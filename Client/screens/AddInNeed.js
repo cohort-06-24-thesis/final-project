@@ -325,7 +325,6 @@ export default function AddInNeed({ navigation, route }) {
             <Text style={styles.submitText}>Submitting...</Text>
           ) : (
             <>
-              <Ionicons name="heart" size={20} color="white" />
               <Text style={styles.submitText}>Submit Request</Text>
             </>
           )}
