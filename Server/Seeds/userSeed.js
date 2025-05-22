@@ -34,7 +34,7 @@ const users = [
   {
     id: 'NM0kL08MmZZD9X6HIPvKbHq2pTo1',
     name: 'nassira ',
-    profilePic:"https://media.discordapp.net/attachments/1293597035269718116/1374044951599517696/20250519_161551.jpg?ex=682df014&is=682c9e94&hm=0fc0edd77861656e345ea68a140c6a9e5eb897700898435f56a8ae4b10bc7c01&=&format=webp&width=754&height=1005",
+    profilePic: 'https://media.discordapp.net/attachments/1293597035269718116/1374044951599517696/20250519_161551.jpg?ex=682df014&is=682c9e94&hm=0fc0edd77861656e345ea68a140c6a9e5eb897700898435f56a8ae4b10bc7c01&=&format=webp&width=591&height=789',
     email: 'garanassira@gmail.com',
     password: '123456',
     role: 'user',

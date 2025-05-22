@@ -295,11 +295,11 @@ export default function AddDonation({ navigation, route }) {
           
           <View style={styles.imageButtonsContainer}>
             <TouchableOpacity onPress={() => pickImage(false)} style={styles.iconButton}>
-              <Ionicons name="images" size={24} color="white" />
+              <Ionicons name="images" size={24} color="black" />
             </TouchableOpacity>
             
             <TouchableOpacity onPress={() => pickImage(true)} style={styles.iconButton}>
-              <Ionicons name="camera" size={24} color="white" />
+              <Ionicons name="camera" size={24} color="black" />
             </TouchableOpacity>
           </View>
 
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
     color: '#00C44F',
   },
   iconButton: {
-    backgroundColor: '#00C44F',
+    backgroundColor: '#FFFFFF',
     borderRadius: 40,
     width: 48,
     height: 48,
