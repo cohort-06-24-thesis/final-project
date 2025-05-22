@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, SafeAreaView, Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, SafeAreaView, Dimensions, Animated } from 'react-native';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE } from '../config';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width } = Dimensions.get('window');
 
 export default function DonationDetails({ route, navigation }) {
   const { item: initialItem } = route.params;
@@ -13,6 +16,18 @@ export default function DonationDetails({ route, navigation }) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
+
+  const scrollY = new Animated.Value(0);
+  const imageScale = scrollY.interpolate({
+    inputRange: [-100, 0],
+    outputRange: [1.5, 1],
+    extrapolate: 'clamp',
+  });
+
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { useNativeDriver: true }
+  );
 
   useEffect(() => {
     const fetchItemDetails = async () => {
@@ -106,18 +121,59 @@ export default function DonationDetails({ route, navigation }) {
     }
   };
 
-  const handleClaim = async () => {
+  const handleStatusChange = async (newStatus) => {
     try {
-      const response = await axios.put(`${API_BASE}/donationItems/updateStatus/${item.id}`, {
-        status: 'claimed'
+      const response = await axios.put(`${API_BASE}/donationItems/${item.id}`, {
+        ...item,
+        status: newStatus
       });
+
       if (response.data) {
-        setItem(prev => ({ ...prev, status: 'claimed' }));
-        Alert.alert('Success', 'Item marked as claimed');
+        setItem(prev => ({ ...prev, status: newStatus }));
+        Alert.alert('Success', `Item marked as ${newStatus}`);
       }
     } catch (error) {
-      console.error('Error claiming item:', error);
-      Alert.alert('Error', 'Failed to claim item');
+      console.error('Error updating item status:', error);
+      Alert.alert('Error', 'Failed to update item status');
+    }
+  };
+
+  const getNextStatus = (currentStatus) => {
+    switch(currentStatus) {
+      case 'available':
+        return 'reserved';
+      case 'reserved':
+        return 'claimed';
+      case 'claimed':
+        return 'available';
+      default:
+        return 'available';
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'available':
+        return '#4CAF50';
+      case 'reserved':
+        return '#FFC107';
+      case 'claimed':
+        return '#666';
+      default:
+        return '#4CAF50';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch(status) {
+      case 'available':
+        return 'Mark as Reserved';
+      case 'reserved':
+        return 'Mark as Claimed';
+      case 'claimed':
+        return 'Mark as Available';
+      default:
+        return 'Update Status';
     }
   };
 
@@ -136,87 +192,113 @@ export default function DonationDetails({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollContainer}>
-        {/* Image Carousel */}
+      <ScrollView 
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero Image Section */}
         <View style={styles.imageContainer}>
           <Image 
             source={{ uri: item.image?.[0] || 'https://via.placeholder.com/150' }}
             style={styles.image}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.8)']}
+            style={styles.gradient}
           />
         </View>
 
-        {/* Content */}
+        {/* Content Section */}
         <View style={styles.content}>
-          <Text style={styles.title}>{item.title}</Text>
-
-          {/* Status Badge */}
-          {item.status && (
-            <View style={styles.statusBadgeContainer}>
-              <Text style={[
-                styles.statusBadge,
-                { backgroundColor: item.status === 'available' ? '#4CAF50' : item.status === 'reserved' ? '#FFC107' : '#FF5722' }
-              ]}>
-                {item.status?.toUpperCase()}
-              </Text>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>{item.title}</Text>
+            <View style={[
+              styles.statusBadge,
+              { backgroundColor: item.status === 'available' ? '#4CAF50' : item.status === 'reserved' ? '#FFC107' : '#FF5722' }
+            ]}>
+              <Text style={styles.statusText}>{item.status?.toUpperCase()}</Text>
             </View>
-          )}
-
-          <View style={styles.infoRow}>
-            <Ionicons name="location-outline" size={20} color="#666" />
-            <Text style={styles.infoText}>{item.location}</Text>
           </View>
 
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.description}>{item.description}</Text>
+          <View style={styles.infoCard}>
+            <View style={styles.infoRow}>
+              <Ionicons name="location-outline" size={20} color="#4CAF50" />
+              <Text style={styles.infoText}>{item.location}</Text>
+            </View>
+            <View style={styles.infoDivider} />
+            <View style={styles.infoRow}>
+              <Ionicons name="time-outline" size={20} color="#4CAF50" />
+              <Text style={styles.infoText}>
+                {new Date(item.createdAt).toLocaleDateString()}
+              </Text>
+            </View>
+          </View>
 
-          <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleFavorite}>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.iconContainer}>
+                <FontAwesome5 name="info-circle" size={18} color="#4CAF50" />
+              </View>
+              <Text style={styles.sectionTitle}>About this item</Text>
+            </View>
+            <Text style={styles.description}>{item.description}</Text>
+            <TouchableOpacity 
+              style={[styles.wishlistButton, isFavorited && styles.wishlistButtonActive]} 
+              onPress={handleFavorite}
+            >
               <Ionicons 
                 name={isFavorited ? "heart" : "heart-outline"} 
-                size={24} 
-                color={isFavorited ? "#FF6B6B" : "#666"} 
+                size={20} 
+                color={isFavorited ? "#fff" : "#FF6B6B"} 
               />
               <Text style={[
-                styles.actionButtonText,
-                isFavorited && { color: "#FF6B6B" }
+                styles.wishlistButtonText,
+                isFavorited && { color: "#fff" }
               ]}>
-                Favorite
+                {isFavorited ? 'Remove from Wishlist' : 'Add to Wishlist'}
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Map Section */}
-          <Text style={styles.sectionTitle}>Location</Text>
-          <TouchableOpacity
-            style={styles.mapContainer}
-            onPress={() => navigation.navigate('FullScreenMap', {
-              latitude: item.latitude || 48.8566,
-              longitude: item.longitude || 2.3522,
-              title: item.title,
-              location: item.location,
-            })}
-          >
-            <MapView
-              style={styles.map}
-              initialRegion={{
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.iconContainer}>
+                <FontAwesome5 name="map-marker-alt" size={18} color="#4CAF50" />
+              </View>
+              <Text style={styles.sectionTitle}>Location</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.mapContainer}
+              onPress={() => navigation.navigate('FullScreenMap', {
                 latitude: item.latitude || 48.8566,
                 longitude: item.longitude || 2.3522,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-              scrollEnabled={false}
-              zoomEnabled={false}
+                title: item.title,
+                location: item.location,
+              })}
             >
-              <Marker
-                coordinate={{
+              <MapView
+                style={styles.map}
+                initialRegion={{
                   latitude: item.latitude || 48.8566,
                   longitude: item.longitude || 2.3522,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
                 }}
-                title={item.title}
-                description={item.location}
-              />
-            </MapView>
-          </TouchableOpacity>
+                scrollEnabled={false}
+                zoomEnabled={false}
+              >
+                <Marker
+                  coordinate={{
+                    latitude: item.latitude || 48.8566,
+                    longitude: item.longitude || 2.3522,
+                  }}
+                  title={item.title}
+                  description={item.location}
+                />
+              </MapView>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
 
@@ -255,19 +337,25 @@ export default function DonationDetails({ route, navigation }) {
           <TouchableOpacity 
             style={[
               styles.contactButton, 
-              { backgroundColor: item.status === 'claimed' ? '#666' : '#4CAF50' }
+              { backgroundColor: getStatusColor(item.status) }
             ]}
-            onPress={handleClaim}
-            disabled={item.status === 'claimed'}
+            onPress={() => handleStatusChange(getNextStatus(item.status))}
           >
-            <Text style={styles.contactButtonText}>
-              {item.status === 'claimed' ? 'Claimed' : 'Mark as Claimed'}
-            </Text>
-            <Ionicons 
-              name={item.status === 'claimed' ? "checkmark-circle" : "checkmark-circle-outline"} 
-              size={18} 
-              color="#fff" 
-            />
+            <View style={styles.buttonContent}>
+              <Ionicons 
+                name={
+                  item.status === 'available' ? "time-outline" :
+                  item.status === 'reserved' ? "checkmark-circle-outline" :
+                  "refresh-outline"
+                } 
+                size={18} 
+                color="#fff" 
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.contactButtonText}>
+                {getStatusText(item.status)}
+              </Text>
+            </View>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity 
@@ -278,12 +366,17 @@ export default function DonationDetails({ route, navigation }) {
             onPress={handleContact}
             disabled={item.status === 'claimed'}
           >
-            <Text style={styles.contactButtonText}>
-              {item.status === 'claimed' ? 'Item Claimed' : 'Contact'}
-            </Text>
-            {item.status === 'claimed' && (
-              <Ionicons name="checkmark-circle" size={18} color="#fff" />
-            )}
+            <View style={styles.buttonContent}>
+              <Ionicons 
+                name={item.status === 'claimed' ? "checkmark-circle" : "chatbubble-outline"} 
+                size={18} 
+                color="#fff" 
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.contactButtonText}>
+                {item.status === 'claimed' ? 'Item Claimed' : 'Contact'}
+              </Text>
+            </View>
           </TouchableOpacity>
         )}
       </View>
@@ -301,79 +394,162 @@ const styles = StyleSheet.create({
     marginBottom: 80, // Leave space for the fixed user bar
   },
   imageContainer: {
-    width: '100%',
     height: 300,
+    width: width,
+    position: 'relative',
   },
   image: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
+  },
+  gradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 100,
   },
   content: {
-    padding: 16,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginTop: -30,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  statusBadgeContainer: {
-    alignSelf: 'flex-start',
-    marginBottom: 16,
+    color: '#333',
+    flex: 1,
+    marginRight: 12,
+    lineHeight: 32,
   },
   statusBadge: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#4CAF50',
+  },
+  statusText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: 'bold',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-    overflow: 'hidden',
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  infoCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    paddingVertical: 8,
   },
   infoText: {
-    marginLeft: 8,
+    marginLeft: 12,
     fontSize: 16,
-    color: '#666',
+    color: '#444',
+    flex: 1,
+  },
+  infoDivider: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginVertical: 8,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  iconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontWeight: '600',
+    color: '#333',
   },
   description: {
     fontSize: 16,
-    color: '#666',
     lineHeight: 24,
-    marginBottom: 24,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 16,
-    marginBottom: 16,
-  },
-  actionButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionButtonText: {
     color: '#666',
-    fontSize: 12,
-    marginTop: 4,
+    letterSpacing: 0.2,
   },
   mapContainer: {
     height: 200,
-    borderRadius: 8,
+    borderRadius: 16,
     overflow: 'hidden',
-    marginTop: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   map: {
     flex: 1,
+  },
+  mapOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mapOverlayText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+    marginRight: 4,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+  },
+  actionButtonActive: {
+    backgroundColor: '#FF6B6B',
+  },
+  actionButtonText: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FF6B6B',
   },
   userContainer: {
     position: 'absolute',
@@ -408,16 +584,29 @@ const styles = StyleSheet.create({
     marginTop: 2, // Add some space between name and rating
   },
   contactButton: {
-    backgroundColor: '#EFD13D',
-    paddingVertical: 20,
-    paddingHorizontal: 38,
-    right: 8,
-    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    minWidth: 120,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonIcon: {
+    marginRight: 6,
   },
   contactButtonText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
   modalContainer: {
     flex: 1,
@@ -442,5 +631,27 @@ const styles = StyleSheet.create({
   fullScreenMap: {
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height - 80,
+  },
+  wishlistButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+    marginTop: 16,
+    alignSelf: 'center',
+  },
+  wishlistButtonActive: {
+    backgroundColor: '#FF6B6B',
+  },
+  wishlistButtonText: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FF6B6B',
   },
 });
