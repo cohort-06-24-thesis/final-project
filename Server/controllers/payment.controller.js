@@ -6,7 +6,14 @@ const { getIO } = require('../socket');
 const paymentController = {
   createPaymentIntent: async (req, res) => {
     try {
-      const { amount, campaignId, type } = req.body;
+      const { amount, campaignId, userId, type } = req.body;
+
+      if (!amount || !userId) {
+        return res.status(400).json({
+          error: 'Missing required fields',
+          message: 'Amount and userId are required'
+        });
+      }
 
       const amountInCents = Math.round(amount * 100);
 
@@ -18,41 +25,22 @@ const paymentController = {
         },
         metadata: {
           campaignId,
-          type
+          userId,
+          type: type || 'campaign_donation'
         }
       });
 
-      // Only create payment record for campaign donations
-      if (type !== 'team_support') {
-        // Save payment information to database
-        const payment = await Payment.create({
-          amount: amount.toFixed(2),
-          transaction_id: paymentIntent.id,
-          campaignId: campaignId
-        });
+      // Create payment record
+      const payment = await Payment.create({
+        amount: amount.toFixed(2),
+        transaction_id: paymentIntent.id,
+        campaignId: campaignId,
+        userId: userId
+      });
 
-        // Find the campaign and update its totalRaised and progress
-        const campaign = await CampaignDonations.findByPk(campaignId);
-        if (campaign) {
-          const newTotalRaised = parseFloat(campaign.totalRaised) + parseFloat(amount);
-          const newProgress = (newTotalRaised / campaign.goal) * 100;
-          
-          await campaign.update({
-            totalRaised: newTotalRaised,
-            progress: newProgress
-          });
-        }
-
-        // Return client secret and payment ID to frontend
-        return res.json({
-          clientSecret: paymentIntent.client_secret,
-          paymentId: payment.id
-        });
-      }
-
-      // For team support, just return the client secret
       res.json({
-        clientSecret: paymentIntent.client_secret
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id
       });
 
     } catch (error) {

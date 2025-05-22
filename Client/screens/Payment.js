@@ -49,14 +49,31 @@ export default function Payment({ route, navigation }) {
       return;
     }
 
+    if (!Uid) {
+      Alert.alert("Error", "Please login to make a donation");
+      navigation.goBack();
+      return;
+    }
+
     setLoading(true);
     try {
-      // Create payment intent
-      const response = await axios.post(`${API_BASE}/payment/create-intent`, {
+      // Create payment intent with proper data structure
+      const paymentData = {
         amount: parseFloat(amount),
         campaignId: campaign.id,
         userId: Uid,
+        type: 'campaign_donation' // Add type to differentiate payment
+      };
+
+      console.log('Sending payment request:', paymentData); // Debug log
+
+      const response = await axios.post(`${API_BASE}/payment/create-intent`, paymentData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
+
+      console.log('Payment response:', response.data); // Debug log
 
       if (!response.data?.clientSecret) {
         throw new Error("Failed to create payment intent");
@@ -65,7 +82,13 @@ export default function Payment({ route, navigation }) {
       // Initialize the Payment Sheet
       const { error: initError } = await initPaymentSheet({
         paymentIntentClientSecret: response.data.clientSecret,
-        merchantDisplayName: "Your App Name",
+        merchantDisplayName: "Sadaꓘa",
+        style: 'automatic',
+        appearance: {
+          colors: {
+            primary: '#00c44f',
+          },
+        }
       });
 
       if (initError) {
@@ -76,37 +99,52 @@ export default function Payment({ route, navigation }) {
       const { error: paymentError } = await presentPaymentSheet();
 
       if (paymentError) {
+        if (paymentError.code === 'Canceled') {
+          throw new Error("Payment was canceled");
+        }
         throw new Error(paymentError.message);
       }
 
-      // Verify the payment after successful completion
-      const verifyResponse = await axios.get(`${API_BASE}/payment/verify/${response.data.paymentIntentId}`);
-      
+      // Verify payment with better error handling
+      const verifyResponse = await axios.get(
+        `${API_BASE}/payment/verify/${response.data.paymentIntentId}`
+      );
+
       if (verifyResponse.data.status === 'success') {
-       
-Alert.alert(
-  "Thanks!",
-  "🙏 You made a difference. Explore other campaigns that need your help."
-);
-        navigation.navigate('MainApp', { screen: 'Campaign' });
-
-
-
-
+        Alert.alert(
+          "Thank You! 🙏",
+          "Your donation was successful. You've made a difference!",
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.navigate('MainApp', { screen: 'Campaign' })
+            }
+          ]
+        );
       } else {
         throw new Error("Payment verification failed");
       }
-    } catch (error) {
-      console.error("Payment error:", error);
-      let errorMessage = "Failed to process payment.";
 
-      if (!error.response) {
-        errorMessage =
-          "Network error. Please check your internet connection and try again.";
+    } catch (error) {
+      console.error("Payment Process Error:", {
+        name: error.name,
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+
+      let errorMessage = "Payment failed. ";
+
+      if (error.response?.status === 500) {
+        errorMessage += "Server error. Please try again later.";
+      } else if (error.message.includes('Canceled')) {
+        errorMessage = "Payment was canceled.";
+      } else if (!error.response && error.message.includes('Network')) {
+        errorMessage += "Please check your internet connection.";
       } else if (error.response?.status === 400) {
-        errorMessage = "Invalid payment details. Please check your input.";
-      } else if (error.response?.status === 500) {
-        errorMessage = "Server error. Please try again later.";
+        errorMessage += error.response.data.message || "Invalid payment details.";
+      } else {
+        errorMessage += error.message;
       }
 
       Alert.alert("Payment Error", errorMessage);

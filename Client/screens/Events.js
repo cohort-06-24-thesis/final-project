@@ -12,6 +12,29 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { API_BASE } from '../config';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const calculateTimeLeft = (eventDate) => {
+  const difference = new Date(eventDate) - new Date();
+  if (difference <= 0) return 'Event ended';
+
+  const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((difference / 1000 / 60) % 60);
+
+  // Calculate months if more than 30 days
+  if (days > 30) {
+    const months = Math.floor(days / 30);
+    const remainingDays = days % 30;
+    return remainingDays > 0 
+      ? `Still ${months}m ${remainingDays}d`
+      : `Still ${months} month${months > 1 ? 's' : ''}`;
+  }
+  
+  if (days > 0) return `Still ${days}d`;
+  if (hours > 0) return `Still ${hours}h`;
+  return `Still ${minutes}m`;
+};
 
 const EventCard = ({ event, onPress }) => (
   <View style={styles.card}>
@@ -23,11 +46,28 @@ const EventCard = ({ event, onPress }) => (
           resizeMode="cover"
         />
       ) : (
-        <View style={[styles.eventImage, { backgroundColor: '#ccc', justifyContent: 'center', alignItems: 'center' }]}>
-          <Text style={{ color: '#666' }}>No Image</Text>
+        <View style={[styles.eventImage, styles.noImage]}>
+          <Ionicons name="calendar-outline" size={40} color="#666" />
         </View>
       )}
-      <Text style={styles.dateText}>{new Date(event.date).toLocaleDateString()}</Text>
+      <LinearGradient
+        colors={['rgba(0,0,0,0.6)', 'transparent']}
+        style={styles.gradientOverlay}
+      >
+        <View style={styles.dateInfo}>
+          <Text style={styles.date}>
+            {new Date(event.date).toLocaleDateString('en-US', { 
+              month: 'short',
+              day: 'numeric'
+            })}
+          </Text>
+          <View style={styles.timeLeftBadge}>
+            <Text style={styles.timeLeftText}>
+              {calculateTimeLeft(event.date)}
+            </Text>
+          </View>
+        </View>
+      </LinearGradient>
     </View>
     <View style={styles.contentContainer}>
       <Text style={styles.title}>{event.title}</Text>
@@ -151,19 +191,48 @@ const styles = StyleSheet.create({
   imageContainer: {
     height: 160,
     backgroundColor: '#e0e0e0',
+    position: 'relative',
   },
   eventImage: {
     width: '100%',
     height: '100%',
   },
-  dateText: {
+  noImage: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  gradientOverlay: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: '#fff',
-    padding: 8,
-    borderRadius: 4,
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 80,
+    padding: 16,
+  },
+  dateInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  date: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  timeLeftBadge: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  timeLeftText: {
+    color: '#fff',
     fontSize: 12,
+    fontWeight: '600',
   },
   contentContainer: {
     padding: 16,
