@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imageContainer: {
-    height: 350,
+    height: 250,
     width: width,
     position: 'relative',
   },
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 150,
+    height: 100,
   },
   content: {
     padding: 20,
