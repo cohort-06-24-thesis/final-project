@@ -14,7 +14,7 @@ import axios from 'axios';
 import { API_BASE } from '../config';
 
 const InNeedCard = ({ item, onPress }) => (
-  <View style={styles.card}>
+  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
     <View style={styles.imageContainer}>
       {item.images && item.images.length > 0 ? (
         <Image
@@ -37,11 +37,15 @@ const InNeedCard = ({ item, onPress }) => (
         {item.description}
       </Text>
       <Text style={styles.location}>📍 {item.location}</Text>
-      <TouchableOpacity style={styles.viewButton} onPress={onPress}>
+      <TouchableOpacity 
+        style={styles.viewButton} 
+        onPress={onPress}
+        activeOpacity={0.6}
+      >
         <Text style={styles.viewText}>View Details</Text>
       </TouchableOpacity>
     </View>
-  </View>
+  </TouchableOpacity>
 );
 
 const InNeedScreen = ({ navigation }) => {
