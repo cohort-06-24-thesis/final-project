@@ -6,7 +6,7 @@ const { getIO } = require('../socket');
 const paymentController = {
   createPaymentIntent: async (req, res) => {
     try {
-      const { amount, campaignId, type } = req.body;
+      const { amount, campaignId, type, } = req.body;
 
       const amountInCents = Math.round(amount * 100);
 
