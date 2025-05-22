@@ -13,6 +13,7 @@ import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE } from '../config'; // Import the API base URL from config
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function AddEvent({ navigation }) {
   const [title, setTitle] = useState('');
@@ -160,129 +161,216 @@ export default function AddEvent({ navigation }) {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Create New Event</Text>
+    <ScrollView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            {/* Logo placeholder */}
+          </View>
+          <Text style={styles.headerTitle}>Create New Event</Text>
+        </View>
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Title *</Text>
-        <TextInput
-          style={styles.input}
-          value={title}
-          onChangeText={setTitle}
-          placeholder="Enter event title"
-        />
+        <View style={styles.formCard}>
+          <Text style={styles.sectionTitle}>Event Details</Text>
 
-        <Text style={styles.label}>Description *</Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          value={description}
-          onChangeText={setDescription}
-          placeholder="Enter event description"
-          multiline
-          numberOfLines={4}
-        />
+          <Text style={styles.label}>Title *</Text>
+          <TextInput
+            style={styles.input}
+            value={title}
+            onChangeText={setTitle}
+            placeholder="Enter event title"
+          />
 
-        <Text style={styles.label}>Date (YYYY-MM-DD) *</Text>
-        <TextInput
-          style={styles.input}
-          value={date}
-          onChangeText={setDate}
-          placeholder="Enter date (e.g., 2024-05-01)"
-        />
+          <Text style={styles.label}>Description *</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Enter event description"
+            multiline
+            numberOfLines={4}
+          />
 
-        <Text style={styles.label}>Location *</Text>
-        <TextInput
-          style={styles.input}
-          value={location}
-          onChangeText={setLocation}
-          placeholder="Enter event location"
-        />
+          <Text style={styles.label}>Date (YYYY-MM-DD) *</Text>
+          <TextInput
+            style={styles.input}
+            value={date}
+            onChangeText={setDate}
+            placeholder="Enter date (e.g., 2024-05-01)"
+          />
 
-        <Text style={styles.label}>Participators *</Text>
-        <TextInput
-          style={styles.input}
-          value={participators}
-          onChangeText={setParticipators}
-          placeholder="Enter number of participators"
-        />
+          <Text style={styles.label}>Location *</Text>
+          <TextInput
+            style={styles.input}
+            value={location}
+            onChangeText={setLocation}
+            placeholder="Enter event location"
+          />
 
-        <Text style={styles.label}>Event Image</Text>
-        <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
-          <Text style={styles.imagePickerButtonText}>Pick an image</Text>
-        </TouchableOpacity>
+          <Text style={styles.label}>Participators *</Text>
+          <TextInput
+            style={styles.input}
+            value={participators}
+            onChangeText={setParticipators}
+            placeholder="Enter number of participators"
+          />
 
-        {imageUri && (
-          <Image source={{ uri: imageUri }} style={styles.imagePreview} />
-        )}
+          <Text style={styles.label}>Event Image</Text>
+          <View style={styles.imageButtonsContainer}>
+            <TouchableOpacity style={styles.iconButton} onPress={pickImage}>
+              <Ionicons name="image" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={pickImage}>
+              <Ionicons name="camera" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
 
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Create Event</Text>
-        </TouchableOpacity>
+          {imageUri && (
+            <View style={styles.imagePreview}>
+              <View style={styles.imageContainer}>
+                <Image source={{ uri: imageUri }} style={styles.imageThumb} />
+                <TouchableOpacity style={styles.imageRemoveButton}>
+                  <Ionicons name="close" size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.submitText}>Create Event</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.footerText}>
+          {/* Footer text placeholder */}
+        </Text>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    padding: 16,
     backgroundColor: '#fff',
   },
-  inputContainer: {
+  container: {
     padding: 16,
+    paddingBottom: 32,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  logoContainer: {
+    marginRight: 10,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#00C44F',
+  },
+  formCard: {
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#333',
   },
   label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 6,
+    color: '#444',
+  },
+  required: {
+    color: 'red',
   },
   input: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    borderWidth: 1,
     borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 16,
+    fontSize: 14,
+    color: '#333',
   },
   textArea: {
     height: 100,
     textAlignVertical: 'top',
   },
-  submitButton: {
-    backgroundColor: '#4CAF50',
-    borderRadius: 8,
-    padding: 16,
+  imageHelper: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 8,
+  },
+  imageButtonsContainer: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  iconButton: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 40,
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
-  },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  imagePickerButton: {
-    backgroundColor: '#4CAF50',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  imagePickerButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    marginVertical: 10,
+    marginRight: 10,
   },
   imagePreview: {
-    width: '100%',
-    height: 200,
-    borderRadius: 8,
-    marginBottom: 16,
-  }
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  imageContainer: {
+    position: 'relative',
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  imageThumb: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+  },
+  imageRemoveButton: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+  },
+  submitButton: {
+    backgroundColor: '#00C44F',
+    borderRadius: 12,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  submitText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  footerText: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#666',
+    fontSize: 13,
+  },
 });
