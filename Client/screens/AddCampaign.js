@@ -137,10 +137,10 @@ export default function AddCampaign() {
           <Text style={styles.sectionTitle}>Campaign Images</Text>
           <View style={styles.imageButtonsContainer}>
             <TouchableOpacity style={styles.iconButton} onPress={pickImage}>
-              <Ionicons name="image" size={24} color="white" />
+              <Ionicons name="image" size={24} color="black" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton} onPress={takePhoto}>
-              <Ionicons name="camera" size={24} color="white" />
+              <Ionicons name="camera" size={24} color="black" />
             </TouchableOpacity>
           </View>
 
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   iconButton: {
-    backgroundColor: '#00C44F',
+    backgroundColor: '#FFFFFF',
     borderRadius: 40,
     width: 48,
     height: 48,
