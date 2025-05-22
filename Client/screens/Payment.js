@@ -64,14 +64,31 @@ export default function Payment({ route, navigation }) {
       return;
     }
 
+    if (!Uid) {
+      Alert.alert("Error", "Please login to make a donation");
+      navigation.goBack();
+      return;
+    }
+
     setLoading(true);
     try {
-      // Create payment intent
-      const response = await axios.post(`${API_BASE}/payment/create-intent`, {
+      // Create payment intent with proper data structure
+      const paymentData = {
         amount: parseFloat(amount),
         campaignId: campaign.id,
         userId: Uid,
+        type: 'campaign_donation' // Add type to differentiate payment
+      };
+
+      console.log('Sending payment request:', paymentData); // Debug log
+
+      const response = await axios.post(`${API_BASE}/payment/create-intent`, paymentData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
+
+      console.log('Payment response:', response.data); // Debug log
 
       if (!response.data?.clientSecret) {
         throw new Error("Failed to create payment intent");
@@ -80,7 +97,13 @@ export default function Payment({ route, navigation }) {
       // Initialize the Payment Sheet
       const { error: initError } = await initPaymentSheet({
         paymentIntentClientSecret: response.data.clientSecret,
-        merchantDisplayName: "Your App Name",
+        merchantDisplayName: "Sadaꓘa",
+        style: 'automatic',
+        appearance: {
+          colors: {
+            primary: '#00c44f',
+          },
+        }
       });
 
       if (initError) {
