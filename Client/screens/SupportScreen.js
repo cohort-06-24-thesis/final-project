@@ -93,6 +93,11 @@ const SupportScreen = () => {
       const { error: paymentError } = await presentPaymentSheet();
 
       if (paymentError) {
+        // Check if the error is due to user cancellation
+        if (paymentError.code === 'Canceled') {
+          console.log('Payment was cancelled by user');
+          return; // Exit gracefully without showing error
+        }
         throw new Error(paymentError.message);
       }
 

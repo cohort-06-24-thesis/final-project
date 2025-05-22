@@ -115,6 +115,11 @@ export default function Payment({ route, navigation }) {
       const { error: paymentError } = await presentPaymentSheet();
 
       if (paymentError) {
+        // Check if the error is due to user cancellation
+        if (paymentError.code === 'Canceled') {
+          console.log('Payment was cancelled by user');
+          return; // Exit gracefully without showing error
+        }
         console.error('Payment sheet error:', paymentError);
         throw new Error(paymentError.message);
       }
