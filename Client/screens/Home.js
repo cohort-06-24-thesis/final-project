@@ -159,9 +159,6 @@ export default function Home({ navigation }) {
   });
 
   const renderCampaignCard = (item, index) => {
-    const progress = Math.random() * 100;
-    const progressWidth = `${progress}%`;
-
     return (
       <TouchableOpacity
         key={item.id || index}
@@ -180,7 +177,7 @@ export default function Home({ navigation }) {
               <FontAwesome5 name="hand-holding-heart" size={24} color="#fff" />
             </View>
           )}
-          {Math.random() > 0.7 && (
+          {item.isUrgent && (
             <View style={styles.urgentBadge}>
               <Text style={styles.urgentText}>Urgent</Text>
             </View>
@@ -193,11 +190,11 @@ export default function Home({ navigation }) {
           </Text>
           <View style={styles.progressContainer}>
             <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: progressWidth }]} />
+              <View style={[styles.progressFill, { width: `${item.progress || 0}%` }]} />
             </View>
             <View style={styles.progressStats}>
-              <Text style={styles.progressText}>${Math.floor(Math.random() * 10000)} raised</Text>
-              <Text style={styles.progressGoal}>of ${Math.floor(Math.random() * 20000) + 10000}</Text>
+              <Text style={styles.progressText}>TND {item.totalRaised || 0} raised</Text>
+              <Text style={styles.progressGoal}>of TND {item.goal || 0}</Text>
             </View>
           </View>
         </View>
