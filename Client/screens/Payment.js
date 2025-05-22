@@ -24,23 +24,38 @@ export default function Payment({ route, navigation }) {
   const [Uid, setUid] = useState('');
   
   const { initPaymentSheet, presentPaymentSheet } = usePaymentSheet();
+
   useEffect(() => {
     const loadUid = async () => {
-      const storedUid = await AsyncStorage.getItem('userUID');
-      if (storedUid) {
-        setUid(storedUid);
-      } else {
-        Alert.alert('Error', 'User ID not found. Please log in again.');
+      try {
+        const storedUid = await AsyncStorage.getItem('userUID');
+        if (storedUid) {
+          setUid(storedUid);
+        } else {
+          Alert.alert('Error', 'User ID not found. Please log in again.');
+          navigation.goBack();
+        }
+      } catch (error) {
+        console.error('Error loading user ID:', error);
+        Alert.alert('Error', 'Failed to load user information');
         navigation.goBack();
       }
     };
     loadUid();
   }, []);
+
   useEffect(() => {
-    initStripe({
-      publishableKey:
-        "pk_test_51RMTosPOIMZHYlJT7cZ0Vk2xPiP0XLE7x1lRX3iN8IY3AWmLu8aNiGcLsZT0bPN9jgE6PLbO9KxCDPWmNu6tlrdD00T7wLIMpB",
-    });
+    const initializeStripe = async () => {
+      try {
+        await initStripe({
+          publishableKey: "pk_test_51RMTosPOIMZHYlJT7cZ0Vk2xPiP0XLE7x1lRX3iN8IY3AWmLu8aNiGcLsZT0bPN9jgE6PLbO9KxCDPWmNu6tlrdD00T7wLIMpB",
+        });
+      } catch (error) {
+        console.error('Error initializing Stripe:', error);
+        Alert.alert('Error', 'Failed to initialize payment system');
+      }
+    };
+    initializeStripe();
   }, []);
 
   const handlePayment = async () => {
@@ -69,6 +84,7 @@ export default function Payment({ route, navigation }) {
       });
 
       if (initError) {
+        console.error('Payment sheet init error:', initError);
         throw new Error(initError.message);
       }
 
@@ -76,23 +92,25 @@ export default function Payment({ route, navigation }) {
       const { error: paymentError } = await presentPaymentSheet();
 
       if (paymentError) {
+        console.error('Payment sheet error:', paymentError);
         throw new Error(paymentError.message);
       }
 
       // Verify the payment after successful completion
-      const verifyResponse = await axios.get(`${API_BASE}/payment/verify/${response.data.paymentIntentId}`);
+      console.log('Verifying payment with ID:', response.data.paymentId);
+      const verifyResponse = await axios.get(`${API_BASE}/payment/verify/${response.data.paymentId}`);
       
       if (verifyResponse.data.status === 'success') {
-       
-Alert.alert(
-  "Thanks!",
-  "🙏 You made a difference. Explore other campaigns that need your help."
-);
-        navigation.navigate('MainApp', { screen: 'Campaign' });
-
-
-
-
+        Alert.alert(
+          "Success!",
+          "Thank you for your donation. Your contribution will make a difference!",
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.navigate('MainApp', { screen: 'Campaign' })
+            }
+          ]
+        );
       } else {
         throw new Error("Payment verification failed");
       }
@@ -101,10 +119,11 @@ Alert.alert(
       let errorMessage = "Failed to process payment.";
 
       if (!error.response) {
-        errorMessage =
-          "Network error. Please check your internet connection and try again.";
+        errorMessage = "Network error. Please check your internet connection and try again.";
       } else if (error.response?.status === 400) {
         errorMessage = "Invalid payment details. Please check your input.";
+      } else if (error.response?.status === 404) {
+        errorMessage = "Payment verification failed. Please contact support.";
       } else if (error.response?.status === 500) {
         errorMessage = "Server error. Please try again later.";
       }
@@ -133,8 +152,10 @@ Alert.alert(
 
       <View style={styles.infoContainer}>
         <Text style={styles.infoText}>
-          • Minimum donation amount: $1{"\n"}• Secure payment powered by Stripe
-          {"\n"}• Supports all major credit cards
+          • Minimum donation amount: $1{"\n"}
+          • Secure payment powered by Stripe{"\n"}
+          • Supports all major credit cards{"\n"}
+          • Your donation will help: {campaign.description}
         </Text>
       </View>
 

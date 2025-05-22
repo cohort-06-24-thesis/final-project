@@ -1,20 +1,11 @@
-require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { Payment, CampaignDonations, User, Notification } = require('../Database/index.js');
 const { getIO } = require('../socket');
 
-const paymentController = {
+const campaignPaymentController = {
   createPaymentIntent: async (req, res) => {
     try {
       const { amount, campaignId, userId } = req.body;
-
-      // Basic validation
-      if (!amount || !userId) {
-        return res.status(400).json({
-          error: 'Missing required fields',
-          message: 'Amount and userId are required'
-        });
-      }
 
       const amountInCents = Math.round(amount * 100);
 
@@ -25,33 +16,36 @@ const paymentController = {
           enabled: true,
         },
         metadata: {
-          campaignId: campaignId || null,
+          campaignId,
           userId
         }
       });
 
-      // Only save to Payment table if it's a campaign donation
-      if (campaignId) {
-        const payment = await Payment.create({
-          amount: amount.toFixed(2),
-          transaction_id: paymentIntent.id,
-          campaignId: campaignId,
-          userId: userId,
-          status: 'pending'
-        });
+      // Save payment information to database
+      const payment = await Payment.create({
+        amount: amount.toFixed(2),
+        transaction_id: paymentIntent.id,
+        campaignId: campaignId,
+        userId: userId
+      });
 
-        // Return client secret and payment ID to frontend
-        return res.json({
-          clientSecret: paymentIntent.client_secret,
-          paymentId: payment.id
-        });
-      } else {
-        // For team support, just return the client secret and payment intent ID
-        return res.json({
-          clientSecret: paymentIntent.client_secret,
-          paymentId: paymentIntent.id
+      // Find the campaign and update its totalRaised and progress
+      const campaign = await CampaignDonations.findByPk(campaignId);
+      if (campaign) {
+        const newTotalRaised = parseFloat(campaign.totalRaised) + parseFloat(amount);
+        const newProgress = (newTotalRaised / campaign.goal) * 100;
+        
+        await campaign.update({
+          totalRaised: newTotalRaised,
+          progress: newProgress
         });
       }
+
+      // Return client secret and payment ID to frontend
+      return res.json({
+        clientSecret: paymentIntent.client_secret,
+        paymentId: payment.id
+      });
 
     } catch (error) {
       console.error('Error creating payment intent:', error);
@@ -64,19 +58,9 @@ const paymentController = {
 
   verifyPayment: async (req, res) => {
     try {
-      const { paymentId } = req.params;
+      const { paymentIntentId } = req.params;
 
-      // Find the payment record
-      const payment = await Payment.findByPk(paymentId);
-      if (!payment) {
-        return res.status(404).json({
-          error: 'Payment not found',
-          message: 'Payment record not found'
-        });
-      }
-
-      // Retrieve payment intent from Stripe
-      const paymentIntent = await stripe.paymentIntents.retrieve(payment.transaction_id);
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       console.log('Payment Intent:', paymentIntent);
 
       // Only proceed if payment was successful
@@ -91,9 +75,11 @@ const paymentController = {
       const { campaignId, userId } = paymentIntent.metadata;
       const amount = (paymentIntent.amount / 100).toFixed(2);
 
-      // Update payment status
-      await payment.update({
-        status: 'completed'
+      const payment = await Payment.create({
+        amount: amount,
+        transaction_id: paymentIntentId,
+        campaignId: campaignId,
+        userId: userId
       });
 
       const campaign = await CampaignDonations.findByPk(campaignId);
@@ -143,7 +129,6 @@ const paymentController = {
     }
   },
 
-  // Get all payments
   getAllPayments: async (req, res) => {
     try {
       const payments = await Payment.findAll({
@@ -165,4 +150,4 @@ const paymentController = {
   }
 };
 
-module.exports = paymentController;
+module.exports = campaignPaymentController; 

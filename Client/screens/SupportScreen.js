@@ -64,12 +64,11 @@ const SupportScreen = () => {
     try {
       console.log('Starting donation process...'); // Debug log
 
-      // Step 1: Create payment intent first
+      // Step 1: Create payment intent
       console.log('Creating payment intent...'); // Debug log
       const paymentResponse = await axios.post(`${API_BASE}/payment/create-intent`, {
         amount: parseFloat(amount),
-        type: 'team_support',
-        userUID
+        userId: userUID
       });
 
       console.log('Payment intent response:', paymentResponse.data); // Debug log
@@ -98,20 +97,21 @@ const SupportScreen = () => {
       }
 
       // Step 4: Create team support record
-      console.log('Creating team support record...'); // Debug log
-      const paymentIntentId = paymentResponse.data.clientSecret.split('_secret_')[0];
       const teamSupportResponse = await axios.post(`${API_BASE}/teamSupport`, {
         amount: parseFloat(amount),
-        message,
-        userUID,
-        transaction_id: paymentIntentId
+        message: message,
+        userUID: userUID,
+        transaction_id: paymentResponse.data.paymentId
       });
 
-      console.log('Team support response:', teamSupportResponse.data); // Debug log
-
-      Alert.alert('Success', 'Thank you for your donation!');
-      setAmount('');
-      setMessage('');
+      if (teamSupportResponse.status === 201) {
+        Alert.alert('Success', 'Thank you for your donation!');
+        setAmount('');
+        setMessage('');
+        navigation.goBack();
+      } else {
+        throw new Error('Failed to record team support donation');
+      }
     } catch (error) {
       console.error('Donation error:', error);
       console.error('Error details:', {
