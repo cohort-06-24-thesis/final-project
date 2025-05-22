@@ -18,21 +18,21 @@ export default function CampaignDetails({ route, navigation }) {
         <Text style={styles.title}>{campaign.title}</Text>
         
         <View style={styles.statsContainer}>
-          <Text style={styles.amount}>TND {campaign.totalRaised }  raised</Text>
+          <Text style={styles.amount}>TND {campaign.totalRaised} raised</Text>
           <Text style={styles.goal}>of TND {campaign.goal} goal</Text>
         </View>
 
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${campaign.progress}%` }]} />
+        <View style={styles.batteryContainer}>
+          <View style={styles.batteryBody}>
+            <View style={[styles.batteryLevel, { width: `${campaign.progress}%` }]} />
+          </View>
+          <View style={styles.batteryCap} />
+          <Text style={styles.batteryPercentage}>{campaign.progress}%</Text>
         </View>
-
-      
 
         <TouchableOpacity style={styles.donateButton} onPress={handleSupport}>
           <Text style={styles.donateButtonText}>I support</Text>
         </TouchableOpacity>
-
-       
 
         <Text style={styles.description}>{campaign.description}</Text>
       </View>
@@ -53,60 +53,74 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  statsContainer: {
-    marginBottom: 10,
-  },
-  amount: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    marginBottom: 20,
+    color: '#333',
+  },
+  statsContainer: {
+    marginBottom: 15,
+    backgroundColor: '#f8f8f8',
+    padding: 15,
+    borderRadius: 12,
+  },
+  amount: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#000000',
   },
   goal: {
     fontSize: 16,
     color: '#666',
     marginTop: 5,
   },
-  progressBar: {
-    height: 8,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 4,
-    marginVertical: 15,
+  batteryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+    paddingHorizontal: 10,
   },
-  progressFill: {
+  batteryBody: {
+    flex: 1,
+    height: 30,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 6,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#ddd',
+  },
+  batteryLevel: {
     height: '100%',
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#00C44F',
     borderRadius: 4,
   },
-  donorsCount: {
+  batteryCap: {
+    width: 4,
+    height: 15,
+    backgroundColor: '#ddd',
+    marginLeft: 2,
+    borderRadius: 2,
+  },
+  batteryPercentage: {
+    marginLeft: 10,
     fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
+    fontWeight: '600',
+    color: '#333',
   },
   donateButton: {
-    backgroundColor: '#00c44f',
-    padding: 15,
-    borderRadius: 25,
+    backgroundColor: '#00C44F',
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 10,
+    marginVertical: 20,
+    shadowColor: '#00C44F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   donateButtonText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  shareButton: {
-    backgroundColor: '#ffe97f',
-    padding: 15,
-    borderRadius: 25,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  shareButtonText: {
-    color: '#000',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -114,5 +128,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: '#444',
+    backgroundColor: '#f8f8f8',
+    padding: 15,
+    borderRadius: 12,
+    marginTop: 10,
   },
 });
