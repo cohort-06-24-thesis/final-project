@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 const SplashScreen = ({ onGetStarted }) => {
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/logoApp.png')} style={styles.logo} />
+      <Image source={require('../assets/logooo.png')} style={styles.logo} />
       <Text style={styles.title}>Sadaꓘa</Text>
       <TouchableOpacity style={styles.getStartedButton} onPress={onGetStarted}>
         <Text style={styles.getStartedButtonText}>Get Started</Text>
@@ -21,8 +21,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#00C44F',
   },
   logo: {
-    width: 300,
-    height: 150,
+    width: 200,
+    height: 200,
     marginBottom: 20,
   },
   title: {

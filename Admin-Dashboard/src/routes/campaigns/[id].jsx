@@ -182,27 +182,27 @@ const CampaignDetails = () => {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 pt-6">
+        <div className="flex flex-col sm:flex-row gap-4 pt-6 justify-center">
           <button
             onClick={toggleApproval}
-            className={`flex-1 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+            className={`w-36 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
               campaign.isApproved 
                 ? "bg-red-600 hover:bg-red-700 focus:ring-red-500" 
                 : "bg-green-600 hover:bg-green-700 focus:ring-green-500"
             }`}
           >
-            {campaign.isApproved ? "Mark as Not Approved" : "Mark as Approved"}
+            {campaign.isApproved ? "Not Approved" : "Approved"}
           </button>
 
           <button
             onClick={toggleStatus}
-            className={`flex-1 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+            className={`w-36 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
               campaign.status === 'completed' 
                 ? "bg-red-600 hover:bg-red-700 focus:ring-red-500" 
                 : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
             }`}
           >
-            {campaign.status === 'completed' ? "Mark as Active" : "Mark as Completed"}
+            {campaign.status === 'completed' ? "Active" : "Completed"}
           </button>
         </div>
       </div>

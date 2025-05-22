@@ -78,10 +78,10 @@ export default function Campaign() {
                 <View style={styles.progressContainer}>
                   <View style={styles.progressBar}>
                     <View
-                      style={[styles.progressFill, { width: `${campaign.progress}%` }]}
+                      style={[styles.progressFill, { width: `${Math.round(campaign.progress)}%` }]}
                     />
                   </View>
-                  <Text style={styles.progressText}>Raised {campaign.progress}%</Text>
+                  <Text style={styles.progressText}>Raised {Math.round(campaign.progress)}%</Text>
                   
                   {campaign.totalDonors > 0 && (
                     <Text style={styles.donorsText}>

@@ -290,11 +290,11 @@ export default function AddInNeed({ navigation, route }) {
           
           <View style={styles.imageButtonsContainer}>
             <TouchableOpacity onPress={() => pickImage(false)} style={styles.iconButton}>
-              <Ionicons name="images" size={24} color="white" />
+              <Ionicons name="images" size={24} color="black" />
             </TouchableOpacity>
             
             <TouchableOpacity onPress={() => pickImage(true)} style={styles.iconButton}>
-              <Ionicons name="camera" size={24} color="white" />
+              <Ionicons name="camera" size={24} color="black" />
             </TouchableOpacity>
           </View>
 
@@ -325,7 +325,6 @@ export default function AddInNeed({ navigation, route }) {
             <Text style={styles.submitText}>Submitting...</Text>
           ) : (
             <>
-              <Ionicons name="heart" size={20} color="white" />
               <Text style={styles.submitText}>Submit Request</Text>
             </>
           )}
@@ -422,7 +421,7 @@ const styles = StyleSheet.create({
     color: '#00C44F',
   },
   iconButton: {
-    backgroundColor: '#000000',
+    backgroundColor: '#ffffff',
     borderRadius: 40,
     width: 48,
     height: 48,

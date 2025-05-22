@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { initStripe, usePaymentSheet } from "@stripe/stripe-react-native";
 import axios from "axios";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { API_BASE } from "../config";
 
@@ -21,8 +21,8 @@ export default function Payment({ route, navigation }) {
   const { campaign } = route.params;
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
-  const [Uid, setUid] = useState('');
-  
+  const [Uid, setUid] = useState("");
+
   const { initPaymentSheet, presentPaymentSheet } = usePaymentSheet();
 
   useEffect(() => {
@@ -64,14 +64,31 @@ export default function Payment({ route, navigation }) {
       return;
     }
 
+    if (!Uid) {
+      Alert.alert("Error", "Please login to make a donation");
+      navigation.goBack();
+      return;
+    }
+
     setLoading(true);
     try {
-      // Create payment intent
-      const response = await axios.post(`${API_BASE}/payment/create-intent`, {
+      // Create payment intent with proper data structure
+      const paymentData = {
         amount: parseFloat(amount),
         campaignId: campaign.id,
         userId: Uid,
+        type: 'campaign_donation' // Add type to differentiate payment
+      };
+
+      console.log('Sending payment request:', paymentData); // Debug log
+
+      const response = await axios.post(`${API_BASE}/payment/create-intent`, paymentData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
+
+      console.log('Payment response:', response.data); // Debug log
 
       if (!response.data?.clientSecret) {
         throw new Error("Failed to create payment intent");
@@ -80,7 +97,13 @@ export default function Payment({ route, navigation }) {
       // Initialize the Payment Sheet
       const { error: initError } = await initPaymentSheet({
         paymentIntentClientSecret: response.data.clientSecret,
-        merchantDisplayName: "Your App Name",
+        merchantDisplayName: "Sadaꓘa",
+        style: 'automatic',
+        appearance: {
+          colors: {
+            primary: '#00c44f',
+          },
+        }
       });
 
       if (initError) {
@@ -92,6 +115,11 @@ export default function Payment({ route, navigation }) {
       const { error: paymentError } = await presentPaymentSheet();
 
       if (paymentError) {
+        // Check if the error is due to user cancellation
+        if (paymentError.code === 'Canceled') {
+          console.log('Payment was cancelled by user');
+          return; // Exit gracefully without showing error
+        }
         console.error('Payment sheet error:', paymentError);
         throw new Error(paymentError.message);
       }
@@ -139,7 +167,7 @@ export default function Payment({ route, navigation }) {
       <Text style={styles.title}>Support {campaign.title}</Text>
 
       <View style={styles.amountContainer}>
-        <Text style={styles.label}>Enter Amount (USD)</Text>
+        <Text style={styles.label}>Enter Amount (TND )</Text>
         <TextInput
           style={styles.input}
           value={amount}
@@ -152,7 +180,7 @@ export default function Payment({ route, navigation }) {
 
       <View style={styles.infoContainer}>
         <Text style={styles.infoText}>
-          • Minimum donation amount: $1{"\n"}
+          • Minimum donation amount: TND 1{"\n"}
           • Secure payment powered by Stripe{"\n"}
           • Supports all major credit cards{"\n"}
           • Your donation will help: {campaign.description}

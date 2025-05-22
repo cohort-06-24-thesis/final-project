@@ -54,7 +54,10 @@ export default function InNeedDetails({ route, navigation }) {
 
         const response = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
         const favorites = response.data;
-        setIsFavorited(favorites.some(fav => fav.inNeedId === item.id));
+        const isFav = favorites.some(fav => 
+          fav.inNeedId === item.id
+        );
+        setIsFavorited(isFav);
       } catch (error) {
         console.error('Error checking favorite status:', error);
       }
@@ -123,7 +126,9 @@ export default function InNeedDetails({ route, navigation }) {
       if (isFavorited) {
         // Find the favorite first before deleting
         const favoritesResponse = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
-        const favorite = favoritesResponse.data.find(fav => fav.inNeedId === item.id);
+        const favorite = favoritesResponse.data.find(fav => 
+          fav.inNeedId === item.id
+        );
         
         if (favorite) {
           await axios.delete(`${API_BASE}/favourite/deleteFavourite/${favorite.id}`);
@@ -131,10 +136,9 @@ export default function InNeedDetails({ route, navigation }) {
           Alert.alert('Success', 'Item removed from wishlist');
         }
       } else {
-        // Add to favorites with proper structure
         const response = await axios.post(`${API_BASE}/favourite/createFavourite`, {
           userId,
-          inNeedId: item.id, // Use inNeedId instead of itemId
+          inNeedId: item.id,
           type: 'inNeed'
         });
 
@@ -531,6 +535,55 @@ export default function InNeedDetails({ route, navigation }) {
     </View>
   );
 }
+
+const WishlistItem = ({ item }) => {
+  // Properly handle image paths for different item types
+  const getImageUrl = () => {
+      if (item.type === 'event') {
+          return item.image || (item.images && item.images[0]) || 'https://via.placeholder.com/100';
+      } else if (item.type === 'inNeed') {
+          return item.images && item.images[0] || 'https://via.placeholder.com/100';
+      } else if (item.type === 'donation') {
+          if (Array.isArray(item.image)) {
+              return item.image[0] || 'https://via.placeholder.com/100';
+          }
+          return item.image || 'https://via.placeholder.com/100';
+      }
+      return 'https://via.placeholder.com/100';
+  };
+
+  return (
+      <View style={styles.wishlistItem}>
+          <Image 
+              source={{ uri: getImageUrl() }}
+              style={styles.wishlistImage}
+          />
+          <View style={styles.wishlistItemContent}>
+              <Text style={styles.wishlistItemTitle} numberOfLines={2}>
+                  {item.title}
+              </Text>
+              {item.location && (
+                  <Text style={styles.wishlistItemLocation} numberOfLines={1}>
+                      <Ionicons name="location-outline" size={14} color="#666" />
+                      {" "}{item.location}
+                  </Text>
+              )}
+              {item.type === 'event' && item.date && (
+                  <Text style={styles.wishlistItemDetail}>
+                      <Ionicons name="calendar-outline" size={14} color="#666" />
+                      {" "}{new Date(item.date).toLocaleDateString()}
+                  </Text>
+              )}
+          </View>
+          <TouchableOpacity 
+              style={styles.removeWishlistButton}
+              onPress={() => handleRemoveFromWishlist(item.favoriteId)}
+          >
+              <Ionicons name="heart" size={20} color="#FF6B6B" />
+          </TouchableOpacity>
+      </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -937,5 +990,52 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '500',
+  },
+  wishlistItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  wishlistImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 12,
+    marginRight: 14,
+    backgroundColor: '#f0f0f0', // Add background color for loading state
+    resizeMode: 'cover', // Ensure proper image scaling
+  },
+  wishlistItemContent: {
+    flex: 1,
+  },
+  wishlistItemTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  wishlistItemLocation: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 2,
+  },
+  wishlistItemDetail: {
+    fontSize: 14,
+    color: '#666',
+  },
+  removeWishlistButton: {
+    padding: 8,
+    borderRadius: 50,
+    backgroundColor: '#FF6B6B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 12,
   },
 });
