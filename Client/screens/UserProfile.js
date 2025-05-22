@@ -205,53 +205,43 @@ export default function UserProfile({ navigation }) {
         if (!userId) return;
 
         const favoritesResponse = await axios.get(`${API_BASE}/favourite/findAllFavourites/${userId}`);
-        console.log('Raw favorites:', favoritesResponse.data);
+        console.log('Received favorites:', favoritesResponse.data);
 
-        const wishlistDetails = await Promise.all(
-            favoritesResponse.data.map(async (favorite) => {
-                try {
-                    // Use the nested data from the favorite response
-                    if (favorite.donationItemId && favorite.DonationItem) {
-                        return {
-                            ...favorite.DonationItem,
-                            id: favorite.id,
-                            favoriteId: favorite.id,
-                            donationItemId: favorite.donationItemId,
-                            type: 'donation'
-                        };
-                    } 
-                    else if (favorite.eventId && favorite.Event) {
-                        return {
-                            ...favorite.Event,
-                            id: favorite.id,
-                            favoriteId: favorite.id,
-                            eventId: favorite.eventId,
-                            type: 'event'
-                        };
-                    }
-                    else if (favorite.inNeedId && favorite.InNeed) {
-                        return {
-                            ...favorite.InNeed,
-                            id: favorite.id,
-                            favoriteId: favorite.id,
-                            inNeedId: favorite.inNeedId,
-                            type: 'inNeed'
-                        };
-                    }
-                    return null;
-                } catch (error) {
-                    console.error('Error processing favorite item:', error);
-                    return null;
-                }
-            })
-        );
+        const wishlistDetails = favoritesResponse.data.map(favorite => {
+            // Determine the type and structure the item accordingly
+            if (favorite.inNeedId) {
+                return {
+                    ...favorite,
+                    ...favorite.InNeed,
+                    type: 'inNeed',
+                    favoriteId: favorite.id,
+                    id: favorite.inNeedId
+                };
+            } else if (favorite.donationItemId) {
+                return {
+                    ...favorite,
+                    ...favorite.DonationItem,
+                    type: 'donation',
+                    favoriteId: favorite.id,
+                    id: favorite.donationItemId
+                };
+            } else if (favorite.eventId) {
+                return {
+                    ...favorite,
+                    ...favorite.Event,
+                    type: 'event',
+                    favoriteId: favorite.id,
+                    id: favorite.eventId
+                };
+            }
+            return null;
+        }).filter(item => item !== null);
 
-        const validItems = wishlistDetails.filter(item => item !== null);
-        console.log('Processed wishlist items:', validItems);
-        setWishlistItems(validItems);
+        console.log('Processed wishlist items:', wishlistItems);
+        setWishlistItems(wishlistDetails);
     } catch (error) {
-        console.error('Error fetching wishlist:', error?.response?.data || error.message);
-        setWishlistItems([]);
+        console.error('Error fetching wishlist:', error);
+        Alert.alert('Error', 'Failed to load wishlist items');
     }
 };
 
@@ -398,36 +388,63 @@ const ActionButton = ({ icon, label, onPress, color = "#666", description }) => 
 );
 
   const WishlistItem = ({ item }) => {
-    const imageUrl = item.type === 'event' ? 
-        (item.image || item.images?.[0] || 'https://via.placeholder.com/100') :
-        (Array.isArray(item.image) ? item.image[0] : item.image || 'https://via.placeholder.com/100');
+    // Get the correct image based on item type and structure
+    const getImageUrl = () => {
+        if (item.type === 'inNeed') {
+            // Check both nested and direct image properties
+            return item.InNeed?.images?.[0] || item.images?.[0] || 'https://via.placeholder.com/100';
+        } else if (item.type === 'donation') {
+            return item.DonationItem?.images?.[0] || item.images?.[0] || 'https://via.placeholder.com/100';
+        } else if (item.type === 'event') {
+            return item.Event?.images?.[0] || item.images?.[0] || 'https://via.placeholder.com/100';
+        }
+        return 'https://via.placeholder.com/100';
+    };
+
+    // Get the correct title based on item type
+    const getTitle = () => {
+        if (item.type === 'inNeed') {
+            return item.InNeed?.title || item.title || 'Untitled';
+        } else if (item.type === 'donation') {
+            return item.DonationItem?.title || item.title || 'Untitled';
+        } else if (item.type === 'event') {
+            return item.Event?.title || item.title || 'Untitled';
+        }
+        return 'Untitled';
+    };
+
+    // Get the correct location based on item type
+    const getLocation = () => {
+        if (item.type === 'inNeed') {
+            return item.InNeed?.location || item.location;
+        } else if (item.type === 'donation') {
+            return item.DonationItem?.location || item.location;
+        } else if (item.type === 'event') {
+            return item.Event?.location || item.location;
+        }
+        return null;
+    };
 
     return (
         <View style={styles.wishlistItem}>
             <Image 
-                source={{ uri: imageUrl }}
+                source={{ uri: getImageUrl() }}
                 style={styles.wishlistImage}
             />
             <View style={styles.wishlistItemContent}>
                 <Text style={styles.wishlistItemTitle} numberOfLines={2}>
-                    {item.title}
+                    {getTitle()}
                 </Text>
-                {item.location && (
+                {getLocation() && (
                     <Text style={styles.wishlistItemLocation} numberOfLines={1}>
                         <Ionicons name="location-outline" size={14} color="#666" />
-                        {" "}{item.location}
-                    </Text>
-                )}
-                {item.type === 'event' && item.date && (
-                    <Text style={styles.wishlistItemDetail}>
-                        <Ionicons name="calendar-outline" size={14} color="#666" />
-                        {" "}{new Date(item.date).toLocaleDateString()}
+                        {" "}{getLocation()}
                     </Text>
                 )}
             </View>
             <TouchableOpacity 
                 style={styles.removeWishlistButton}
-                onPress={() => handleRemoveFromWishlist(item.favoriteId)}
+                onPress={() => handleRemoveFromWishlist(item.favoriteId || item.id)}
             >
                 <Ionicons name="heart" size={20} color="#FF6B6B" />
             </TouchableOpacity>
