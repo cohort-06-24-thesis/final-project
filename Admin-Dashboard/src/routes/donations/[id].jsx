@@ -122,16 +122,18 @@ const DonationItemDetails = () => {
                     </div>
                 </div>
 
-                <button 
-                    onClick={toggleApproval}
-                    className={`w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                        item.isApproved 
-                            ? "bg-red-600 hover:bg-red-700 focus:ring-red-500" 
-                            : "bg-green-600 hover:bg-green-700 focus:ring-green-500"
-                    }`}
-                >
-                    {item.isApproved ? "Mark as Not Approved" : "Mark as Approved"}
-                </button>
+                <div className="flex justify-center">
+                    <button 
+                        onClick={toggleApproval}
+                        className={`w-36 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                            item.isApproved 
+                                ? "bg-red-600 hover:bg-red-700 focus:ring-red-500" 
+                                : "bg-green-600 hover:bg-green-700 focus:ring-green-500"
+                        }`}
+                    >
+                        {item.isApproved ? "Not Approved" : "Approved"}
+                    </button>
+                </div>
             </div>
         </div>
     );

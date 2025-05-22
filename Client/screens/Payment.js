@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { initStripe, usePaymentSheet } from "@stripe/stripe-react-native";
 import axios from "axios";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { API_BASE } from "../config";
 
@@ -21,8 +21,8 @@ export default function Payment({ route, navigation }) {
   const { campaign } = route.params;
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
-  const [Uid, setUid] = useState('');
-  
+  const [Uid, setUid] = useState("");
+
   const { initPaymentSheet, presentPaymentSheet } = usePaymentSheet();
 
   useEffect(() => {
