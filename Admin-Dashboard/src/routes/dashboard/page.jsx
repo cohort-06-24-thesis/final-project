@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import {
   BarChart,
@@ -129,7 +128,8 @@ export default function CharityDashboard() {
 const userVsNeedData = useMemo(() => [
   { name: "In Need Requests", count: inNeedPeople.length },
   { name: "Donation Items", count: donationItems.length },
-], [inNeedPeople.length, donationItems.length]);
+  { name: "Campaigns", count: campaignDonations.length }
+], [inNeedPeople.length, donationItems.length, campaignDonations.length]);
 
 
   const eventStatusData = useMemo(() => {
@@ -234,7 +234,7 @@ const userVsNeedData = useMemo(() => [
 
         {/* Users vs People in Need Bar Chart */}
         <div className="rounded-lg bg-white p-6 shadow">
-          <h3 className="mb-4 text-lg font-semibold text-gray-700">In Need Requests vs. Donation Items</h3>
+          <h3 className="mb-4 text-lg font-semibold text-gray-700">In Need Requests vs. Donation Items vs. Campaigns</h3>
 
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={userVsNeedData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
