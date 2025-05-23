@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useContext } from "react";
+import React, { useState, useEffect, useCallback, useContext, useMemo } from "react";
 import {
   View,
   Text,
@@ -28,7 +28,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NotificationContext } from '../src/context/NotificationContext';
 
 const { width, height } = Dimensions.get('window');
-const HEADER_MAX_HEIGHT = 220;
+const HEADER_MAX_HEIGHT = 200;
 const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 120 : 100;
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
@@ -296,6 +296,43 @@ export default function Home({ navigation }) {
     );
   };
 
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const filteredCampaigns = useMemo(() =>
+    !normalizedQuery ? [] : campaigns.filter(item =>
+      (item.title && item.title.toLowerCase().includes(normalizedQuery)) ||
+      (item.description && item.description.toLowerCase().includes(normalizedQuery))
+    ), [campaigns, normalizedQuery]);
+
+  const filteredInNeeds = useMemo(() =>
+    !normalizedQuery ? [] : inNeeds.filter(item =>
+      (item.title && item.title.toLowerCase().includes(normalizedQuery)) ||
+      (item.description && item.description.toLowerCase().includes(normalizedQuery)) ||
+      (item.location && item.location.toLowerCase().includes(normalizedQuery))
+    ), [inNeeds, normalizedQuery]);
+
+  const filteredDonationItems = useMemo(() =>
+    !normalizedQuery ? [] : donationItems.filter(item =>
+      (item.title && item.title.toLowerCase().includes(normalizedQuery)) ||
+      (item.location && item.location.toLowerCase().includes(normalizedQuery))
+    ), [donationItems, normalizedQuery]);
+
+  const filteredEvents = useMemo(() =>
+    !normalizedQuery ? [] : events.filter(item =>
+      (item.title && item.title.toLowerCase().includes(normalizedQuery)) ||
+      (item.location && item.location.toLowerCase().includes(normalizedQuery))
+    ), [events, normalizedQuery]);
+
+  const searchResults = useMemo(() => {
+    if (!normalizedQuery) return [];
+    return [
+      ...filteredCampaigns.map(item => ({ ...item, _type: 'Campaign' })),
+      ...filteredInNeeds.map(item => ({ ...item, _type: 'In Need' })),
+      ...filteredDonationItems.map(item => ({ ...item, _type: 'Donation' })),
+      ...filteredEvents.map(item => ({ ...item, _type: 'Event' })),
+    ];
+  }, [filteredCampaigns, filteredInNeeds, filteredDonationItems, filteredEvents, normalizedQuery]);
+
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
@@ -313,7 +350,7 @@ export default function Home({ navigation }) {
             <Ionicons name="information-circle-outline" size={28} color="#fff" />
           </TouchableOpacity>
           <LottieView
-            source={require('../assets/lottie.json')}
+            source={require('../assets/heart-animation.json')}
             autoPlay
             loop
             style={{ width: 300, height: 300, backgroundColor: 'transparent', alignSelf: 'center' }}
@@ -489,278 +526,274 @@ export default function Home({ navigation }) {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* Search Bar (always visible) */}
-      <Animated.View
-        style={[
-          styles.searchContainer,
-          {
-            transform: [{
-              translateY: scrollY.interpolate({
-                inputRange: [0, HEADER_SCROLL_DISTANCE],
-                outputRange: [HEADER_MAX_HEIGHT - 85, 0],
-                extrapolate: 'clamp'
-              })
-            }]
-          }
-        ]}
-      >
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color="#666" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search campaigns, donations..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#999"
-          />
+      <ScrollView style={{ marginTop: HEADER_MAX_HEIGHT }} contentContainerStyle={{ paddingBottom: 30 }}>
+        {/* Search Bar and Dropdown in normal flow */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <Ionicons name="search" size={20} color="#666" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search campaigns, donations..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholderTextColor="#999"
+            />
+          </View>
         </View>
-      </Animated.View>
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )
-        }
-        scrollEventThrottle={16}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={["#4CAF50"]}
-            tintColor="#4CAF50"
-          />
-        }
-      >
-        {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#4CAF50"
-            style={styles.loader}
-          />
-        ) : (
-          <>
-            {/* Stats Grid */}
+        {normalizedQuery ? (
+          <View style={{
+            backgroundColor: '#fff',
+            borderRadius: 18,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.12,
+            shadowRadius: 16,
+            elevation: 8,
+            paddingVertical: 4,
+            paddingHorizontal: 0,
+            maxHeight: 340,
+            marginHorizontal: 16,
+            marginTop: 12,
+          }}>
             <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={{
-                paddingLeft: 20,
-                marginBottom: 20,
-                marginTop: 45, // Reduced from 65 to 45 to maintain proper spacing
-              }}
-              contentContainerStyle={{
-                paddingRight: 20,
-                paddingTop: 25,
-                gap: 10,
-              }}
+              style={{ maxHeight: 320 }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
             >
-              {featuredItems.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[styles.statCard, { width: 120 }]} // Reduced width from 150 to 120
-                  onPress={() => navigation.navigate(item.screen)}
-                >
-                  <LinearGradient
-                    colors={item.gradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.statGradient}
-                  >
-                    <View style={styles.statIconContainer}>
-                      <FontAwesome5 name={item.icon} size={14} color="#fff" />
-                    </View>
-                    <Text style={styles.statCount}>
-                      {Array.isArray(item.data) ? item.data.length : 0}
-                    </Text>
-                    <Text style={styles.statTitle}>{item.title}</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            {/* Featured Campaigns */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionTitleContainer}>
-                  <FontAwesome5 name="star" size={16} color="#4CAF50" style={styles.sectionIcon} />
-                  <Text style={styles.sectionTitle}>Featured Campaigns</Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.seeAllButton}
-                  onPress={() => navigation.navigate("Campaign")}
-                >
-                  <Text style={styles.seeAllText}>See All</Text>
-                  <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.campaignsScrollContent}
-              >
-                {Array.isArray(campaigns) && campaigns.length > 0 ? (
-                  campaigns.slice(0, 5).map((campaign, index) => renderCampaignCard(campaign, index))
-                ) : (
-                  <View style={styles.emptyStateContainer}>
-                    <FontAwesome5 name="hand-holding-heart" size={40} color="#ddd" />
-                    <Text style={styles.emptyStateText}>No campaigns available</Text>
-                  </View>
-                )}
-              </ScrollView>
-            </View>
-
-            {/* Donation Items */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionTitleContainer}>
-                  <FontAwesome5 name="gift" size={16} color="#FFD166" style={styles.sectionIcon} />
-                  <Text style={styles.sectionTitle}>Donation Items</Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.seeAllButton}
-                  onPress={() => navigation.navigate("Donations")}
-                >
-                  <Text style={styles.seeAllText}>See All</Text>
-                  <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
-                </TouchableOpacity>
-              </View>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                {Array.isArray(donationItems) && donationItems.length > 0 ? (
-                  donationItems.slice(0, 4).map((item, index) => (
-                    <View key={item.id || index} style={{ width: '48%', marginBottom: 20 }}>
-                      {renderDonationItemCard(item, index)}
-                    </View>
-                  ))
-                ) : (
-                  <View style={styles.emptyStateContainer}>
-                    <FontAwesome5 name="gift" size={40} color="#ddd" />
-                    <Text style={styles.emptyStateText}>No donation items available</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-
-            {/* Recent In-Needs */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionTitleContainer}>
-                  <FontAwesome5 name="users" size={16} color="#4ECDC4" style={styles.sectionIcon} />
-                  <Text style={styles.sectionTitle}>People In Need</Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.seeAllButton}
-                  onPress={() => navigation.navigate("InNeed")}
-                >
-                  <Text style={styles.seeAllText}>See All</Text>
-                  <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
-                </TouchableOpacity>
-              </View>
-
-              {Array.isArray(inNeeds) && inNeeds.length > 0 ? (
-                inNeeds.slice(0, 3).map((inNeed, index) => renderInNeedCard(inNeed, index))
+              {searchResults.length === 0 ? (
+                <Text style={{ color: '#888', fontSize: 16, padding: 18, textAlign: 'center' }}>No results found.</Text>
               ) : (
-                <View style={styles.emptyStateContainer}>
-                  <FontAwesome5 name="users" size={40} color="#ddd" />
-                  <Text style={styles.emptyStateText}>No in-needs available</Text>
-                </View>
+                searchResults.map((item, idx) => (
+                  <TouchableOpacity
+                    key={[item._type, item.id ?? idx].join('-')}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingVertical: 14,
+                      paddingHorizontal: 18,
+                      borderBottomWidth: idx !== searchResults.length - 1 ? 1 : 0,
+                      borderBottomColor: '#f0f0f0',
+                      backgroundColor: '#fff',
+                    }}
+                    onPress={() => {
+                      if (item._type === 'Campaign') navigation.navigate('CampaignDetails', { campaign: item });
+                      else if (item._type === 'In Need') navigation.navigate('InNeedDetails', { item });
+                      else if (item._type === 'Donation') navigation.navigate('DonationDetails', { item });
+                      else if (item._type === 'Event') navigation.navigate('Events');
+                    }}
+                    activeOpacity={0.85}
+                  >
+                    {/* Left icon for type */}
+                    <View style={{ width: 32, alignItems: 'center', marginRight: 10 }}>
+                      {item._type === 'Campaign' && <FontAwesome5 name="hand-holding-heart" size={18} color="#FF6B6B" />}
+                      {item._type === 'In Need' && <FontAwesome5 name="users" size={18} color="#4ECDC4" />}
+                      {item._type === 'Donation' && <FontAwesome5 name="gift" size={18} color="#FFD166" />}
+                      {item._type === 'Event' && <FontAwesome5 name="calendar-alt" size={18} color="#9C27B0" />}
+                    </View>
+                    {/* Main content */}
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#222' }}>{item.title}</Text>
+                      {item.description && <Text style={{ color: '#666', marginTop: 2, fontSize: 13 }} numberOfLines={1}>{item.description}</Text>}
+                      {item.location && <Text style={{ color: '#aaa', marginTop: 1, fontSize: 12 }}>{item.location}</Text>}
+                    </View>
+                    {/* Type badge and arrow */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
+                      <View style={{
+                        backgroundColor: '#f5f5f5',
+                        borderRadius: 8,
+                        paddingHorizontal: 8,
+                        paddingVertical: 2,
+                        marginRight: 6,
+                      }}>
+                        <Text style={{ fontSize: 11, color: '#00C44F', fontWeight: '600' }}>{item._type}</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={18} color="#bbb" />
+                    </View>
+                  </TouchableOpacity>
+                ))
               )}
-            </View>
+            </ScrollView>
+          </View>
+        ) : null}
 
-            {/* Events Section */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionTitleContainer}>
-                  <FontAwesome5 name="calendar-alt" size={16} color="#9C27B0" style={styles.sectionIcon} />
-                  <Text style={styles.sectionTitle}>Events</Text>
+        {/* Featured Campaigns */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleContainer}>
+              <FontAwesome5 name="star" size={16} color="#4CAF50" style={styles.sectionIcon} />
+              <Text style={styles.sectionTitle}>Featured Campaigns</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.seeAllButton}
+              onPress={() => navigation.navigate("Campaign")}
+            >
+              <Text style={styles.seeAllText}>See All</Text>
+              <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.campaignsScrollContent}
+          >
+            {Array.isArray(campaigns) && campaigns.length > 0 ? (
+              campaigns.slice(0, 5).map((campaign, index) => renderCampaignCard(campaign, index))
+            ) : (
+              <View style={styles.emptyStateContainer}>
+                <FontAwesome5 name="hand-holding-heart" size={40} color="#ddd" />
+                <Text style={styles.emptyStateText}>No campaigns available</Text>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+
+        {/* Donation Items */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleContainer}>
+              <FontAwesome5 name="gift" size={16} color="#FFD166" style={styles.sectionIcon} />
+              <Text style={styles.sectionTitle}>Donation Items</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.seeAllButton}
+              onPress={() => navigation.navigate("Donations")}
+            >
+              <Text style={styles.seeAllText}>See All</Text>
+              <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
+            </TouchableOpacity>
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+            {Array.isArray(donationItems) && donationItems.length > 0 ? (
+              donationItems.slice(0, 4).map((item, index) => (
+                <View key={item.id || index} style={{ width: '48%', marginBottom: 20 }}>
+                  {renderDonationItemCard(item, index)}
                 </View>
+              ))
+            ) : (
+              <View style={styles.emptyStateContainer}>
+                <FontAwesome5 name="gift" size={40} color="#ddd" />
+                <Text style={styles.emptyStateText}>No donation items available</Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Recent In-Needs */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleContainer}>
+              <FontAwesome5 name="users" size={16} color="#4ECDC4" style={styles.sectionIcon} />
+              <Text style={styles.sectionTitle}>People In Need</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.seeAllButton}
+              onPress={() => navigation.navigate("InNeed")}
+            >
+              <Text style={styles.seeAllText}>See All</Text>
+              <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
+            </TouchableOpacity>
+          </View>
+
+          {Array.isArray(inNeeds) && inNeeds.length > 0 ? (
+            inNeeds.slice(0, 3).map((inNeed, index) => renderInNeedCard(inNeed, index))
+          ) : (
+            <View style={styles.emptyStateContainer}>
+              <FontAwesome5 name="users" size={40} color="#ddd" />
+              <Text style={styles.emptyStateText}>No in-needs available</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Events Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleContainer}>
+              <FontAwesome5 name="calendar-alt" size={16} color="#9C27B0" style={styles.sectionIcon} />
+              <Text style={styles.sectionTitle}>Events</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.seeAllButton}
+              onPress={() => navigation.navigate("Events")}
+            >
+              <Text style={styles.seeAllText}>See All</Text>
+              <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
+            </TouchableOpacity>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.campaignsScrollContent}
+          >
+            {Array.isArray(events) && events.length > 0 ? (
+              events.slice(0, 5).map((event, index) => (
                 <TouchableOpacity
-                  style={styles.seeAllButton}
+                  key={event.id || index}
+                  style={styles.campaignCard}
                   onPress={() => navigation.navigate("Events")}
                 >
-                  <Text style={styles.seeAllText}>See All</Text>
-                  <FontAwesome5 name="chevron-right" size={12} color="#4CAF50" />
+                  <View style={styles.campaignImageContainer}>
+                    {event.images && event.images.length > 0 ? (
+                      <Image
+                        source={{ uri: event.images[0] }}
+                        style={{ width: '100%', height: '100%' }}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View style={styles.campaignImagePlaceholder}>
+                        <FontAwesome5 name="calendar-alt" size={24} color="#fff" />
+                      </View>
+                    )}
+                  </View>
+                  <View style={styles.campaignContent}>
+                    <Text style={styles.campaignTitle} numberOfLines={1}>{event.title || "Untitled Event"}</Text>
+                    <Text style={styles.campaignDescription} numberOfLines={1}>{event.location || "Unknown location"}</Text>
+                    <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                      {event.date ? new Date(event.date).toLocaleDateString() : "No date"}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
+              ))
+            ) : (
+              <View style={styles.emptyStateContainer}>
+                <FontAwesome5 name="calendar-alt" size={40} color="#ddd" />
+                <Text style={styles.emptyStateText}>No events available</Text>
               </View>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.campaignsScrollContent}
-              >
-                {Array.isArray(events) && events.length > 0 ? (
-                  events.slice(0, 5).map((event, index) => (
-                    <TouchableOpacity
-                      key={event.id || index}
-                      style={styles.campaignCard}
-                      onPress={() => navigation.navigate("Events")}
-                    >
-                      <View style={styles.campaignImageContainer}>
-                        {event.images && event.images.length > 0 ? (
-                          <Image
-                            source={{ uri: event.images[0] }}
-                            style={{ width: '100%', height: '100%' }}
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <View style={styles.campaignImagePlaceholder}>
-                            <FontAwesome5 name="calendar-alt" size={24} color="#fff" />
-                          </View>
-                        )}
-                      </View>
-                      <View style={styles.campaignContent}>
-                        <Text style={styles.campaignTitle} numberOfLines={1}>{event.title || "Untitled Event"}</Text>
-                        <Text style={styles.campaignDescription} numberOfLines={1}>{event.location || "Unknown location"}</Text>
-                        <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
-                          {event.date ? new Date(event.date).toLocaleDateString() : "No date"}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))
-                ) : (
-                  <View style={styles.emptyStateContainer}>
-                    <FontAwesome5 name="calendar-alt" size={40} color="#ddd" />
-                    <Text style={styles.emptyStateText}>No events available</Text>
-                  </View>
-                )}
-              </ScrollView>
+            )}
+          </ScrollView>
+        </View>
+
+        {/* Impact Stats */}
+        <View style={styles.impactSection}>
+          <Text style={styles.impactTitle}>Your Impact</Text>
+          <Text style={styles.impactSubtitle}>Together we're making a difference</Text>
+
+          <View style={styles.impactStats}>
+            <View style={styles.impactStatCard}>
+              <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}>
+                <FontAwesome5 name="hand-holding-usd" size={20} color="#FF6B6B" />
+              </View>
+              <Text style={styles.impactStatValue}>+120K TND</Text>
+              <Text style={styles.impactStatLabel}>Funds Raised</Text>
             </View>
 
-            {/* Impact Stats */}
-            <View style={styles.impactSection}>
-              <Text style={styles.impactTitle}>Your Impact</Text>
-              <Text style={styles.impactSubtitle}>Together we're making a difference</Text>
-
-              <View style={styles.impactStats}>
-                <View style={styles.impactStatCard}>
-                  <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}>
-                    <FontAwesome5 name="hand-holding-usd" size={20} color="#FF6B6B" />
-                  </View>
-                  <Text style={styles.impactStatValue}>+120K TND</Text>
-                  <Text style={styles.impactStatLabel}>Funds Raised</Text>
-                </View>
-
-                <View style={styles.impactStatCard}>
-                  <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(78, 205, 196, 0.1)' }]}>
-                    <FontAwesome5 name="users" size={20} color="#4ECDC4" />
-                  </View>
-                  <Text style={styles.impactStatValue}>5,000+</Text>
-                  <Text style={styles.impactStatLabel}>People Helped</Text>
-                </View>
-
-                <View style={styles.impactStatCard}>
-                  <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 209, 102, 0.1)' }]}>
-                    <FontAwesome5 name="globe-americas" size={20} color="#FFD166" />
-                  </View>
-                  <Text style={styles.impactStatValue}>24</Text>
-                  <Text style={styles.impactStatLabel}>States</Text>
-                </View>
+            <View style={styles.impactStatCard}>
+              <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(78, 205, 196, 0.1)' }]}>
+                <FontAwesome5 name="users" size={20} color="#4ECDC4" />
               </View>
+              <Text style={styles.impactStatValue}>5,000+</Text>
+              <Text style={styles.impactStatLabel}>People Helped</Text>
             </View>
-          </>
-        )}
+
+            <View style={styles.impactStatCard}>
+              <View style={[styles.impactIconContainer, { backgroundColor: 'rgba(255, 209, 102, 0.1)' }]}>
+                <FontAwesome5 name="globe-americas" size={20} color="#FFD166" />
+              </View>
+              <Text style={styles.impactStatValue}>24</Text>
+              <Text style={styles.impactStatLabel}>States</Text>
+            </View>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -778,6 +811,8 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 1000,
     overflow: 'hidden',
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
   },
   headerTitleContainer: {
     position: 'absolute',
@@ -808,28 +843,28 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 80 : 60,
   },
   searchContainer: {
-    position: 'absolute',
-    top: HEADER_MAX_HEIGHT - 170, // Changed from -35 to -20 to move search bar lower
-    left: 20,
-    right: 20,
-    zIndex: 1000,
+    marginHorizontal: 16,
+    marginTop: -12,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 14,
-    borderRadius: 12,
-    elevation: 8,
+    padding: 20,
+    borderRadius: 18,
+    elevation: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
+    zIndex: 0,
   },
   searchInput: {
     flex: 1,
     marginLeft: 10,
-    fontSize: 16,
+    fontSize: 18,
     color: '#333',
   },
   scrollView: {
