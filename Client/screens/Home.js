@@ -28,9 +28,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NotificationContext } from '../src/context/NotificationContext';
 
 const { width, height } = Dimensions.get('window');
-const HEADER_MAX_HEIGHT = 200;
-const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 120 : 100;
-const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
 export default function Home({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
@@ -40,7 +37,6 @@ export default function Home({ navigation }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const scrollY = new Animated.Value(0);
   const [profileMenuVisible, setProfileMenuVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportReason, setReportReason] = useState('');
@@ -139,24 +135,42 @@ export default function Home({ navigation }) {
     },
   ];
 
-  // Animated header calculations
-  const headerHeight = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE],
-    outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
-    extrapolate: 'clamp',
-  });
+  const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  const headerTitleOpacity = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
-    outputRange: [0, 0, 1],
-    extrapolate: 'clamp',
-  });
+  const filteredCampaigns = useMemo(() =>
+    !normalizedQuery ? [] : campaigns.filter(item =>
+      (item.title && item.title.toLowerCase().includes(normalizedQuery)) ||
+      (item.description && item.description.toLowerCase().includes(normalizedQuery))
+    ), [campaigns, normalizedQuery]);
 
-  const headerContentOpacity = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE / 2],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  });
+  const filteredInNeeds = useMemo(() =>
+    !normalizedQuery ? [] : inNeeds.filter(item =>
+      (item.title && item.title.toLowerCase().includes(normalizedQuery)) ||
+      (item.description && item.description.toLowerCase().includes(normalizedQuery)) ||
+      (item.location && item.location.toLowerCase().includes(normalizedQuery))
+    ), [inNeeds, normalizedQuery]);
+
+  const filteredDonationItems = useMemo(() =>
+    !normalizedQuery ? [] : donationItems.filter(item =>
+      (item.title && item.title.toLowerCase().includes(normalizedQuery)) ||
+      (item.location && item.location.toLowerCase().includes(normalizedQuery))
+    ), [donationItems, normalizedQuery]);
+
+  const filteredEvents = useMemo(() =>
+    !normalizedQuery ? [] : events.filter(item =>
+      (item.title && item.title.toLowerCase().includes(normalizedQuery)) ||
+      (item.location && item.location.toLowerCase().includes(normalizedQuery))
+    ), [events, normalizedQuery]);
+
+  const searchResults = useMemo(() => {
+    if (!normalizedQuery) return [];
+    return [
+      ...filteredCampaigns.map(item => ({ ...item, _type: 'Campaign' })),
+      ...filteredInNeeds.map(item => ({ ...item, _type: 'In Need' })),
+      ...filteredDonationItems.map(item => ({ ...item, _type: 'Donation' })),
+      ...filteredEvents.map(item => ({ ...item, _type: 'Event' })),
+    ];
+  }, [filteredCampaigns, filteredInNeeds, filteredDonationItems, filteredEvents, normalizedQuery]);
 
   const renderCampaignCard = (item, index) => {
     return (
@@ -296,97 +310,35 @@ export default function Home({ navigation }) {
     );
   };
 
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-
-  const filteredCampaigns = useMemo(() =>
-    !normalizedQuery ? [] : campaigns.filter(item =>
-      (item.title && item.title.toLowerCase().includes(normalizedQuery)) ||
-      (item.description && item.description.toLowerCase().includes(normalizedQuery))
-    ), [campaigns, normalizedQuery]);
-
-  const filteredInNeeds = useMemo(() =>
-    !normalizedQuery ? [] : inNeeds.filter(item =>
-      (item.title && item.title.toLowerCase().includes(normalizedQuery)) ||
-      (item.description && item.description.toLowerCase().includes(normalizedQuery)) ||
-      (item.location && item.location.toLowerCase().includes(normalizedQuery))
-    ), [inNeeds, normalizedQuery]);
-
-  const filteredDonationItems = useMemo(() =>
-    !normalizedQuery ? [] : donationItems.filter(item =>
-      (item.title && item.title.toLowerCase().includes(normalizedQuery)) ||
-      (item.location && item.location.toLowerCase().includes(normalizedQuery))
-    ), [donationItems, normalizedQuery]);
-
-  const filteredEvents = useMemo(() =>
-    !normalizedQuery ? [] : events.filter(item =>
-      (item.title && item.title.toLowerCase().includes(normalizedQuery)) ||
-      (item.location && item.location.toLowerCase().includes(normalizedQuery))
-    ), [events, normalizedQuery]);
-
-  const searchResults = useMemo(() => {
-    if (!normalizedQuery) return [];
-    return [
-      ...filteredCampaigns.map(item => ({ ...item, _type: 'Campaign' })),
-      ...filteredInNeeds.map(item => ({ ...item, _type: 'In Need' })),
-      ...filteredDonationItems.map(item => ({ ...item, _type: 'Donation' })),
-      ...filteredEvents.map(item => ({ ...item, _type: 'Event' })),
-    ];
-  }, [filteredCampaigns, filteredInNeeds, filteredDonationItems, filteredEvents, normalizedQuery]);
-
   return (
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+      <StatusBar translucent backgroundColor="#00C44F" barStyle="light-content" />
 
-      {/* Animated Header */}
-      <Animated.View style={[styles.header, { height: headerHeight }]}>
-        <Animated.View
-          style={[styles.headerContent, { opacity: headerContentOpacity, backgroundColor: '#00C44F', borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }]}
+      {/* Simple Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.aboutButton}
+          onPress={() => navigation.navigate('AboutUs')}
         >
-          {/* About Us icon in expanded header */}
-          <TouchableOpacity
-            style={styles.aboutButtonExpanded}
-            onPress={() => navigation.navigate('AboutUs')}
-          >
-            <Ionicons name="information-circle-outline" size={28} color="#fff" />
-          </TouchableOpacity>
-          <LottieView
-            source={require('../assets/heart-animation.json')}
-            autoPlay
-            loop
-            style={{ width: 300, height: 300, backgroundColor: 'transparent', alignSelf: 'center' }}
-          />
-        </Animated.View>
-        {/* Compact header title (visible on scroll) */}
-        <Animated.View
-          style={[styles.headerTitleContainer, { opacity: headerTitleOpacity }]}
-        >
-          <TouchableOpacity
-            style={styles.aboutButton}
-            onPress={() => navigation.navigate('AboutUs')}
-          >
-            <Ionicons name="information-circle-outline" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Sadaꓘa</Text>
-          <View style={{ width: 24 }} />
-        </Animated.View>
+          <Ionicons name="information-circle-outline" size={24} color="#fff" />
+        </TouchableOpacity>
         <View style={styles.headerButtons}>
           <TouchableOpacity
             style={[styles.headerButton, { marginRight: 12 }]}
             onPress={() => navigation.navigate('Conversation')}
           >
-            <Ionicons name="chatbubble-outline" size={30} color="#fff" />
+            <Ionicons name="chatbubble-outline" size={24} color="#fff" />
             {unseenChatCount > 0 && (
               <View style={styles.chatBadge}>
                 <Text style={styles.chatBadgeText}>{unseenChatCount}</Text>
               </View>
             )}
           </TouchableOpacity>
-          {/* Notification Bell Button */}
           <TouchableOpacity
             style={[styles.headerButton, { marginRight: 12 }]}
             onPress={() => navigation.navigate('Notifications')}
           >
-            <MaterialIcons name="notifications-none" size={30} color="#fff" />
+            <MaterialIcons name="notifications-none" size={24} color="#fff" />
             {unseenNotifCount > 0 && (
               <View style={styles.notifBadge}>
                 <Text style={styles.notifBadgeText}>{unseenNotifCount}</Text>
@@ -403,11 +355,11 @@ export default function Home({ navigation }) {
                 style={styles.profilePic}
               />
             ) : (
-              <Ionicons name="person-circle-outline" size={30} color="#fff" />
+              <Ionicons name="person-circle-outline" size={24} color="#fff" />
             )}
           </TouchableOpacity>
         </View>
-      </Animated.View>
+      </View>
 
       {/* Profile Dropdown Modal */}
       <Modal
@@ -526,7 +478,7 @@ export default function Home({ navigation }) {
         </TouchableWithoutFeedback>
       </Modal>
 
-      <ScrollView style={{ marginTop: HEADER_MAX_HEIGHT }} contentContainerStyle={{ paddingBottom: 30 }}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingBottom: 30 }}>
         {/* Search Bar and Dropdown in normal flow */}
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
@@ -805,42 +757,34 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f9fa",
   },
   header: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-    overflow: 'hidden',
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-  },
-  headerTitleContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: HEADER_MIN_HEIGHT,
+    backgroundColor: '#00C44F',
+    height: Platform.OS === 'ios' ? 90 : 70,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 50 : 30,
-    backgroundColor: '#00C44F',
+    paddingTop: Platform.OS === 'ios' ? 40 : 20,
+    paddingHorizontal: 16,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    paddingHorizontal: 24,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  headerContent: {
-    flex: 1,
-    justifyContent: 'center',
+  headerButtons: {
+    flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    paddingBottom: 40,
-    paddingTop: Platform.OS === 'ios' ? 80 : 60,
+  },
+  headerButton: {
+    padding: 8,
+    borderRadius: 20,
+  },
+  aboutButton: {
+    padding: 8,
+  },
+  scrollView: {
+    flex: 1,
   },
   searchContainer: {
     marginHorizontal: 16,
@@ -866,61 +810,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 18,
     color: '#333',
-  },
-  scrollView: {
-    flex: 1,
-    marginTop: HEADER_MAX_HEIGHT - 25, // Update to match searchContainer
-  },
-  scrollContent: {
-    paddingBottom: 10,
-  },
-  loader: {
-    marginTop: 50,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  statCard: {
-    height: 85, // Reduced from 100 to 85
-    borderRadius: 12, // Slightly reduced radius
-    overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    marginRight: 10,
-  },
-  statGradient: {
-    padding: 12, // Reduced padding
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  statIconContainer: {
-    width: 32, // Smaller icon container
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  statCount: {
-    fontSize: 20, // Smaller font size
-    fontWeight: 'bold',
-    color: '#fff',
-    marginVertical: 2,
-  },
-  statTitle: {
-    fontSize: 12, // Smaller font size
-    color: 'rgba(255,255,255,0.95)',
-    fontWeight: '600',
-    textAlign: 'center',
   },
   section: {
     marginTop: 25,
@@ -980,20 +869,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  urgentBadge: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: '#FF6B6B',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-  },
-  urgentText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
   campaignContent: {
     padding: 15,
   },
@@ -1007,34 +882,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginBottom: 12,
-  },
-  progressContainer: {
-    marginTop: 5,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#4CAF50',
-    borderRadius: 3,
-  },
-  progressStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  progressText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#333',
-  },
-  progressGoal: {
-    fontSize: 13,
-    color: '#666',
   },
   inNeedCard: {
     backgroundColor: '#fff',
@@ -1156,27 +1003,55 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
-  headerButtons: {
-    position: 'absolute',
-    right: 16,
-    top: Platform.OS === 'ios' ? 50 : 30,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerButton: {
-    padding: 8,
-    borderRadius: 20,
-  },
-  notificationDot: {
+  chatBadge: {
     position: 'absolute',
     top: 6,
     right: 6,
-    width: 10,
-    height: 10,
+    width: 18,
+    height: 18,
     backgroundColor: '#FF6B6B',
-    borderRadius: 5,
+    borderRadius: 9,
     borderWidth: 1,
     borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chatBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 18,
+    height: 18,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notifBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  profileButton: {
+    padding: 0,
+    height: 35,
+    width: 35,
+    borderRadius: 17.5,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  profilePic: {
+    height: '100%',
+    width: '100%',
+    borderRadius: 17.5,
   },
   modalOverlay: {
     flex: 1,
@@ -1274,64 +1149,48 @@ const styles = StyleSheet.create({
   submitButton: {
     backgroundColor: '#4CAF50',
   },
-  profileButton: {
-    padding: 0,
-    height: 35,
-    width: 35,
-    borderRadius: 17.5,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#fff',
+  urgentBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 10,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
   },
-  profilePic: {
+  urgentText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  progressBar: {
+    height: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+    flex: 1,
+  },
+  progressFill: {
     height: '100%',
-    width: '100%',
-    borderRadius: 17.5,
+    backgroundColor: '#4CAF50',
+    borderRadius: 5,
   },
-  chatBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 18,
-    height: 18,
-    backgroundColor: '#FF6B6B',
-    borderRadius: 9,
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
-    justifyContent: 'center',
+  progressStats: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginLeft: 10,
   },
-  chatBadgeText: {
-    color: '#fff',
+  progressText: {
+    color: '#333',
     fontSize: 12,
     fontWeight: 'bold',
   },
-  notifBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 18,
-    height: 18,
-    backgroundColor: '#FF6B6B',
-    borderRadius: 9,
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  notifBadgeText: {
-    color: '#fff',
+  progressGoal: {
+    color: '#666',
     fontSize: 12,
-    fontWeight: 'bold',
-  },
-  aboutButton: {
-    padding: 8,
-  },
-  aboutButtonExpanded: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 30,
-    left: 24,
-    zIndex: 10,
-    padding: 8,
   },
 });
