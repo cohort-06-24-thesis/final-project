@@ -37,7 +37,11 @@ const calculateTimeLeft = (eventDate) => {
 };
 
 const EventCard = ({ event, onPress }) => (
-  <View style={styles.card}>
+  <TouchableOpacity 
+    style={styles.card}
+    onPress={onPress}
+    activeOpacity={0.7}
+  >
     <View style={styles.imageContainer}>
       {event.images && event.images.length > 0 ? (
         <Image
@@ -76,9 +80,10 @@ const EventCard = ({ event, onPress }) => (
       <Text style={styles.participators}>👥 {event.participators}</Text>
       <TouchableOpacity style={styles.viewDetailsButton} onPress={onPress}>
         <Text style={styles.viewDetailsText}>View Details</Text>
+        <Ionicons name="chevron-forward" size={16} color="#4CAF50" style={styles.viewDetailsIcon} />
       </TouchableOpacity>
     </View>
-  </View>
+  </TouchableOpacity>
 );
 
 const EventsScreen = ({ navigation }) => {
@@ -187,6 +192,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: 'hidden',
     elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   imageContainer: {
     height: 160,
@@ -258,10 +267,17 @@ const styles = StyleSheet.create({
   },
   viewDetailsButton: {
     alignSelf: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
   },
   viewDetailsText: {
     color: '#4CAF50',
     fontWeight: 'bold',
+    marginRight: 4,
+  },
+  viewDetailsIcon: {
+    marginLeft: 2,
   },
   centerContainer: {
     flex: 1,
