@@ -50,7 +50,12 @@ export default function Campaign() {
         {campaigns
           .filter(campaign => campaign.isApproved === true)
           .map((campaign, index) => (
-            <View key={index} style={styles.card}>
+            <TouchableOpacity 
+              key={index} 
+              style={styles.card}
+              onPress={() => handleViewDetails(campaign)}
+              activeOpacity={0.7}
+            >
               <View style={styles.imageContainer}>
                 {campaign.images && campaign.images.length > 0 && (
                   <Image
@@ -95,9 +100,10 @@ export default function Campaign() {
                   onPress={() => handleViewDetails(campaign)}
                 >
                   <Text style={styles.viewDetailsText}>View Details</Text>
+                  <Ionicons name="chevron-forward" size={16} color="#4CAF50" style={styles.viewDetailsIcon} />
                 </TouchableOpacity>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
       </ScrollView>
 
@@ -110,9 +116,6 @@ export default function Campaign() {
     </View>
   );
 }
-
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -134,6 +137,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: 'hidden',
     elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   imageContainer: {
     height: 160,
@@ -191,13 +198,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-  viewDetailsButton: {
-   alignSelf: 'flex-end',
-  },
-  viewDetailsText: {
-   color: '#4CAF50',
-    fontWeight: 'bold',
-  },
   addButton: {
     backgroundColor: '#4CAF50',
     borderRadius: 25,
@@ -209,5 +209,19 @@ const styles = StyleSheet.create({
     bottom: 20,
     right: 20,
     elevation: 5,
+  },
+  viewDetailsButton: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  viewDetailsText: {
+    color: '#4CAF50',
+    fontWeight: 'bold',
+    marginRight: 4,
+  },
+  viewDetailsIcon: {
+    marginLeft: 2,
   },
 });

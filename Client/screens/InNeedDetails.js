@@ -9,15 +9,17 @@ import {
   Alert,
   TextInput,
   Modal,
-  KeyboardAvoidingView,
-  Platform,
+  Dimensions,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE } from '../config';
 import axios from "axios";
 import io from "socket.io-client";
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width } = Dimensions.get('window');
 
 export default function InNeedDetails({ route, navigation }) {
   const { item } = route.params;
@@ -29,7 +31,6 @@ export default function InNeedDetails({ route, navigation }) {
   const [socket, setSocket] = useState(null);
   const [editingComment, setEditingComment] = useState(null);
   const [editedContent, setEditedContent] = useState('');
-  const [currentUser, setCurrentUser] = useState(null);
   const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
@@ -45,7 +46,6 @@ export default function InNeedDetails({ route, navigation }) {
     loadUid();
   }, []);
 
- 
   useEffect(() => {
     const checkIfFavorited = async () => {
       try {
@@ -65,7 +65,6 @@ export default function InNeedDetails({ route, navigation }) {
 
     checkIfFavorited();
   }, [item.id]);
-
 
   useEffect(() => {
     const socketInstance = io(API_BASE.replace('/api', ''));
@@ -263,248 +262,308 @@ export default function InNeedDetails({ route, navigation }) {
   
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero Image Section */}
         <View style={styles.imageContainer}>
-          <Image
+          <Image 
             source={{ uri: item.images?.[0] || 'https://via.placeholder.com/150' }}
             style={styles.image}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.8)']}
+            style={styles.gradient}
           />
         </View>
 
+        {/* Content Section */}
         <View style={styles.content}>
-          <Text style={styles.title}>{item.title}</Text>
-
-          <View style={styles.infoRow}>
-            <Ionicons name="location-outline" size={20} color="#666" />
-            <Text style={styles.infoText}>{item.location}</Text>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>{item.title}</Text>
           </View>
 
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.description}>{item.description}</Text>
+          <View style={styles.infoCard}>
+            <View style={styles.infoRow}>
+              <Ionicons name="location-outline" size={20} color="#4CAF50" />
+              <Text style={styles.infoText}>{item.location}</Text>
+            </View>
+            <View style={styles.infoDivider} />
+            <View style={styles.infoRow}>
+              <Ionicons name="time-outline" size={20} color="#4CAF50" />
+              <Text style={styles.infoText}>
+                {new Date(item.createdAt).toLocaleDateString()}
+              </Text>
+            </View>
+          </View>
 
-          <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleFavorite}>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.iconContainer}>
+                <FontAwesome5 name="info-circle" size={18} color="#4CAF50" />
+              </View>
+              <Text style={styles.sectionTitle}>About this request</Text>
+            </View>
+            <Text style={styles.description}>{item.description}</Text>
+            <TouchableOpacity 
+              style={[styles.wishlistButton, isFavorited && styles.wishlistButtonActive]} 
+              onPress={handleFavorite}
+            >
               <Ionicons 
                 name={isFavorited ? "heart" : "heart-outline"} 
-                size={24} 
-                color={isFavorited ? "#FF6B6B" : "#666"} 
+                size={20} 
+                color={isFavorited ? "#fff" : "#FF6B6B"} 
               />
               <Text style={[
-                styles.actionButtonText,
-                isFavorited && { color: "#FF6B6B" }
+                styles.wishlistButtonText,
+                isFavorited && { color: "#fff" }
               ]}>
-                Favorite
+                {isFavorited ? 'Remove from Wishlist' : 'Add to Wishlist'}
               </Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.sectionTitle}>Location</Text>
-          <TouchableOpacity
-            style={styles.mapContainer}
-            onPress={() =>
-              navigation.navigate('FullScreenMap', {
-                latitude: item.latitude,
-                longitude: item.longitude,
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.iconContainer}>
+                <FontAwesome5 name="map-marker-alt" size={18} color="#4CAF50" />
+              </View>
+              <Text style={styles.sectionTitle}>Location</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.mapContainer}
+              onPress={() => navigation.navigate('FullScreenMap', {
+                latitude: item.latitude || 48.8566,
+                longitude: item.longitude || 2.3522,
                 title: item.title,
                 location: item.location,
-              })
-            }
-          >
-            <MapView
-              style={styles.map}
-              initialRegion={{
-                latitude: item.latitude || 0,
-                longitude: item.longitude || 0,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-              scrollEnabled={false}
+              })}
             >
-              <Marker
-                coordinate={{
-                  latitude: item.latitude || 0,
-                  longitude: item.longitude || 0,
+              <MapView
+                style={styles.map}
+                initialRegion={{
+                  latitude: item.latitude || 48.8566,
+                  longitude: item.longitude || 2.3522,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
                 }}
-                title={item.title}
-                description={item.location}
-              />
-            </MapView>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.commentsSection}>
-          <View style={styles.commentsHeader}>
-            <Text style={styles.commentsCount}>{comments.length} Comments</Text>
-          </View>
-
-          <View style={styles.addCommentContainer}>
-            <TouchableOpacity onPress={() => navigation.navigate('UserProfile')}>
-              <Image 
-                source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/40' }}
-                style={styles.currentUserAvatar}
-              />
-            </TouchableOpacity>
-            <View style={styles.inputWrapper}>
-              <TextInput
-                style={styles.commentInput}
-                placeholder="Write a comment..."
-                placeholderTextColor="#999"
-                value={newComment}
-                onChangeText={setNewComment}
-                multiline
-                maxLength={500}
-              />
-              {newComment.trim() && (
-                <TouchableOpacity 
-                  style={styles.postButton}
-                  onPress={handlePostComment}
-                >
-                  <Text style={styles.postButtonText}>Post</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-
-          <View style={styles.commentsList}>
-            {comments.map((comment, index) => (
-              <View key={comment.id || index} style={styles.commentItem}>
-                <TouchableOpacity
-                  onPress={() => {
-                    if (comment.user?.id && comment.user.id.toString() === Uid.toString()) {
-                      navigation.navigate('UserProfile');
-                    } else if (comment.user?.id) {
-                      navigation.navigate('OtherUser', { userId: comment.user.id });
-                    } else {
-                      Alert.alert("Error", "User ID is missing, cannot navigate to profile.");
-                    }
+                scrollEnabled={false}
+                zoomEnabled={false}
+              >
+                <Marker
+                  coordinate={{
+                    latitude: item.latitude || 48.8566,
+                    longitude: item.longitude || 2.3522,
                   }}
-                >
-                  <Image 
-                    source={{ uri: comment.user?.profilePic || 'https://via.placeholder.com/40' }}
-                    style={styles.commentAvatar}
-                  />
-                </TouchableOpacity>
-                <View style={styles.commentContent}>
-                  <View style={styles.commentBubble}>
-                    <Text style={styles.commentUsername}>{comment.user?.name}</Text>
-                    <Text style={styles.commentText}>{comment.content}</Text>
-                  </View>
-                  <View style={styles.commentActions}>
-                    <Text style={styles.commentTime}>
-                      {new Date(comment.createdAt).toLocaleDateString()}
-                    </Text>
-                    {comment.userId === Uid && (
-                      <View style={styles.actionButtons}>
-                        <TouchableOpacity 
-                          onPress={() => {
-                            setEditingComment(comment.id);
-                            setEditedContent(comment.content);
-                          }}
-                        >
-                          <Text style={styles.actionText}>Edit</Text>
-                        </TouchableOpacity>
-                        <Text style={styles.dotSeparator}>•</Text>
-                        <TouchableOpacity 
-                          onPress={() => {
-                            Alert.alert(
-                              'Delete Comment',
-                              'Are you sure?',
-                              [
-                                { text: 'Cancel', style: 'cancel' },
-                                { 
-                                  text: 'Delete', 
-                                  style: 'destructive', 
-                                  onPress: () => handleDeleteComment(comment.id) 
-                                }
-                              ]
-                            );
-                          }}
-                        >
-                          <Text style={[styles.actionText, styles.deleteText]}>Delete</Text>
-                        </TouchableOpacity>
+                  title={item.title}
+                  description={item.location}
+                />
+              </MapView>
+            </TouchableOpacity>
+          </View>
+
+          {/* Comments Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.iconContainer}>
+                <FontAwesome5 name="comments" size={18} color="#4CAF50" />
+              </View>
+              <Text style={styles.sectionTitle}>Comments ({comments.length})</Text>
+            </View>
+            
+            <View style={styles.addCommentContainer}>
+              <TouchableOpacity onPress={() => navigation.navigate('UserProfile')}>
+                <Image 
+                  source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/40' }}
+                  style={styles.currentUserAvatar}
+                />
+              </TouchableOpacity>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.commentInput}
+                  placeholder="Write a comment..."
+                  placeholderTextColor="#999"
+                  value={newComment}
+                  onChangeText={setNewComment}
+                  multiline
+                  maxLength={500}
+                />
+                {newComment.trim() && (
+                  <TouchableOpacity 
+                    style={styles.postButton}
+                    onPress={handlePostComment}
+                  >
+                    <Text style={styles.postButtonText}>Post</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+
+            <View style={styles.commentsList}>
+              {comments.map((comment, index) => (
+                <View key={comment.id || index} style={styles.commentItem}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (comment.user?.id && comment.user.id.toString() === Uid.toString()) {
+                        navigation.navigate('UserProfile');
+                      } else if (comment.user?.id) {
+                        navigation.navigate('OtherUser', { userId: comment.user.id });
+                      }
+                    }}
+                  >
+                    <Image 
+                      source={{ uri: comment.user?.profilePic || 'https://via.placeholder.com/40' }}
+                      style={styles.commentAvatar}
+                    />
+                  </TouchableOpacity>
+                  <View style={styles.commentContent}>
+                    <View style={styles.commentBubble}>
+                      <Text style={styles.commentUsername}>{comment.user?.name}</Text>
+                      <Text style={styles.commentText}>{comment.content}</Text>
+                    </View>
+                    <View style={styles.commentActions}>
+                      <Text style={styles.commentTime}>
+                        {new Date(comment.createdAt).toLocaleDateString()}
+                      </Text>
+                      {comment.userId === Uid && (
+                        <View style={styles.actionButtons}>
+                          <TouchableOpacity 
+                            onPress={() => {
+                              setEditingComment(comment.id);
+                              setEditedContent(comment.content);
+                            }}
+                          >
+                            <Text style={styles.actionText}>Edit</Text>
+                          </TouchableOpacity>
+                          <Text style={styles.dotSeparator}>•</Text>
+                          <TouchableOpacity 
+                            onPress={() => {
+                              Alert.alert(
+                                'Delete Comment',
+                                'Are you sure?',
+                                [
+                                  { text: 'Cancel', style: 'cancel' },
+                                  { 
+                                    text: 'Delete', 
+                                    style: 'destructive', 
+                                    onPress: () => handleDeleteComment(comment.id) 
+                                  }
+                                ]
+                              );
+                            }}
+                          >
+                            <Text style={[styles.actionText, styles.deleteText]}>Delete</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                    {editingComment === comment.id && (
+                      <View style={styles.editContainer}>
+                        <TextInput
+                          style={styles.editInput}
+                          value={editedContent}
+                          onChangeText={setEditedContent}
+                          multiline
+                          maxLength={500}
+                          autoFocus
+                        />
+                        <View style={styles.editActions}>
+                          <TouchableOpacity 
+                            onPress={() => {
+                              setEditingComment(null);
+                              setEditedContent('');
+                            }}
+                          >
+                            <Text style={styles.cancelText}>Cancel</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity 
+                            onPress={() => handleEditComment(comment.id)}
+                            style={styles.saveButton}
+                          >
+                            <Text style={styles.saveText}>Save</Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     )}
                   </View>
-                  {editingComment === comment.id && (
-                    <View style={styles.editContainer}>
-                      <TextInput
-                        style={styles.editInput}
-                        value={editedContent}
-                        onChangeText={setEditedContent}
-                        multiline
-                        maxLength={500}
-                        autoFocus
-                      />
-                      <View style={styles.editActions}>
-                        <TouchableOpacity 
-                          onPress={() => {
-                            setEditingComment(null);
-                            setEditedContent('');
-                          }}
-                        >
-                          <Text style={styles.cancelText}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                          onPress={() => handleEditComment(comment.id)}
-                          style={styles.saveButton}
-                        >
-                          <Text style={styles.saveText}>Save</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
                 </View>
-              </View>
-            ))}
+              ))}
+            </View>
           </View>
         </View>
       </ScrollView>
 
+      {/* Fixed User Details Section */}
       <View style={styles.userContainer}>
         <TouchableOpacity
           onPress={() => {
-            if (item.User?.id && item.User.id.toString() === Uid.toString()) {
+            if (item?.User?.id && item.User.id.toString() === Uid.toString()) {
               navigation.navigate('UserProfile');
-            } else if (item.User?.id) {
+            } else if (item?.User?.id) {
               navigation.navigate('OtherUser', { userId: item.User.id });
-            } else {
-              Alert.alert("Error", "User ID is missing, cannot navigate to profile.");
             }
           }}
         >
-          <Image
+          <Image 
             source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/100' }}
             style={styles.userImage}
           />
         </TouchableOpacity>
-        <View style={styles.userInfo}>
-          <TouchableOpacity
-            onPress={() => {
-              if (item.User?.id && item.User.id.toString() === Uid.toString()) {
-                navigation.navigate('UserProfile');
-              } else if (item.User?.id) {
-                navigation.navigate('OtherUser', { userId: item.User.id });
-              } else {
-                Alert.alert("Error", "User ID is missing, cannot navigate to profile.");
-              }
-            }}
-          >
-            <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
-          </TouchableOpacity>
-         
-        </View>
-
+        <TouchableOpacity 
+          style={styles.userInfo}
+          onPress={() => {
+            if (String(item?.User?.id) === String(Uid)) {
+              navigation.navigate('UserProfile');
+            } else {
+              navigation.navigate('OtherUser', { userId: item?.User?.id });
+            }
+          }}
+        >
+          <Text style={styles.userName}>{item?.User?.name || 'Anonymous'}</Text>
+        </TouchableOpacity>
         {String(item?.User?.id) !== String(Uid) ? (
-          <TouchableOpacity style={styles.contactButton} onPress={handleContact}>
-            <Text style={styles.contactButtonText}>Contact</Text>
+          <TouchableOpacity 
+            style={[
+              styles.contactButton,
+              { backgroundColor: item.isDone ? '#666' : '#EFD13D' }
+            ]} 
+            onPress={handleContact}
+            disabled={item.isDone}
+          >
+            <View style={styles.buttonContent}>
+              <Ionicons 
+                name={item.isDone ? "checkmark-circle" : "chatbubble-outline"} 
+                size={18} 
+                color="#fff" 
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.contactButtonText}>
+                {item.isDone ? 'Request Fulfilled' : 'Contact'}
+              </Text>
+            </View>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            style={styles.fulfilledButton}
+            style={[
+              styles.contactButton,
+              { backgroundColor: item.isDone ? '#666' : '#4CAF50' }
+            ]}
             onPress={() => setModalVisible(true)}
+            disabled={item.isDone}
           >
-            <Text style={styles.fulfilledButtonText}>Fulfilled</Text>
-            <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+            <View style={styles.buttonContent}>
+              <Ionicons 
+                name={item.isDone ? "checkmark-circle" : "checkmark-circle-outline"} 
+                size={18} 
+                color="#fff" 
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.contactButtonText}>
+                {item.isDone ? 'Request Fulfilled' : 'Mark as Fulfilled'}
+              </Text>
+            </View>
           </TouchableOpacity>
         )}
       </View>
@@ -536,155 +595,138 @@ export default function InNeedDetails({ route, navigation }) {
   );
 }
 
-const WishlistItem = ({ item }) => {
-  // Properly handle image paths for different item types
-  const getImageUrl = () => {
-      if (item.type === 'event') {
-          return item.image || (item.images && item.images[0]) || 'https://via.placeholder.com/100';
-      } else if (item.type === 'inNeed') {
-          return item.images && item.images[0] || 'https://via.placeholder.com/100';
-      } else if (item.type === 'donation') {
-          if (Array.isArray(item.image)) {
-              return item.image[0] || 'https://via.placeholder.com/100';
-          }
-          return item.image || 'https://via.placeholder.com/100';
-      }
-      return 'https://via.placeholder.com/100';
-  };
-
-  return (
-      <View style={styles.wishlistItem}>
-          <Image 
-              source={{ uri: getImageUrl() }}
-              style={styles.wishlistImage}
-          />
-          <View style={styles.wishlistItemContent}>
-              <Text style={styles.wishlistItemTitle} numberOfLines={2}>
-                  {item.title}
-              </Text>
-              {item.location && (
-                  <Text style={styles.wishlistItemLocation} numberOfLines={1}>
-                      <Ionicons name="location-outline" size={14} color="#666" />
-                      {" "}{item.location}
-                  </Text>
-              )}
-              {item.type === 'event' && item.date && (
-                  <Text style={styles.wishlistItemDetail}>
-                      <Ionicons name="calendar-outline" size={14} color="#666" />
-                      {" "}{new Date(item.date).toLocaleDateString()}
-                  </Text>
-              )}
-          </View>
-          <TouchableOpacity 
-              style={styles.removeWishlistButton}
-              onPress={() => handleRemoveFromWishlist(item.favoriteId)}
-          >
-              <Ionicons name="heart" size={20} color="#FF6B6B" />
-          </TouchableOpacity>
-      </View>
-  );
-};
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#fff',
   },
-  scrollContent: {
-    paddingBottom: 140,
+  scrollContainer: {
+    flex: 1,
+    marginBottom: 80,
   },
   imageContainer: {
-    width: '100%',
-    height: 320,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    height: 300,
+    width: width,
+    position: 'relative',
   },
   image: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
+  },
+  gradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 100,
   },
   content: {
     padding: 20,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginTop: -30,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginBottom: 12,
-    letterSpacing: 0.2,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    lineHeight: 32,
+  },
+  infoCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    paddingVertical: 8,
   },
   infoText: {
-    marginLeft: 10,
+    marginLeft: 12,
     fontSize: 16,
-    color: '#555',
-    fontWeight: '500',
+    color: '#444',
+    flex: 1,
+  },
+  infoDivider: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginVertical: 8,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  iconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
-    color: '#1a1a1a',
+    color: '#333',
   },
   description: {
     fontSize: 16,
-    color: '#555',
-    lineHeight: 26,
-    marginBottom: 24,
+    lineHeight: 24,
+    color: '#666',
+    letterSpacing: 0.2,
   },
-  actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 16,
-    marginBottom: 20,
-    backgroundColor: '#fff',
+  mapContainer: {
+    height: 200,
     borderRadius: 16,
-    elevation: 2,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
-    width: '100%',
-  },
-  actionButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 10,
-    borderRadius: 12,
-    transform: [{ scale: 1 }],
-    width: '100%',
-  },
-  actionButtonText: {
-    color: '#666',
-    fontSize: 14,
-    fontWeight: '500',
-    marginTop: 6,
-  },
-  mapContainer: {
-    height: 220,
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginTop: 12,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
     shadowRadius: 8,
+    elevation: 3,
   },
   map: {
     flex: 1,
+  },
+  wishlistButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+    marginTop: 16,
+    alignSelf: 'center',
+  },
+  wishlistButtonActive: {
+    backgroundColor: '#FF6B6B',
+  },
+  wishlistButtonText: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FF6B6B',
   },
   userContainer: {
     position: 'absolute',
@@ -693,58 +735,50 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
+    padding: 16,
+    backgroundColor: '#f9f9f9',
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    borderTopColor: '#ddd',
   },
   userImage: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     marginRight: 16,
-    borderWidth: 2,
-    borderColor: '#EFD13D',
   },
   userInfo: {
     flex: 1,
+    paddingVertical: 8,
   },
   userName: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
-  },
-  userRating: {
-    fontSize: 14,
-    color: '#555',
-    marginTop: 4,
+    fontWeight: 'bold',
+    color: '#333',
   },
   contactButton: {
-    backgroundColor: '#EFD13D',
-    paddingVertical: 12,
-    paddingHorizontal: 28,
-    borderRadius: 50,
-    elevation: 3,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
+    elevation: 3,
+    minWidth: 120,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonIcon: {
+    marginRight: 6,
   },
   contactButtonText: {
-    color: '#1a1a1a',
-    fontSize: 16,
+    color: '#fff',
+    fontSize: 14,
     fontWeight: '600',
-  },
-  errorText: {
-    textAlign: 'center',
-    fontSize: 18,
-    color: '#dc3545',
-    marginTop: 20,
+    letterSpacing: 0.3,
   },
   modalOverlay: {
     position: 'absolute',
@@ -779,25 +813,6 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
     backgroundColor: '#f8f9fa',
   },
-  fulfilledButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#4CAF50',
-    paddingVertical: 12,
-    paddingHorizontal: 28,
-    borderRadius: 50,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-  },
-  fulfilledButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 8,
-  },
   modalSubmitButton: {
     backgroundColor: '#4CAF50',
     paddingVertical: 14,
@@ -816,25 +831,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  commentsSection: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    backgroundColor: '#fff',
-    borderTopWidth: 10,
-    borderTopColor: '#f1f3f5',
-  },
-  commentsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  commentsCount: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
   },
   addCommentContainer: {
     flexDirection: 'row',
@@ -990,52 +986,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '500',
-  },
-  wishlistItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-  },
-  wishlistImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 12,
-    marginRight: 14,
-    backgroundColor: '#f0f0f0', // Add background color for loading state
-    resizeMode: 'cover', // Ensure proper image scaling
-  },
-  wishlistItemContent: {
-    flex: 1,
-  },
-  wishlistItemTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#1a1a1a',
-    marginBottom: 4,
-  },
-  wishlistItemLocation: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 2,
-  },
-  wishlistItemDetail: {
-    fontSize: 14,
-    color: '#666',
-  },
-  removeWishlistButton: {
-    padding: 8,
-    borderRadius: 50,
-    backgroundColor: '#FF6B6B',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 12,
   },
 });
