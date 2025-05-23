@@ -28,7 +28,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NotificationContext } from '../src/context/NotificationContext';
 
 const { width, height } = Dimensions.get('window');
-const HEADER_MAX_HEIGHT = 220;
+const HEADER_MAX_HEIGHT = 200;
 const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 120 : 100;
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
@@ -616,45 +616,6 @@ export default function Home({ navigation }) {
           </View>
         ) : null}
 
-        {/* Stats Grid */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{
-            paddingLeft: 20,
-            marginBottom: 20,
-            marginTop: 45, // Reduced from 65 to 45 to maintain proper spacing
-          }}
-          contentContainerStyle={{
-            paddingRight: 20,
-            paddingTop: 25,
-            gap: 10,
-          }}
-        >
-          {featuredItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[styles.statCard, { width: 120 }]} // Reduced width from 150 to 120
-              onPress={() => navigation.navigate(item.screen)}
-            >
-              <LinearGradient
-                colors={item.gradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.statGradient}
-              >
-                <View style={styles.statIconContainer}>
-                  <FontAwesome5 name={item.icon} size={14} color="#fff" />
-                </View>
-                <Text style={styles.statCount}>
-                  {Array.isArray(item.data) ? item.data.length : 0}
-                </Text>
-                <Text style={styles.statTitle}>{item.title}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
         {/* Featured Campaigns */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -850,6 +811,8 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 1000,
     overflow: 'hidden',
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
   },
   headerTitleContainer: {
     position: 'absolute',
@@ -881,24 +844,27 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginHorizontal: 16,
-    marginTop: 18,
+    marginTop: -12,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 14,
-    borderRadius: 12,
-    elevation: 8,
+    padding: 20,
+    borderRadius: 18,
+    elevation: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
+    zIndex: 0,
   },
   searchInput: {
     flex: 1,
     marginLeft: 10,
-    fontSize: 16,
+    fontSize: 18,
     color: '#333',
   },
   scrollView: {
