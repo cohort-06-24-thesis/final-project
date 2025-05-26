@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, SafeAreaView, Dimensions, Animated } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, SafeAreaView, Dimensions, Animated, Pressable } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE } from '../config';
 import { LinearGradient } from 'expo-linear-gradient';
+import ImageViewing from 'react-native-image-viewing';
 
 const { width } = Dimensions.get('window');
 
@@ -17,7 +18,9 @@ export default function DonationDetails({ route, navigation }) {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
   const scrollViewRef = useRef(null);
+  const modalScrollViewRef = useRef(null);
 
   const scrollY = new Animated.Value(0);
   const imageScale = scrollY.interpolate({
@@ -192,6 +195,12 @@ export default function DonationDetails({ route, navigation }) {
     getCurrentUser();
   }, []);
 
+  // Helper to open modal at a specific image
+  const openImageModal = (index) => {
+    setCurrentImageIndex(index);
+    setModalVisible(true);
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView 
@@ -212,12 +221,13 @@ export default function DonationDetails({ route, navigation }) {
             scrollEventThrottle={16}
           >
             {(Array.isArray(item.image) ? item.image : [item.image]).map((uri, index) => (
-              <Image
-                key={index}
-                source={{ uri: uri || 'https://via.placeholder.com/300' }}
-                style={{ width: width, height: 300 }}
-                resizeMode="cover"
-              />
+              <Pressable key={index} onPress={() => openImageModal(index)}>
+                <Image
+                  source={{ uri: uri || 'https://via.placeholder.com/300' }}
+                  style={{ width: width, height: 300 }}
+                  resizeMode="cover"
+                />
+              </Pressable>
             ))}
           </ScrollView>
           {/* Overlayed image indicator dots */}
@@ -230,6 +240,25 @@ export default function DonationDetails({ route, navigation }) {
             ))}
           </View>
         </View>
+
+        {/* Fullscreen Image Viewer with react-native-image-viewing */}
+        <ImageViewing
+          images={(Array.isArray(item.image) ? item.image : [item.image]).map(uri => ({ uri: uri || 'https://via.placeholder.com/300' }))}
+          imageIndex={currentImageIndex}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+          presentationStyle="fullScreen"
+          FooterComponent={({ imageIndex }) => (
+            <View style={styles.modalDotsContainer}>
+              {(Array.isArray(item.image) ? item.image : [item.image]).map((_, idx) => (
+                <View
+                  key={idx}
+                  style={[styles.dot, idx === imageIndex && styles.activeDot]}
+                />
+              ))}
+            </View>
+          )}
+        />
 
         {/* Content Section */}
         <View style={styles.content}>
@@ -630,30 +659,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.3,
   },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  closeButton: {
-    padding: 8,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  fullScreenMap: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height - 80,
-  },
   wishlistButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -704,5 +709,15 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     marginHorizontal: 4,
+  },
+  modalDotsContainer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
 });
