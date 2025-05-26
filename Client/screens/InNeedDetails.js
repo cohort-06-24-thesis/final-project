@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import { API_BASE } from '../config';
 import axios from "axios";
 import io from "socket.io-client";
 import { LinearGradient } from 'expo-linear-gradient';
+import ImageViewing from 'react-native-image-viewing';
 
 const { width } = Dimensions.get('window');
 
@@ -32,6 +33,9 @@ export default function InNeedDetails({ route, navigation }) {
   const [editingComment, setEditingComment] = useState(null);
   const [editedContent, setEditedContent] = useState('');
   const [isFavorited, setIsFavorited] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
+  const scrollViewRef = useRef(null);
 
   useEffect(() => {
     const loadUid = async () => {
@@ -259,7 +263,13 @@ export default function InNeedDetails({ route, navigation }) {
       Alert.alert('Error', 'Failed to update comment');
     }
   };
-  
+
+  // Helper to open modal at a specific image
+  const openImageModal = (index) => {
+    setCurrentImageIndex(index);
+    setImageViewerVisible(true);
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView 
@@ -268,16 +278,60 @@ export default function InNeedDetails({ route, navigation }) {
       >
         {/* Hero Image Section */}
         <View style={styles.imageContainer}>
-          <Image 
-            source={{ uri: item.images?.[0] || 'https://via.placeholder.com/150' }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-          <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.8)']}
-            style={styles.gradient}
-          />
+          <ScrollView
+            ref={scrollViewRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={e => {
+              const index = Math.round(e.nativeEvent.contentOffset.x / width);
+              setCurrentImageIndex(index);
+            }}
+            scrollEventThrottle={16}
+          >
+            {(Array.isArray(item.images) ? item.images : [item.images]).map((uri, index) => (
+              <TouchableOpacity key={index} activeOpacity={0.8} onPress={() => openImageModal(index)}>
+                <Image
+                  source={{ uri: uri || 'https://via.placeholder.com/300' }}
+                  style={{ width: width, height: 300 }}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {/* Overlayed image indicator dots */}
+          {((Array.isArray(item.images) ? item.images.length : item.images ? 1 : 0) > 1) && (
+            <View style={styles.dotsContainer}>
+              {(Array.isArray(item.images) ? item.images : [item.images]).map((_, idx) => (
+                <View
+                  key={idx}
+                  style={[styles.dot, currentImageIndex === idx && styles.activeDot]}
+                />
+              ))}
+            </View>
+          )}
         </View>
+
+        {/* Fullscreen Image Viewer with react-native-image-viewing */}
+        <ImageViewing
+          images={(Array.isArray(item.images) ? item.images : [item.images]).map(uri => ({ uri: uri || 'https://via.placeholder.com/300' }))}
+          imageIndex={currentImageIndex}
+          visible={imageViewerVisible}
+          onRequestClose={() => setImageViewerVisible(false)}
+          presentationStyle="fullScreen"
+          FooterComponent={({ imageIndex }) => (
+            (Array.isArray(item.images) ? item.images.length : item.images ? 1 : 0) > 1 ? (
+              <View style={styles.modalDotsContainer}>
+                {(Array.isArray(item.images) ? item.images : [item.images]).map((_, idx) => (
+                  <View
+                    key={idx}
+                    style={[styles.dot, idx === imageIndex && styles.activeDot]}
+                  />
+                ))}
+              </View>
+            ) : null
+          )}
+        />
 
         {/* Content Section */}
         <View style={styles.content}>
@@ -986,5 +1040,44 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '500',
+  },
+  dotsContainer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    alignSelf: 'center',
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  activeDot: {
+    backgroundColor: '#FFE97F',
+    borderColor: '#FFE97F',
+    borderWidth: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    marginHorizontal: 4,
+  },
+  modalDotsContainer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
 });

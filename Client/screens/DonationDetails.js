@@ -231,14 +231,16 @@ export default function DonationDetails({ route, navigation }) {
             ))}
           </ScrollView>
           {/* Overlayed image indicator dots */}
-          <View style={styles.dotsContainer}>
-            {(Array.isArray(item.image) ? item.image : [item.image]).map((_, idx) => (
-              <View
-                key={idx}
-                style={[styles.dot, currentImageIndex === idx && styles.activeDot]}
-              />
-            ))}
-          </View>
+          {((Array.isArray(item.image) ? item.image.length : item.image ? 1 : 0) > 1) && (
+            <View style={styles.dotsContainer}>
+              {(Array.isArray(item.image) ? item.image : [item.image]).map((_, idx) => (
+                <View
+                  key={idx}
+                  style={[styles.dot, currentImageIndex === idx && styles.activeDot]}
+                />
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Fullscreen Image Viewer with react-native-image-viewing */}
@@ -249,14 +251,16 @@ export default function DonationDetails({ route, navigation }) {
           onRequestClose={() => setModalVisible(false)}
           presentationStyle="fullScreen"
           FooterComponent={({ imageIndex }) => (
-            <View style={styles.modalDotsContainer}>
-              {(Array.isArray(item.image) ? item.image : [item.image]).map((_, idx) => (
-                <View
-                  key={idx}
-                  style={[styles.dot, idx === imageIndex && styles.activeDot]}
-                />
-              ))}
-            </View>
+            (Array.isArray(item.image) ? item.image.length : item.image ? 1 : 0) > 1 ? (
+              <View style={styles.modalDotsContainer}>
+                {(Array.isArray(item.image) ? item.image : [item.image]).map((_, idx) => (
+                  <View
+                    key={idx}
+                    style={[styles.dot, idx === imageIndex && styles.activeDot]}
+                  />
+                ))}
+              </View>
+            ) : null
           )}
         />
 
