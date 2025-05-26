@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, SafeAreaView, Dimensions, Animated } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
@@ -16,6 +16,8 @@ export default function DonationDetails({ route, navigation }) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const scrollViewRef = useRef(null);
 
   const scrollY = new Animated.Value(0);
   const imageScale = scrollY.interpolate({
@@ -198,15 +200,35 @@ export default function DonationDetails({ route, navigation }) {
       >
         {/* Hero Image Section */}
         <View style={styles.imageContainer}>
-          <Image 
-            source={{ uri: item.image?.[0] || 'https://via.placeholder.com/150' }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-          <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.8)']}
-            style={styles.gradient}
-          />
+          <ScrollView
+            ref={scrollViewRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={e => {
+              const index = Math.round(e.nativeEvent.contentOffset.x / width);
+              setCurrentImageIndex(index);
+            }}
+            scrollEventThrottle={16}
+          >
+            {(Array.isArray(item.image) ? item.image : [item.image]).map((uri, index) => (
+              <Image
+                key={index}
+                source={{ uri: uri || 'https://via.placeholder.com/300' }}
+                style={{ width: width, height: 300 }}
+                resizeMode="cover"
+              />
+            ))}
+          </ScrollView>
+          {/* Overlayed image indicator dots */}
+          <View style={styles.dotsContainer}>
+            {(Array.isArray(item.image) ? item.image : [item.image]).map((_, idx) => (
+              <View
+                key={idx}
+                style={[styles.dot, currentImageIndex === idx && styles.activeDot]}
+              />
+            ))}
+          </View>
         </View>
 
         {/* Content Section */}
@@ -653,5 +675,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FF6B6B',
+  },
+  dotsContainer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    alignSelf: 'center',
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    marginHorizontal: 4,
+    transitionProperty: 'width,background-color',
+    transitionDuration: '200ms',
+  },
+  activeDot: {
+    backgroundColor: '#FFE97F',
+    borderColor: '#FFE97F',
+    borderWidth: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    marginHorizontal: 4,
   },
 });
