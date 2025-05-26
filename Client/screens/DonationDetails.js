@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, SafeAreaView, Dimensions, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, SafeAreaView, Dimensions, Animated, Pressable } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE } from '../config';
 import { LinearGradient } from 'expo-linear-gradient';
+import ImageViewing from 'react-native-image-viewing';
 
 const { width } = Dimensions.get('window');
 
@@ -16,6 +17,10 @@ export default function DonationDetails({ route, navigation }) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const scrollViewRef = useRef(null);
+  const modalScrollViewRef = useRef(null);
 
   const scrollY = new Animated.Value(0);
   const imageScale = scrollY.interpolate({
@@ -190,6 +195,12 @@ export default function DonationDetails({ route, navigation }) {
     getCurrentUser();
   }, []);
 
+  // Helper to open modal at a specific image
+  const openImageModal = (index) => {
+    setCurrentImageIndex(index);
+    setModalVisible(true);
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView 
@@ -198,16 +209,60 @@ export default function DonationDetails({ route, navigation }) {
       >
         {/* Hero Image Section */}
         <View style={styles.imageContainer}>
-          <Image 
-            source={{ uri: item.image?.[0] || 'https://via.placeholder.com/150' }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-          <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.8)']}
-            style={styles.gradient}
-          />
+          <ScrollView
+            ref={scrollViewRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={e => {
+              const index = Math.round(e.nativeEvent.contentOffset.x / width);
+              setCurrentImageIndex(index);
+            }}
+            scrollEventThrottle={16}
+          >
+            {(Array.isArray(item.image) ? item.image : [item.image]).map((uri, index) => (
+              <Pressable key={index} onPress={() => openImageModal(index)}>
+                <Image
+                  source={{ uri: uri || 'https://via.placeholder.com/300' }}
+                  style={{ width: width, height: 300 }}
+                  resizeMode="cover"
+                />
+              </Pressable>
+            ))}
+          </ScrollView>
+          {/* Overlayed image indicator dots */}
+          {((Array.isArray(item.image) ? item.image.length : item.image ? 1 : 0) > 1) && (
+            <View style={styles.dotsContainer}>
+              {(Array.isArray(item.image) ? item.image : [item.image]).map((_, idx) => (
+                <View
+                  key={idx}
+                  style={[styles.dot, currentImageIndex === idx && styles.activeDot]}
+                />
+              ))}
+            </View>
+          )}
         </View>
+
+        {/* Fullscreen Image Viewer with react-native-image-viewing */}
+        <ImageViewing
+          images={(Array.isArray(item.image) ? item.image : [item.image]).map(uri => ({ uri: uri || 'https://via.placeholder.com/300' }))}
+          imageIndex={currentImageIndex}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+          presentationStyle="fullScreen"
+          FooterComponent={({ imageIndex }) => (
+            (Array.isArray(item.image) ? item.image.length : item.image ? 1 : 0) > 1 ? (
+              <View style={styles.modalDotsContainer}>
+                {(Array.isArray(item.image) ? item.image : [item.image]).map((_, idx) => (
+                  <View
+                    key={idx}
+                    style={[styles.dot, idx === imageIndex && styles.activeDot]}
+                  />
+                ))}
+              </View>
+            ) : null
+          )}
+        />
 
         {/* Content Section */}
         <View style={styles.content}>
@@ -608,30 +663,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.3,
   },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  closeButton: {
-    padding: 8,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  fullScreenMap: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height - 80,
-  },
   wishlistButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -653,5 +684,44 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FF6B6B',
+  },
+  dotsContainer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    alignSelf: 'center',
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    marginHorizontal: 4,
+    transitionProperty: 'width,background-color',
+    transitionDuration: '200ms',
+  },
+  activeDot: {
+    backgroundColor: '#FFE97F',
+    borderColor: '#FFE97F',
+    borderWidth: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    marginHorizontal: 4,
+  },
+  modalDotsContainer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
 });
