@@ -26,6 +26,7 @@ import { BlurView } from 'expo-blur';
 import LottieView from 'lottie-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NotificationContext } from '../src/context/NotificationContext';
+import Header from '../components/Header';
 
 const { width, height } = Dimensions.get('window');
 
@@ -37,11 +38,9 @@ export default function Home({ navigation }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [customReason, setCustomReason] = useState('');
-  const [userProfilePic, setUserProfilePic] = useState(null);
   const { unreadCount, notifications } = useContext(NotificationContext); // Access unreadCount and notifications
 
   // Compute unseen chat count
@@ -73,21 +72,8 @@ export default function Home({ navigation }) {
     }
   };
 
-  const fetchUserProfile = async () => {
-    try {
-      const userId = await AsyncStorage.getItem('userUID');
-      if (userId) {
-        const response = await axios.get(`${API_BASE}/user/getById/${userId}`);
-        setUserProfilePic(response.data.profilePic || null);
-      }
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-    }
-  };
-
   useEffect(() => {
     fetchData();
-    fetchUserProfile();
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
@@ -313,170 +299,12 @@ export default function Home({ navigation }) {
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="#00C44F" barStyle="light-content" />
-
-      {/* Simple Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.aboutButton}
-          onPress={() => navigation.navigate('AboutUs')}
-        >
-          <Ionicons name="information-circle-outline" size={24} color="#fff" />
-        </TouchableOpacity>
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            style={[styles.headerButton, { marginRight: 12 }]}
-            onPress={() => navigation.navigate('Conversation')}
-          >
-            <Ionicons name="chatbubble-outline" size={24} color="#fff" />
-            {unseenChatCount > 0 && (
-              <View style={styles.chatBadge}>
-                <Text style={styles.chatBadgeText}>{unseenChatCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.headerButton, { marginRight: 12 }]}
-            onPress={() => navigation.navigate('Notifications')}
-          >
-            <MaterialIcons name="notifications-none" size={24} color="#fff" />
-            {unseenNotifCount > 0 && (
-              <View style={styles.notifBadge}>
-                <Text style={styles.notifBadgeText}>{unseenNotifCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.headerButton, styles.profileButton]}
-            onPress={() => setProfileMenuVisible(true)}
-          >
-            {userProfilePic ? (
-              <Image
-                source={{ uri: userProfilePic }}
-                style={styles.profilePic}
-              />
-            ) : (
-              <Ionicons name="person-circle-outline" size={24} color="#fff" />
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Profile Dropdown Modal */}
-      <Modal
-        visible={profileMenuVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setProfileMenuVisible(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setProfileMenuVisible(false)}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.dropdownMenu}>
-              <TouchableOpacity
-                style={styles.dropdownItem}
-                onPress={() => {
-                  setProfileMenuVisible(false);
-                  navigation.navigate('UserProfile');
-                }}
-              >
-                <Ionicons name="person-outline" size={22} color="#333" style={{ marginRight: 10 }} />
-                <Text style={styles.dropdownText}>View Profile</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.dropdownItem}
-                onPress={() => {
-                  setProfileMenuVisible(false);
-                  setReportModalVisible(true);
-                }}
-              >
-                <Ionicons name="alert-circle-outline" size={22} color="#FF6B6B" style={{ marginRight: 10 }} />
-                <Text style={styles.dropdownText}>Report</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.dropdownItem}
-                onPress={() => {
-                  setProfileMenuVisible(false);
-                  navigation.replace('Login');
-                }}
-              >
-                <Ionicons name="log-out-outline" size={22} color="#FF6B6B" style={{ marginRight: 10 }} />
-                <Text style={styles.dropdownText}>Logout</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-
-      {/* Report Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={reportModalVisible}
-        onRequestClose={() => setReportModalVisible(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setReportModalVisible(false)}>
-          <View style={styles.modalOverlayContainer}>
-            <TouchableWithoutFeedback>
-              <View style={styles.reportModalContainer}>
-                <Text style={styles.modalTitle}>Report a Problem</Text>
-                <TextInput
-                  style={[styles.customReasonInput, { minHeight: 100 }]}
-                  placeholder="Describe the problem..."
-                  value={customReason}
-                  onChangeText={setCustomReason}
-                  multiline
-                  textAlignVertical="top"
-                  placeholderTextColor="#999"
-                />
-                <View style={styles.modalButtonsContainer}>
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.cancelButton]}
-                    onPress={() => {
-                      setReportModalVisible(false);
-                      setCustomReason('');
-                    }}
-                  >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.submitButton]}
-                    onPress={async () => {
-                      if (!customReason.trim()) {
-                        Alert.alert('Error', 'Please describe your problem.');
-                        return;
-                      }
-
-                      try {
-                        const userId = await AsyncStorage.getItem('userUID');
-
-                        if (!userId) {
-                          Alert.alert('Error', 'Please login to submit a report');
-                          return;
-                        }
-
-                        await axios.post(`${API_BASE}/report/createReport`, {
-                          reason: customReason.trim(),
-                          userId: userId,
-                          itemType: "general",
-                          itemId: null
-                        });
-
-                        Alert.alert('Thank you', 'Your report has been submitted.');
-                        setReportModalVisible(false);
-                        setCustomReason('');
-                      } catch (err) {
-                        console.error('Error submitting report:', err);
-                        Alert.alert('Error', 'Failed to submit report. Please try again.');
-                      }
-                    }}
-                  >
-                    <Text style={styles.submitButtonText}>Submit</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+      <Header
+        navigation={navigation}
+        title="Home"
+        leftIcon={<Ionicons name="information-circle-outline" size={24} color="#fff" />}
+        onLeftIconPress={() => navigation.navigate('AboutUs')}
+      />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingBottom: 30 }}>
         {/* Search Bar and Dropdown in normal flow */}
@@ -756,33 +584,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f8f9fa",
   },
-  header: {
-    backgroundColor: '#00C44F',
-    height: Platform.OS === 'ios' ? 90 : 70,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 40 : 20,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  headerButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerButton: {
-    padding: 8,
-    borderRadius: 20,
-  },
-  aboutButton: {
-    padding: 8,
-  },
   scrollView: {
     flex: 1,
   },
@@ -1038,116 +839,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
-  },
-  profileButton: {
-    padding: 0,
-    height: 35,
-    width: 35,
-    borderRadius: 17.5,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#fff',
-  },
-  profilePic: {
-    height: '100%',
-    width: '100%',
-    borderRadius: 17.5,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-end',
-  },
-  dropdownMenu: {
-    marginTop: Platform.OS === 'ios' ? 80 : 60,
-    marginRight: 20,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingVertical: 8,
-    width: 180,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-  dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-  },
-  dropdownText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  modalButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    minWidth: 100,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#666',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  submitButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  customReasonInput: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 12,
-    fontSize: 16,
-    backgroundColor: '#FAFAFA',
-  },
-  reportModalContainer: {
-    backgroundColor: '#fff',
-    width: '85%',
-    maxWidth: 400,
-    borderRadius: 20,
-    padding: 24,
-    elevation: 24,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 12,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 16.0,
-  },
-  modalOverlayContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 20,
-    gap: 12,
-  },
-  cancelButton: {
-    backgroundColor: '#f5f5f5',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  submitButton: {
-    backgroundColor: '#4CAF50',
   },
   urgentBadge: {
     position: 'absolute',

@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { API_BASE } from '../config';
 import { LinearGradient } from 'expo-linear-gradient';
+import Header from '../components/Header';
 
 const calculateTimeLeft = (eventDate) => {
   const difference = new Date(eventDate) - new Date();
@@ -141,7 +142,7 @@ const EventsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Upcoming Events</Text>
+      <Header navigation={navigation} title="Events" />
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -176,12 +177,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    padding: 16,
-    backgroundColor: '#fff',
   },
   scrollView: {
     padding: 16,

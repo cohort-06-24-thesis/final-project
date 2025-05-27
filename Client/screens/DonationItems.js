@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, TextInput, Image, RefreshCont
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { API_BASE } from '../config';
+import Header from '../components/Header';
 
 const categoryIcons = {
   Furniture: 'bed-outline',
@@ -67,8 +68,7 @@ export default function DonationItems({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>SADAKA</Text>
-
+      <Header navigation={navigation} title="Donations" />
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={24} color="#666" />
         <TextInput
@@ -210,22 +210,10 @@ export default function DonationItems({ navigation }) {
   );
 }
 
-
-
-
-
-
-
 const styles = {
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 16,
-  },
-  headerText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 16,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -234,6 +222,7 @@ const styles = {
     borderRadius: 25,
     paddingHorizontal: 16,
     marginBottom: 16,
+    marginTop: 16,
   },
   searchInput: {
     flex: 1,
@@ -275,7 +264,8 @@ const styles = {
     fontWeight: 'bold',
   },
   itemsContainer: {
-    marginTop: 5, // Add small margin top
+    marginTop: 5,
+    paddingHorizontal: 16,
   },
   itemsGrid: {
     flexDirection: 'row',
