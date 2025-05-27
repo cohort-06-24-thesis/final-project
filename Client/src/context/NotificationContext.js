@@ -94,9 +94,74 @@ setUnreadCount(filteredNotifications.filter(n => !n.isRead).length);
               topOffset: 50,
               props: {
                 style: {
-                  backgroundColor: notification.itemType === 'campaign' ? '#4CAF50' : undefined,
-                }
-              }
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: 16,
+                  padding: 16,
+                  marginHorizontal: 16,
+                  shadowColor: '#000',
+                  shadowOffset: {
+                    width: 0,
+                    height: 4,
+                  },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 12,
+                  elevation: 8,
+                  borderWidth: 1,
+                  borderColor: 'rgba(0, 0, 0, 0.05)',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                },
+                text1Style: {
+                  fontSize: 16,
+                  fontWeight: '700',
+                  color: '#1F2937',
+                  marginBottom: 4,
+                  fontFamily: 'System',
+                },
+                text2Style: {
+                  fontSize: 14,
+                  color: '#6B7280',
+                  fontFamily: 'System',
+                  lineHeight: 20,
+                },
+                containerStyle: {
+                  backgroundColor: notification.itemType === 'campaign' ? '#F0FDF4' :
+                                 notification.itemType === 'donation' ? '#F0FDF4' :
+                                 notification.itemType === 'inNeed' ? '#EFF6FF' :
+                                 notification.itemType === 'event' ? '#FFF7ED' :
+                                 notification.itemType === 'payment' ? '#F0FDF4' : '#F9FAFB',
+                  borderLeftWidth: 4,
+                  borderLeftColor: notification.itemType === 'campaign' ? '#4CAF50' :
+                                  notification.itemType === 'donation' ? '#4CAF50' :
+                                  notification.itemType === 'inNeed' ? '#3B82F6' :
+                                  notification.itemType === 'event' ? '#F97316' :
+                                  notification.itemType === 'payment' ? '#4CAF50' : '#6B7280',
+                },
+                iconContainerStyle: {
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: notification.itemType === 'campaign' ? '#DCFCE7' :
+                                  notification.itemType === 'donation' ? '#DCFCE7' :
+                                  notification.itemType === 'inNeed' ? '#DBEAFE' :
+                                  notification.itemType === 'event' ? '#FFEDD5' :
+                                  notification.itemType === 'payment' ? '#DCFCE7' : '#F3F4F6',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 12,
+                },
+                iconStyle: {
+                  fontSize: 20,
+                },
+                contentContainerStyle: {
+                  flex: 1,
+                },
+              },
+              icon: notification.itemType === 'campaign' ? '🎯' : 
+                    notification.itemType === 'donation' ? '🎁' :
+                    notification.itemType === 'inNeed' ? '📢' :
+                    notification.itemType === 'event' ? '📅' :
+                    notification.itemType === 'payment' ? '💰' : '📌',
             });
           });
           
