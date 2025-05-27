@@ -20,9 +20,20 @@ const toastConfig = {
   style: {
     background: "#fff",
     color: "#333",
-    borderRadius: "8px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    borderRadius: "12px",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+    padding: "16px",
+    fontSize: "14px",
+    fontFamily: "system-ui, -apple-system, sans-serif",
+    border: "1px solid rgba(0, 0, 0, 0.05)",
   },
+  progressStyle: {
+    background: "#4CAF50",
+  },
+  bodyStyle: {
+    padding: "0",
+  },
+  icon: false,
 };
 
 export const NotificationProvider = ({ children }) => {
@@ -94,9 +105,14 @@ export const NotificationProvider = ({ children }) => {
         saveToStorage(updatedNotifications, newUnseenCount);
 
         toast.info(
-          <div>
-            <p className="font-semibold">New In-Need Request! 📢</p>
-            <p>{data.message}</p>
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+              <span className="text-blue-500 text-lg">📢</span>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">New In-Need Request!</p>
+              <p className="text-gray-600 mt-1">{data.message}</p>
+            </div>
           </div>,
           toastConfig
         );
@@ -116,9 +132,14 @@ export const NotificationProvider = ({ children }) => {
         saveToStorage(updatedNotifications, newUnseenCount);
 
         toast.info(
-          <div>
-            <p className="font-semibold">New Donation Item! 🎁</p>
-            <p>{data.message}</p>
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-50 flex items-center justify-center">
+              <span className="text-green-500 text-lg">🎁</span>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">New Donation Item!</p>
+              <p className="text-gray-600 mt-1">{data.message}</p>
+            </div>
           </div>,
           toastConfig
         );
@@ -138,9 +159,14 @@ export const NotificationProvider = ({ children }) => {
         saveToStorage(updatedNotifications, newUnseenCount);
 
         toast.info(
-          <div>
-            <p className="font-semibold">New Campaign! 🎯</p>
-            <p>{data.message}</p>
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center">
+              <span className="text-purple-500 text-lg">🎯</span>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">New Campaign!</p>
+              <p className="text-gray-600 mt-1">{data.message}</p>
+            </div>
           </div>,
           toastConfig
         );
@@ -160,9 +186,14 @@ export const NotificationProvider = ({ children }) => {
         saveToStorage(updatedNotifications, newUnseenCount);
 
         toast.info(
-          <div>
-            <p className="font-semibold">New Event! 📅</p>
-            <p>{data.message}</p>
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center">
+              <span className="text-orange-500 text-lg">📅</span>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">New Event!</p>
+              <p className="text-gray-600 mt-1">{data.message}</p>
+            </div>
           </div>,
           toastConfig
         );
@@ -182,9 +213,14 @@ export const NotificationProvider = ({ children }) => {
         saveToStorage(updatedNotifications, newUnseenCount);
 
         toast.success(
-          <div>
-            <p className="font-semibold">New Payment Received! 💰</p>
-            <p>{data.message}</p>
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-50 flex items-center justify-center">
+              <span className="text-green-500 text-lg">💰</span>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">New Payment Received!</p>
+              <p className="text-gray-600 mt-1">{data.message}</p>
+            </div>
           </div>,
           toastConfig
         );
