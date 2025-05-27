@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { API_BASE } from '../config';
+import Header from '../components/Header';
 
 const InNeedCard = ({ item, onPress }) => (
   <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
@@ -84,7 +85,7 @@ const InNeedScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>People In Need</Text>
+      <Header navigation={navigation} title="In Need" />
       <ScrollView
         style={styles.scroll}
         refreshControl={
@@ -117,12 +118,6 @@ const InNeedScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    padding: 16,
-    backgroundColor: '#fff',
-  },
   scroll: { padding: 16 },
   noData: {
     textAlign: 'center',

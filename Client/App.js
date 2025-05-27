@@ -82,22 +82,30 @@ function TabNavigator() {
       <Tab.Screen
         name="Donations"
         component={DonationItems}
-        options={{ title: "Donations" }}
+        options={{ title: "Donations",
+          headerShown: false,
+        }}
       />
       <Tab.Screen
         name="InNeed"
         component={InNeed}
-        options={{ title: "In Need" }}
+        options={{ title: "In Need",
+          headerShown: false,
+        }}
       />
       <Tab.Screen
         name="Campaign"
         component={Campaign}
-        options={{ title: "Campaign" }}
+        options={{ title: "Campaign",
+          headerShown: false,
+        }}
       />
       <Tab.Screen
         name="Events"
         component={Events}
-        options={{ title: "Events" }}
+        options={{ title: "Events",
+          headerShown: false,
+         }}
       />
     </Tab.Navigator>
   );
@@ -255,7 +263,7 @@ export default function App() {
               component={Conversation}
               options={{
                 title: "Chat",
-                headerShown: true,
+                headerShown: false,
                 headerStyle: { backgroundColor: "#fff" },
                 headerTintColor: "#4CAF50",
                 headerTitleStyle: { fontWeight: "bold" },

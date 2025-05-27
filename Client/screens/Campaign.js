@@ -4,11 +4,12 @@ import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { API_BASE } from '../config';
+import Header from '../components/Header';
 
-export default function Campaign() {
+export default function Campaign({ navigation: navFromProps }) {
   const [campaigns, setCampaigns] = useState([]);
   const [refreshing, setRefreshing] = useState(false); 
-  const navigation = useNavigation();
+  const navigation = navFromProps || useNavigation();
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -39,8 +40,7 @@ export default function Campaign() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Text style={styles.header}>Feature Campaign</Text>
-
+      <Header navigation={navigation} title="Campaign" />
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -121,12 +121,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    padding: 16,
-    backgroundColor: '#fff',
   },
   scrollView: {
     padding: 16,
