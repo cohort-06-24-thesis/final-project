@@ -10,6 +10,9 @@ import {
   TextInput,
   Modal,
   Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
@@ -36,6 +39,8 @@ export default function InNeedDetails({ route, navigation }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const scrollViewRef = useRef(null);
+  const [userProfilePic, setUserProfilePic] = useState(null);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
     const loadUid = async () => {
@@ -270,11 +275,57 @@ export default function InNeedDetails({ route, navigation }) {
     setImageViewerVisible(true);
   };
 
+  useEffect(() => {
+    const loadUserProfilePic = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userUID');
+        if (userId) {
+          const response = await axios.get(`${API_BASE}/user/getById/${userId}`);
+          setUserProfilePic(response.data.profilePic || null);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        setUserProfilePic(null);
+      }
+    };
+    loadUserProfilePic();
+  }, []);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true);
+        // Scroll to the bottom when keyboard appears
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+    >
       <ScrollView 
+        ref={scrollViewRef}
         style={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Hero Image Section */}
         <View style={styles.imageContainer}>
@@ -430,7 +481,7 @@ export default function InNeedDetails({ route, navigation }) {
             <View style={styles.addCommentContainer}>
               <TouchableOpacity onPress={() => navigation.navigate('UserProfile')}>
                 <Image 
-                  source={{ uri: item?.User?.profilePic || 'https://via.placeholder.com/40' }}
+                  source={{ uri: userProfilePic || 'https://via.placeholder.com/40' }}
                   style={styles.currentUserAvatar}
                 />
               </TouchableOpacity>
@@ -645,7 +696,7 @@ export default function InNeedDetails({ route, navigation }) {
           </View>
         </View>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
