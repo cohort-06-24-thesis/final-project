@@ -26,8 +26,12 @@ const Page = () => {
     try {
       const res = await axios.get('http://localhost:3000/api/inNeed/all');
       
-      
-      const sortedData = res.data.sort((a, b) => a.id - b.id);
+      // Sort by createdAt timestamp in descending order (newest first)
+      const sortedData = res.data.sort((a, b) => {
+        const dateA = new Date(a.createdAt);
+        const dateB = new Date(b.createdAt);
+        return dateB - dateA;
+      });
       
       setData(sortedData);
       setTotalPages(Math.ceil(sortedData.length / itemsPerPage));

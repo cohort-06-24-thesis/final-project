@@ -389,8 +389,8 @@ export default function InNeedDetails({ route, navigation }) {
             <TouchableOpacity
               style={styles.mapContainer}
               onPress={() => navigation.navigate('FullScreenMap', {
-                latitude: item.latitude || 48.8566,
-                longitude: item.longitude || 2.3522,
+                latitude: item.latitude ||  36.850251,
+                longitude: item.longitude || 10.164390,
                 title: item.title,
                 location: item.location,
               })}
@@ -398,8 +398,8 @@ export default function InNeedDetails({ route, navigation }) {
               <MapView
                 style={styles.map}
                 initialRegion={{
-                  latitude: item.latitude || 48.8566,
-                  longitude: item.longitude || 2.3522,
+                  latitude: item.latitude ||  36.850251,
+                  longitude: item.longitude || 10.164390,
                   latitudeDelta: 0.01,
                   longitudeDelta: 0.01,
                 }}
@@ -408,8 +408,8 @@ export default function InNeedDetails({ route, navigation }) {
               >
                 <Marker
                   coordinate={{
-                    latitude: item.latitude || 48.8566,
-                    longitude: item.longitude || 2.3522,
+                    latitude: item.latitude ||  36.850251,
+                    longitude: item.longitude || 10.164390,
                   }}
                   title={item.title}
                   description={item.location}
